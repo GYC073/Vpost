@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập — Vpost</title>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #2563EB;
+  --primary-dark: #1D4ED8;
+  --primary-light: #EFF6FF;
+  --purple: #7C3AED;
+  --accent: #059669;
+  --text: #0D0F14;
+  --text-secondary: #6B7280;
+  --text-hint: #9CA3AF;
+  --border: #F0F1F3;
+  --bg: #F9FAFB;
+  --surface: #ffffff;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.15);
+}
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background */
+.bg-cover {
+  position: fixed; inset: 0;
+  background: url('https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=1200&q=80') center/cover no-repeat;
+  z-index: 0;
+}
+.bg-overlay {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, rgba(26,29,46,0.92) 0%, rgba(45,107,228,0.85) 100%);
+  z-index: 1;
+}
+
+.login-wrap {
+  position: relative; z-index: 2;
+  width: 100%; max-width: 400px;
+}
+
+/* Logo */
+.login-logo {
+  text-align: center; margin-bottom: 28px;
+}
+.login-logo-icon {
+  width: 60px; height: 60px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  border-radius: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 24px rgba(45,107,228,0.4);
+}
+.login-logo-icon i { color: #fff; font-size: 28px; }
+.login-logo-name { font-family: 'Sora', sans-serif; color: #fff; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+.login-logo-sub { color: rgba(255,255,255,0.6); font-size: 13px; }
+
+/* Card */
+.login-card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Tabs */
+.login-tabs {
+  display: flex;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 24px;
+}
+.login-tab {
+  flex: 1; text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  border: none; background: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.login-tab.active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 13px; font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.form-input-wrap { position: relative; }
+.form-input-wrap i {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 17px; color: var(--text-hint);
+}
+.form-input {
+  width: 100%;
+  padding: 11px 14px 11px 38px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--text);
+  background: var(--bg);
+  outline: none; transition: all 0.2s;
+}
+.form-input:focus { border-color: var(--primary); background: #fff; }
+.form-input::placeholder { color: var(--text-hint); }
+
+.form-input-wrap .toggle-pw {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--text-hint); font-size: 17px; padding: 0;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  color: #fff; border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  margin-top: 4px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.submit-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,107,228,0.35); }
+.submit-btn i { font-size: 18px; }
+
+.divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 20px 0;
+}
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-text { font-size: 12px; color: var(--text-hint); }
+
+.trial-info {
+  background: linear-gradient(135deg, rgba(72,207,173,0.1), rgba(45,107,228,0.1));
+  border: 1px solid rgba(72,207,173,0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-top: 16px;
+}
+.trial-info i { color: var(--accent); font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.trial-info-text { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.trial-info-text strong { color: var(--text); }
+
+.forgot-link {
+  text-align: right; margin-bottom: 4px;
+}
+.forgot-link a {
+  font-size: 12px; color: var(--primary);
+  text-decoration: none;
+}
+.forgot-link a:hover { text-decoration: underline; }
+
+/* Loading state */
+.btn-loading { pointer-events: none; opacity: 0.8; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; display: inline-block; }
+
+/* Error */
+.form-error {
+  font-size: 12px; color: #E24B4A;
+  margin-top: 5px; display: none;
+}
+.form-error.show { display: block; }
+
+/* Footer note */
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+}
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="bg-cover"></div>
+<div class="bg-overlay"></div>
+
+<div class="login-wrap">
+  <!-- Logo -->
+  <div class="login-logo">
+    <div class="login-logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <div class="login-logo-name">Vpost</div>
+    <div class="login-logo-sub">Tự động đăng bài — Tăng tương tác mỗi ngày</div>
+  </div>
+
+  <!-- Card -->
+  <div class="login-card">
+    <!-- Tabs -->
+    <div class="login-tabs">
+      <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">Đăng nhập</button>
+      <button class="login-tab" id="tabRegister" onclick="switchTab('register')">Đăng ký</button>
+    </div>
+
+    <!-- Form đăng nhập -->
+    <div id="formLogin">
+      <div class="form-group">
+        <label class="form-label">Số điện thoại / Email</label>
+        <div class="form-input-wrap">
+          <i class="ti ti-user"></i>
+          <input class="form-input" type="text" id="loginPhone" placeholder="Nhập số điện thoại hoặc email">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mật khẩu</label>
+        <div class="form-input-wrap">
+          <i class="ti ti-lock"></i>
+          <input class="form-input" type="password" id="loginPass" placeholder="Nhập mật khẩu">
+          <button class="toggle-pw" onclick="togglePassword('loginPass', this)"><i class="ti ti-eye"></i></button>
+        </div>
+        <div class="form-error" id="loginError">Số điện thoại hoặc mật khẩu không đúng!</div>
+      </div>
+      <div class="forgot-link"><a href="#">Quên mật khẩu?</a></div>
+      <button class="submit-btn" onclick="handleLogin()">
+        <i class="ti ti-login"></i> Đăng nhập
+      </button>
+    </div>
+
+    <!-- Form đăng ký -->
+    <div id="formRegister" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Tên shop / Cơ sở kinh doanh</label>
+        <div class="form-input-wrap">
+          <i class="ti ti-store"></i>
+          <input class="form-input" type="text" id="regShop" placeholder="Ví dụ: Tiệm Cà Phê Hương Xưa">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Số điện thoại</label>
+        <div class="form-input-wrap">
+          <i class="ti ti-phone"></i>
+          <input class="form-input" type="tel" id="regPhone" placeholder="0912 345 678">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mật khẩu</label>
+        <div class="form-input-wrap">
+          <i class="ti ti-lock"></i>
+          <input class="form-input" type="password" id="regPass" placeholder="Tối thiểu 6 ký tự">
+          <button class="toggle-pw" onclick="togglePassword('regPass', this)"><i class="ti ti-eye"></i></button>
+        </div>
+        <div class="form-error" id="regError">Vui lòng điền đầy đủ thông tin!</div>
+      </div>
+      <button class="submit-btn" onclick="handleRegister()">
+        <i class="ti ti-user-plus"></i> Đăng ký dùng thử miễn phí
+      </button>
+      <div class="trial-info">
+        <i class="ti ti-gift"></i>
+        <div class="trial-info-text">
+          <strong>🎉 Dùng thử miễn phí 3 ngày!</strong><br>
+          Không cần thẻ tín dụng. Sau 3 ngày liên hệ admin để tiếp tục sử dụng.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-footer">© 2025 Vpost · Hỗ trợ: Zalo 0789 434 345</div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+function switchTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('formLogin').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('formRegister').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isText = input.type === 'text';
+  input.type = isText ? 'password' : 'text';
+  btn.querySelector('i').className = isText ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+
+function handleLogin() {
+  const phone = document.getElementById('loginPhone').value.trim().replace(/\s/g,'');
+  const pass = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginError');
+  const btn = document.querySelector('#formLogin .submit-btn');
+
+  if (!phone || !pass) {
+    err.textContent = 'Vui lòng điền đầy đủ thông tin!';
+    err.classList.add('show'); return;
+  }
+  err.classList.remove('show');
+  btn.classList.add('btn-loading');
+  btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Đang đăng nhập...';
+
+  setTimeout(() => {
+    // Tìm trong DB khách hàng
+    VpostAuth.seedDemoData();
+    const customers = VpostAuth.getCustomers();
+    const customer = customers.find(c => c.phone.replace(/\s/g,'') === phone);
+
+    if (!customer) {
+      // Không tìm thấy — vẫn cho đăng nhập demo
+      VpostAuth.saveCurrentUser({ name: 'Shop Demo', shopName: 'Shop Demo', phone, plan: 'basic', loggedIn: true });
+      window.location.href = 'index.html'; return;
+    }
+
+    // Lưu session với thông tin từ DB admin
+    VpostAuth.saveCurrentUser({
+      name: customer.name, shopName: customer.name,
+      phone: customer.phone, plan: customer.plan,
+      loggedIn: true,
+    });
+
+    // Kiểm tra trạng thái tài khoản
+    if (!customer.enabled) { window.location.href = 'locked.html'; return; }
+    const today = new Date().toISOString().slice(0,10);
+    if (customer.expire < today) { window.location.href = 'locked.html'; return; }
+
+    window.location.href = 'index.html';
+  }, 1200);
+}
+
+function handleRegister() {
+  const shop = document.getElementById('regShop').value.trim();
+  const phone = document.getElementById('regPhone').value.trim().replace(/\s/g,'');
+  const pass = document.getElementById('regPass').value.trim();
+  const err = document.getElementById('regError');
+  const btn = document.querySelector('#formRegister .submit-btn');
+
+  if (!shop || !phone || !pass || pass.length < 6) {
+    err.textContent = !pass || pass.length < 6 ? 'Mật khẩu tối thiểu 6 ký tự!' : 'Vui lòng điền đầy đủ thông tin!';
+    err.classList.add('show'); return;
+  }
+  err.classList.remove('show');
+  btn.classList.add('btn-loading');
+  btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Đang tạo tài khoản...';
+
+  setTimeout(() => {
+    VpostAuth.seedDemoData();
+    VpostAuth.registerCustomer(shop, phone, 'trial');
+    VpostAuth.saveCurrentUser({ name: shop, shopName: shop, phone, plan: 'trial', loggedIn: true, isNew: true });
+    window.location.href = 'onboarding.html';
+  }, 1500);
+}
+
+// Tự động đăng nhập nếu đã có session
+VpostAuth.seedDemoData();
+const _user = VpostAuth.getCurrentUser();
+if (_user.loggedIn) {
+  const access = VpostAuth.checkAccess();
+  if (access.allowed) window.location.href = 'index.html';
+  else window.location.href = 'locked.html';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tạo Video — Vpost</title>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* ===== VIDEO PAGE ===== */
+.step-bar {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 24px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 20px; box-shadow: var(--shadow);
+}
+.step-item { display: flex; align-items: center; gap: 8px; flex: 1; }
+.step-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+  border: 2px solid var(--border); color: var(--text-hint);
+  transition: all 0.3s;
+}
+.step-circle.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.step-circle.done { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step-label { font-size: 12px; font-weight: 500; color: var(--text-hint); transition: color 0.3s; }
+.step-label.active { color: var(--primary); font-weight: 600; }
+.step-label.done { color: var(--accent); }
+.step-divider { flex: 1; height: 1px; background: var(--border); margin: 0 8px; max-width: 32px; }
+
+/* QUOTA BADGE */
+.quota-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 16px;
+  margin-bottom: 20px; box-shadow: var(--shadow);
+}
+.quota-left { display: flex; align-items: center; gap: 10px; }
+.quota-icon { width: 36px; height: 36px; background: var(--primary-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.quota-icon i { color: var(--primary); font-size: 18px; }
+.quota-label { font-size: 13px; font-weight: 600; color: var(--text); }
+.quota-sub { font-size: 11px; color: var(--text-secondary); }
+.quota-dots { display: flex; gap: 5px; }
+.quota-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: background 0.2s; }
+.quota-dot.used { background: var(--primary); }
+.quota-dot.available { background: var(--accent); }
+
+/* UPLOAD ZONE */
+.upload-grid-zone {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.upload-grid-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
+.upload-grid-title i { color: var(--primary); font-size: 16px; }
+.upload-grid-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+.image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.image-slot {
+  aspect-ratio: 9/16; border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--border); background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+}
+.image-slot:hover { border-color: var(--primary); background: var(--primary-light); }
+.image-slot.has-image { border-style: solid; border-color: var(--border); }
+.image-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.image-slot .slot-label { font-size: 10px; color: var(--text-hint); }
+.image-slot .slot-icon { font-size: 20px; color: var(--text-hint); }
+.image-slot .slot-num {
+  position: absolute; top: 4px; left: 4px;
+  background: rgba(0,0,0,0.55); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+}
+.image-slot .remove-slot {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.55); color: #fff; border: none;
+  width: 20px; height: 20px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 11px;
+}
+.drag-hint { text-align: center; font-size: 12px; color: var(--text-hint); margin-top: 4px; }
+
+/* OPTIONS */
+.option-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.option-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+.option-title i { color: var(--primary); font-size: 16px; }
+
+/* Ratio */
+.ratio-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.ratio-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); cursor: pointer; transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.ratio-preview { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; }
+.ratio-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+.ratio-desc { font-size: 10px; color: var(--text-hint); }
+.ratio-btn:hover, .ratio-btn.active { border-color: var(--primary); background: var(--primary-light); }
+.ratio-btn.active .ratio-label { color: var(--primary); }
+
+/* Music */
+.music-list { display: flex; flex-direction: column; gap: 8px; }
+.music-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+  background: var(--surface);
+}
+.music-item:hover, .music-item.active { border-color: var(--primary); background: var(--primary-light); }
+.music-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.music-icon i { font-size: 18px; }
+.music-info { flex: 1; }
+.music-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.music-mood { font-size: 11px; color: var(--text-secondary); }
+.music-play { width: 30px; height: 30px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; flex-shrink: 0; transition: all 0.2s; }
+.music-play:hover { background: var(--primary-dark); }
+.music-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.music-item.active .music-check { background: var(--primary); border-color: var(--primary); }
+.music-item.active .music-check i { color: #fff; font-size: 11px; }
+
+/* Text overlay */
+.text-overlay-row { display: flex; gap: 8px; align-items: flex-start; }
+.text-overlay-input { flex: 1; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; resize: none; min-height: 70px; }
+.text-overlay-input:focus { border-color: var(--primary); }
+.ai-fill-btn { display: flex; align-items: center; gap: 5px; background: var(--purple-light); color: var(--purple); border: none; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+.ai-fill-btn:hover { background: var(--purple); color: #fff; }
+
+/* Speed */
+.speed-row { display: flex; gap: 8px; }
+.speed-btn { flex: 1; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: center; }
+.speed-btn:hover, .speed-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+/* PREVIEW */
+.preview-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  margin-bottom: 16px; box-shadow: var(--shadow);
+  display: none;
+}
+.preview-section.show { display: block; }
+.preview-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+.preview-title i { color: var(--primary); }
+
+.preview-canvas-wrap {
+  display: flex; justify-content: center; margin-bottom: 16px;
+}
+.preview-canvas {
+  border-radius: var(--radius-sm); overflow: hidden;
+  box-shadow: var(--shadow-lg); position: relative;
+  background: #000;
+}
+.preview-canvas canvas { display: block; }
+
+.preview-controls { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 16px; }
+.prev-ctrl-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 16px; transition: all 0.2s; }
+.prev-ctrl-btn:hover { border-color: var(--primary); color: var(--primary); }
+.preview-slide-info { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+
+.action-row-video { display: flex; gap: 10px; }
+.btn-generate-video {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  color: #fff; border: none; border-radius: var(--radius-sm);
+  padding: 13px; font-size: 14px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+}
+.btn-generate-video:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-generate-video:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-generate-video i { font-size: 17px; }
+.btn-preview-video {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: var(--surface); color: var(--text-secondary);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 13px 16px; font-size: 13px; font-weight: 500;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+}
+.btn-preview-video:hover { border-color: var(--primary); color: var(--primary); }
+
+/* RESULT */
+.result-section { display: none; }
+.result-section.show { display: block; }
+.result-card-video {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
+  text-align: center;
+}
+.result-video-wrap { position: relative; display: inline-block; margin-bottom: 16px; }
+.result-video-wrap video { border-radius: var(--radius-sm); max-width: 200px; box-shadow: var(--shadow-lg); }
+.result-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn-download { display: flex; align-items: center; gap: 7px; background: var(--green); color: #fff; border: none; border-radius: var(--radius-sm); padding: 11px 20px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; }
+.btn-download:hover { background: #2da55e; }
+.btn-post-fb { display: flex; align-items: center; gap: 7px; background: #1877F2; color: #fff; border: none; border-radius: var(--radius-sm); padding: 11px 20px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; }
+.btn-post-fb:hover { background: #1558b0; }
+.btn-make-another { display: flex; align-items: center; gap: 7px; background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 16px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+.btn-make-another:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Progress */
+.progress-wrap { padding: 24px; text-align: center; }
+.progress-bar-outer { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin: 12px 0; }
+.progress-bar-inner { height: 100%; background: linear-gradient(90deg, var(--primary), var(--purple)); border-radius: 4px; transition: width 0.3s ease; width: 0%; }
+.progress-label { font-size: 13px; color: var(--text-secondary); }
+
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <span class="logo-text">Vpost</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="../index.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+    <a href="../pages/calendar.html" class="nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+    <a href="../pages/caption.html" class="nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+    <a href="../pages/video.html" class="nav-item active"><i class="ti ti-video"></i><span>Tạo Video</span></a>
+    <a href="../pages/settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+  </nav>
+  <div class="sidebar-plan">
+    <div class="plan-badge" id="planBadge">Gói Cơ Bản</div>
+    <div class="plan-expire">Hết hạn: 15/06/2025</div>
+    <div class="plan-days" id="videoQuotaInfo">Video hôm nay: 0/1</div>
+  </div>
+</aside>
+
+<header class="mobile-topbar">
+  <button class="menu-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+  <div class="mobile-logo">
+    <div class="logo-icon sm"><i class="ti ti-pencil-star"></i></div>
+    <span>Vpost</span>
+  </div>
+  <button class="notif-btn"><i class="ti ti-bell"></i></button>
+</header>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<main class="main">
+  <div class="page-header">
+    <h1 class="page-title">🎬 Tạo Video Slideshow</h1>
+    <p class="page-sub">Upload ảnh → chọn nhạc → tải về dùng cho mọi nền tảng</p>
+  </div>
+
+  <!-- Step bar -->
+  <div class="step-bar">
+    <div class="step-item">
+      <div class="step-circle active" id="s1">1</div>
+      <span class="step-label active" id="sl1">Tải ảnh lên</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-item">
+      <div class="step-circle" id="s2">2</div>
+      <span class="step-label" id="sl2">Tuỳ chỉnh</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-item">
+      <div class="step-circle" id="s3">3</div>
+      <span class="step-label" id="sl3">Xuất video</span>
+    </div>
+  </div>
+
+  <!-- Quota -->
+  <div class="quota-bar">
+    <div class="quota-left">
+      <div class="quota-icon"><i class="ti ti-video"></i></div>
+      <div>
+        <div class="quota-label">Lượt tạo video hôm nay</div>
+        <div class="quota-sub" id="quotaSub">Gói Cơ bản — còn 1 lượt</div>
+      </div>
+    </div>
+    <div class="quota-dots" id="quotaDots"></div>
+  </div>
+
+  <!-- STEP 1: Upload ảnh -->
+  <div id="step1Section">
+    <div class="upload-grid-zone">
+      <div class="upload-grid-title"><i class="ti ti-photo"></i>Tải ảnh lên</div>
+      <div class="upload-grid-sub">Tối thiểu 2 ảnh, tối đa 5 ảnh. Tỉ lệ 9:16 sẽ đẹp nhất cho Reels/TikTok</div>
+      <div class="image-grid" id="imageGrid">
+        <!-- Slots được render bởi JS -->
+      </div>
+      <div class="drag-hint"><i class="ti ti-drag-drop" style="font-size:14px"></i> Kéo thả ảnh vào ô hoặc bấm để chọn</div>
+      <input type="file" id="fileInputVideo" accept="image/*" multiple style="display:none" onchange="handleImageUpload(this)">
+    </div>
+
+    <div class="action-row-video">
+      <button class="btn-preview-video" onclick="previewSlides()">
+        <i class="ti ti-eye"></i> Xem thử
+      </button>
+      <button class="btn-generate-video" id="btnNext1" onclick="goToStep(2)">
+        Tiếp theo <i class="ti ti-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Tuỳ chỉnh -->
+  <div id="step2Section" style="display:none">
+
+    <!-- Tỉ lệ khung hình -->
+    <div class="option-card">
+      <div class="option-title"><i class="ti ti-aspect-ratio"></i>Tỉ lệ khung hình</div>
+      <div class="ratio-grid">
+        <button class="ratio-btn" onclick="selectRatio(this,'9:16')" title="TikTok / Reels">
+          <div class="ratio-preview" style="width:24px;height:40px"></div>
+          <div class="ratio-label">9:16</div>
+          <div class="ratio-desc">TikTok / Reels</div>
+        </button>
+        <button class="ratio-btn active" onclick="selectRatio(this,'1:1')" title="Feed vuông">
+          <div class="ratio-preview" style="width:36px;height:36px"></div>
+          <div class="ratio-label">1:1</div>
+          <div class="ratio-desc">Feed vuông</div>
+        </button>
+        <button class="ratio-btn" onclick="selectRatio(this,'16:9')" title="YouTube / Story ngang">
+          <div class="ratio-preview" style="width:48px;height:27px"></div>
+          <div class="ratio-label">16:9</div>
+          <div class="ratio-desc">YouTube / Ngang</div>
+        </button>
+        <button class="ratio-btn" onclick="selectRatio(this,'4:5')" title="Instagram Feed">
+          <div class="ratio-preview" style="width:32px;height:40px"></div>
+          <div class="ratio-label">4:5</div>
+          <div class="ratio-desc">Instagram</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tốc độ -->
+    <div class="option-card">
+      <div class="option-title"><i class="ti ti-clock"></i>Thời gian mỗi ảnh</div>
+      <div class="speed-row">
+        <button class="speed-btn" onclick="selectSpeed(this, 2)">2 giây</button>
+        <button class="speed-btn active" onclick="selectSpeed(this, 3)">3 giây</button>
+        <button class="speed-btn" onclick="selectSpeed(this, 4)">4 giây</button>
+        <button class="speed-btn" onclick="selectSpeed(this, 5)">5 giây</button>
+      </div>
+    </div>
+
+    <!-- Nhạc nền -->
+    <div class="option-card">
+      <div class="option-title"><i class="ti ti-music"></i>Nhạc nền</div>
+      <div class="music-list">
+        <div class="music-item active" onclick="selectMusic(this, 'none')">
+          <div class="music-icon" style="background:#f3f4f6"><i class="ti ti-music-off" style="color:#9CA3AF"></i></div>
+          <div class="music-info"><div class="music-name">Không có nhạc</div><div class="music-mood">Video thuần ảnh</div></div>
+          <div class="music-check"><i class="ti ti-check"></i></div>
+        </div>
+        <div class="music-item" onclick="selectMusic(this, 'upbeat')">
+          <div class="music-icon" style="background:#e8f0fd"><i class="ti ti-music" style="color:#2D6BE4"></i></div>
+          <div class="music-info"><div class="music-name">Sôi động & Tươi vui</div><div class="music-mood">Phù hợp shop thời trang, đồ ăn</div></div>
+          <div class="music-check"><i class="ti ti-check"></i></div>
+        </div>
+        <div class="music-item" onclick="selectMusic(this, 'chill')">
+          <div class="music-icon" style="background:#e1f5ee"><i class="ti ti-music" style="color:#48cfad"></i></div>
+          <div class="music-info"><div class="music-name">Nhẹ nhàng & Chill</div><div class="music-mood">Phù hợp cà phê, spa, mỹ phẩm</div></div>
+          <div class="music-check"><i class="ti ti-check"></i></div>
+        </div>
+        <div class="music-item" onclick="selectMusic(this, 'luxury')">
+          <div class="music-icon" style="background:#f0ebff"><i class="ti ti-music" style="color:#7C5CFC"></i></div>
+          <div class="music-info"><div class="music-name">Sang trọng & Tinh tế</div><div class="music-mood">Phù hợp thời trang cao cấp, nội thất</div></div>
+          <div class="music-check"><i class="ti ti-check"></i></div>
+        </div>
+        <div class="music-item" onclick="selectMusic(this, 'trendy')">
+          <div class="music-icon" style="background:#fff0e6"><i class="ti ti-music" style="color:#FF8C42"></i></div>
+          <div class="music-info"><div class="music-name">Trending & Gen Z</div><div class="music-mood">Phù hợp giới trẻ, streetwear</div></div>
+          <div class="music-check"><i class="ti ti-check"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text overlay -->
+    <div class="option-card">
+      <div class="option-title"><i class="ti ti-text-size"></i>Chữ hiển thị trên video <span style="font-weight:400;color:var(--text-hint);font-size:12px">(Tuỳ chọn)</span></div>
+      <div class="text-overlay-row">
+        <textarea class="text-overlay-input" id="overlayText" placeholder="Ví dụ: Khai trương giảm 30% &#10;Ghé tiệm ngay hôm nay! 🎉"></textarea>
+        <button class="ai-fill-btn" onclick="aiGenerateOverlayText()"><i class="ti ti-sparkles"></i>AI viết</button>
+      </div>
+    </div>
+
+    <div class="action-row-video">
+      <button class="btn-preview-video" onclick="goToStep(1)">
+        <i class="ti ti-arrow-left"></i> Quay lại
+      </button>
+      <button class="btn-generate-video" onclick="startGenerate()">
+        <i class="ti ti-video"></i> Tạo video ngay
+      </button>
+    </div>
+  </div>
+
+  <!-- Preview slideshow -->
+  <div class="preview-section" id="previewSection">
+    <div class="preview-title"><i class="ti ti-eye"></i>Xem trước slideshow</div>
+    <div class="preview-canvas-wrap">
+      <div class="preview-canvas" id="previewCanvas">
+        <canvas id="slideCanvas" width="270" height="270"></canvas>
+      </div>
+    </div>
+    <div class="preview-controls">
+      <button class="prev-ctrl-btn" onclick="prevSlide()"><i class="ti ti-chevron-left"></i></button>
+      <span class="preview-slide-info" id="slideInfo">Ảnh 1 / 1</span>
+      <button class="prev-ctrl-btn" onclick="nextSlide()"><i class="ti ti-chevron-right"></i></button>
+      <button class="prev-ctrl-btn" id="playBtn" onclick="togglePlay()"><i class="ti ti-player-play"></i></button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Xuất video / Progress -->
+  <div id="step3Section" style="display:none">
+    <div class="option-card">
+      <div class="progress-wrap">
+        <div style="font-size:15px;font-weight:700;margin-bottom:8px" id="progressTitle">Đang tạo video...</div>
+        <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+        <div class="progress-label" id="progressLabel">Đang xử lý ảnh...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-section" id="resultSection">
+    <div class="result-card-video">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">🎉 Video đã sẵn sàng!</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Tải về hoặc đăng lên Facebook ngay</div>
+      <div class="result-video-wrap">
+        <canvas id="resultCanvas" width="270" height="270" style="border-radius:var(--radius-sm);box-shadow:var(--shadow-lg)"></canvas>
+      </div>
+      <div class="result-actions">
+        <button class="btn-download" onclick="downloadVideo()"><i class="ti ti-download"></i>Tải về MP4</button>
+        <button class="btn-post-fb" onclick="showToast('Tính năng đăng Facebook sẽ có trong phiên bản tiếp theo! 🚀')"><i class="ti ti-brand-facebook"></i>Đăng Facebook</button>
+        <button class="btn-make-another" onclick="resetVideo()"><i class="ti ti-refresh"></i>Tạo video khác</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<nav class="mobile-nav">
+  <a href="../index.html" class="mobile-nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+  <a href="../pages/calendar.html" class="mobile-nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+  <a href="../pages/caption.html" class="mobile-nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+  <a href="../pages/video.html" class="mobile-nav-item active"><i class="ti ti-video"></i><span>Video</span></a>
+  <a href="../pages/settings.html" class="mobile-nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+</nav>
+
+<div class="toast" id="toast"></div>
+<script src="../js/auth.js"></script>
+<script src="../js/caption-engine.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/app.js"></script>
+<script>
+// ===== CONFIG =====
+const PLAN_QUOTA = { basic: 1, standard: 2, pro: 5 };
+const MAX_IMAGES = 5;
+
+// ===== STATE =====
+let uploadedImages = [];
+let selectedRatio = '1:1';
+let selectedMusicKey = 'none';
+let selectedSpeed = 3;
+let currentSlide = 0;
+let isPlaying = false;
+let playInterval = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+
+// ===== QUOTA =====
+function getQuota() {
+  try {
+    const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+    const plan = user.plan || 'basic';
+    const max = PLAN_QUOTA[plan] || 1;
+    const today = new Date().toISOString().slice(0,10);
+    const usageKey = `vpost_video_usage_${today}`;
+    const used = parseInt(localStorage.getItem(usageKey) || '0');
+    return { max, used, remaining: Math.max(0, max - used), plan };
+  } catch { return { max:1, used:0, remaining:1, plan:'basic' }; }
+}
+
+function useQuota() {
+  const today = new Date().toISOString().slice(0,10);
+  const usageKey = `vpost_video_usage_${today}`;
+  const used = parseInt(localStorage.getItem(usageKey) || '0');
+  localStorage.setItem(usageKey, used + 1);
+}
+
+function renderQuota() {
+  const { max, used, remaining, plan } = getQuota();
+  const planNames = { basic:'Gói Cơ bản', standard:'Gói Tiêu chuẩn', pro:'Gói Pro' };
+  document.getElementById('quotaSub').textContent = `${planNames[plan]} — còn ${remaining} lượt hôm nay`;
+  document.getElementById('videoQuotaInfo').textContent = `Video hôm nay: ${used}/${max}`;
+  const dots = document.getElementById('quotaDots');
+  dots.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const d = document.createElement('div');
+    d.className = `quota-dot ${i < used ? 'used' : 'available'}`;
+    d.title = i < used ? 'Đã dùng' : 'Còn lại';
+    dots.appendChild(d);
+  }
+}
+
+// ===== IMAGE SLOTS =====
+function renderSlots() {
+  const grid = document.getElementById('imageGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < MAX_IMAGES; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'image-slot' + (uploadedImages[i] ? ' has-image' : '');
+    slot.onclick = () => { if (!uploadedImages[i]) triggerUpload(i); };
+    if (uploadedImages[i]) {
+      slot.innerHTML = `
+        <span class="slot-num">${i+1}</span>
+        <img src="${uploadedImages[i]}" alt="slide ${i+1}">
+        <button class="remove-slot" onclick="removeImage(event,${i})"><i class="ti ti-x"></i></button>`;
+    } else {
+      slot.innerHTML = `
+        <i class="ti ti-plus slot-icon"></i>
+        <span class="slot-label">${i === 0 ? 'Ảnh bìa' : `Ảnh ${i+1}`}</span>`;
+    }
+    grid.appendChild(slot);
+  }
+}
+
+function triggerUpload(idx) {
+  const input = document.getElementById('fileInputVideo');
+  input.dataset.targetIdx = idx;
+  input.value = '';
+  input.click();
+}
+
+function handleImageUpload(input) {
+  const files = Array.from(input.files);
+  files.forEach((file, fi) => {
+    const idx = parseInt(input.dataset.targetIdx || 0) + fi;
+    if (idx >= MAX_IMAGES) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedImages[idx] = e.target.result;
+      renderSlots();
+      if (uploadedImages.filter(Boolean).length >= 2) previewSlides();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removeImage(e, idx) {
+  e.stopPropagation();
+  uploadedImages.splice(idx, 1);
+  renderSlots();
+  renderPreview();
+}
+
+// ===== OPTIONS =====
+function selectRatio(btn, ratio) {
+  document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedRatio = ratio;
+  renderPreview();
+}
+
+function selectSpeed(btn, speed) {
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedSpeed = speed;
+}
+
+function selectMusic(item, key) {
+  document.querySelectorAll('.music-item').forEach(m => m.classList.remove('active'));
+  item.classList.add('active');
+  selectedMusicKey = key;
+}
+
+async function aiGenerateOverlayText() {
+  const btn = document.querySelector('.ai-fill-btn');
+  btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i>';
+  btn.disabled = true;
+  try {
+    const shop = CaptionEngine.getShopInfo();
+    const name = shop.shopName || shop.name || 'Shop';
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 200,
+        messages: [{ role: 'user', content: `Viết 2 dòng text ngắn gọn để hiển thị trên video slideshow cho shop "${name}" (ngành: ${shop.industry || 'kinh doanh'}). Phải ngắn, súc tích, có emoji, tối đa 10 chữ/dòng. Chỉ trả về 2 dòng text, không giải thích.` }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.map(i => i.text || '').join('').trim();
+    document.getElementById('overlayText').value = text;
+    showToast('AI đã viết text cho video! ✨');
+  } catch { document.getElementById('overlayText').value = `✨ Ghé thăm ${CaptionEngine.getShopInfo().shopName || 'shop'} ngay!\n🎁 Ưu đãi hấp dẫn chờ bạn!`; }
+  btn.innerHTML = '<i class="ti ti-sparkles"></i>AI viết';
+  btn.disabled = false;
+}
+
+// ===== CANVAS PREVIEW =====
+function getCanvasSize() {
+  const base = 270;
+  const ratios = { '9:16':[base, base*16/9], '1:1':[base,base], '16:9':[base*16/9,base], '4:5':[base,base*5/4] };
+  const [w, h] = ratios[selectedRatio] || [base,base];
+  return { w: Math.round(w), h: Math.round(h) };
+}
+
+function renderPreview() {
+  const imgs = uploadedImages.filter(Boolean);
+  if (!imgs.length) return;
+  const canvas = document.getElementById('slideCanvas');
+  const { w, h } = getCanvasSize();
+  canvas.width = w; canvas.height = h;
+  drawSlide(canvas, imgs[currentSlide % imgs.length]);
+  document.getElementById('slideInfo').textContent = `Ảnh ${(currentSlide % imgs.length) + 1} / ${imgs.length}`;
+}
+
+function drawSlide(canvas, imgSrc) {
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Cover fit
+    const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+    const sw = img.width * scale, sh = img.height * scale;
+    const sx = (canvas.width - sw) / 2, sy = (canvas.height - sh) / 2;
+    ctx.drawImage(img, sx, sy, sw, sh);
+    // Overlay gradient bottom
+    const grad = ctx.createLinearGradient(0, canvas.height * 0.5, 0, canvas.height);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Text overlay
+    const overlayText = document.getElementById('overlayText')?.value || '';
+    if (overlayText.trim()) {
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${Math.round(canvas.width * 0.065)}px Be Vietnam Pro, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 8;
+      const lines = overlayText.trim().split('\n');
+      const lineH = canvas.width * 0.08;
+      const startY = canvas.height - lineH * (lines.length + 0.5);
+      lines.forEach((line, i) => ctx.fillText(line, canvas.width / 2, startY + i * lineH));
+      ctx.shadowBlur = 0;
+    }
+    // Shop name watermark
+    const shop = CaptionEngine.getShopInfo();
+    if (shop.shopName || shop.name) {
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.font = `${Math.round(canvas.width * 0.04)}px Be Vietnam Pro, sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.fillText(shop.shopName || shop.name, canvas.width - 8, 18);
+    }
+  };
+  img.src = imgSrc;
+}
+
+function previewSlides() {
+  const imgs = uploadedImages.filter(Boolean);
+  if (imgs.length < 1) { showToast('Hãy tải lên ít nhất 1 ảnh!'); return; }
+  document.getElementById('previewSection').classList.add('show');
+  currentSlide = 0;
+  renderPreview();
+  document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function prevSlide() { const n = uploadedImages.filter(Boolean).length; currentSlide = (currentSlide - 1 + n) % n; renderPreview(); }
+function nextSlide() { const n = uploadedImages.filter(Boolean).length; currentSlide = (currentSlide + 1) % n; renderPreview(); }
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const btn = document.getElementById('playBtn');
+  if (isPlaying) {
+    btn.innerHTML = '<i class="ti ti-player-pause"></i>';
+    playInterval = setInterval(() => { nextSlide(); }, selectedSpeed * 1000);
+  } else {
+    btn.innerHTML = '<i class="ti ti-player-play"></i>';
+    clearInterval(playInterval);
+  }
+}
+
+// ===== STEP NAVIGATION =====
+function goToStep(step) {
+  const imgs = uploadedImages.filter(Boolean);
+  if (step === 2 && imgs.length < 2) { showToast('Hãy tải lên ít nhất 2 ảnh!'); return; }
+  document.getElementById('step1Section').style.display = step === 1 ? 'block' : 'none';
+  document.getElementById('step2Section').style.display = step === 2 ? 'block' : 'none';
+  document.getElementById('step3Section').style.display = step === 3 ? 'block' : 'none';
+  [1,2,3].forEach(i => {
+    const c = document.getElementById(`s${i}`);
+    const l = document.getElementById(`sl${i}`);
+    c.className = 'step-circle' + (i < step ? ' done' : i === step ? ' active' : '');
+    c.innerHTML = i < step ? '<i class="ti ti-check" style="font-size:12px"></i>' : i;
+    l.className = 'step-label' + (i < step ? ' done' : i === step ? ' active' : '');
+  });
+  if (step === 2) renderPreview();
+}
+
+// ===== GENERATE VIDEO =====
+async function startGenerate() {
+  const { remaining } = getQuota();
+  if (remaining <= 0) {
+    showToast('Hết lượt tạo video hôm nay! Nâng cấp gói để tạo thêm 🚀');
+    return;
+  }
+  goToStep(3);
+  document.getElementById('resultSection').classList.remove('show');
+
+  const steps = [
+    { label: 'Đang xử lý ảnh...', pct: 20 },
+    { label: 'Đang áp dụng hiệu ứng chuyển cảnh...', pct: 45 },
+    { label: 'Đang thêm text và watermark...', pct: 65 },
+    { label: 'Đang ghép nhạc nền...', pct: 80 },
+    { label: 'Đang xuất file MP4...', pct: 95 },
+    { label: 'Hoàn tất!', pct: 100 },
+  ];
+
+  for (const s of steps) {
+    document.getElementById('progressLabel').textContent = s.label;
+    document.getElementById('progressBar').style.width = s.pct + '%';
+    await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+  }
+
+  useQuota();
+  renderQuota();
+  showResult();
+}
+
+function showResult() {
+  document.getElementById('step3Section').style.display = 'none';
+  document.getElementById('resultSection').classList.add('show');
+
+  // Vẽ frame cuối lên result canvas
+  const canvas = document.getElementById('resultCanvas');
+  const { w, h } = getCanvasSize();
+  canvas.width = w; canvas.height = h;
+  const imgs = uploadedImages.filter(Boolean);
+  if (imgs.length) drawSlide(canvas, imgs[0]);
+
+  showToast('Video đã tạo xong! 🎉');
+}
+
+function downloadVideo() {
+  // Trong thực tế sẽ dùng MediaRecorder để xuất MP4 thật
+  // Demo: tải canvas frame cuối dưới dạng PNG
+  const canvas = document.getElementById('resultCanvas');
+  const link = document.createElement('a');
+  link.download = `vpost-video-${Date.now()}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('Đã tải về! (Demo xuất ảnh — MP4 thật sẽ có khi deploy) 📥');
+}
+
+function resetVideo() {
+  uploadedImages = [];
+  currentSlide = 0;
+  isPlaying = false;
+  clearInterval(playInterval);
+  document.getElementById('resultSection').classList.remove('show');
+  document.getElementById('previewSection').classList.remove('show');
+  document.getElementById('step3Section').style.display = 'none';
+  document.getElementById('progressBar').style.width = '0%';
+  renderSlots();
+  goToStep(1);
+}
+
+// ===== INIT =====
+renderSlots();
+renderQuota();
+</script>
+</body>
+</html>

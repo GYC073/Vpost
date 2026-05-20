@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Vpost</title>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #2D6BE4; --primary-dark: #1a4fa8; --primary-light: #e8f0fd;
+  --purple: #7C5CFC; --purple-light: #f0ebff;
+  --accent: #48cfad; --accent-light: #e1f5ee;
+  --orange: #FF8C42; --orange-light: #fff0e6;
+  --green: #3BBD6E; --green-light: #e8f8ee;
+  --danger: #E24B4A; --danger-light: #fef2f2;
+  --yellow: #F59E0B; --yellow-light: #fffbeb;
+  --text: #1a1d2e; --text-secondary: #6B7280; --text-hint: #9CA3AF;
+  --border: #E8EAF0; --bg: #F5F6FA; --surface: #fff;
+  --sidebar-bg: #1a1d2e; --sidebar-width: 240px;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.07); --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-width); background: var(--sidebar-bg);
+  min-height: 100vh; display: flex; flex-direction: column;
+  padding: 24px 16px; position: fixed; top: 0; left: 0; height: 100vh;
+  z-index: 100; transition: transform 0.3s;
+}
+.sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 8px; margin-bottom: 8px; }
+.logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.logo-icon i { color: #fff; font-size: 18px; }
+.logo-text { color: #fff; font-size: 18px; font-weight: 700; }
+.logo-admin-badge { background: var(--danger); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
+
+.sidebar-section { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; padding: 16px 12px 6px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); color: rgba(255,255,255,0.55); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s; cursor: pointer; border: none; background: none; width: 100%; font-family: 'DM Sans', sans-serif; }
+.nav-item i { font-size: 18px; }
+.nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-item.active { background: var(--primary); color: #fff; }
+.nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+.nav-badge.yellow { background: var(--yellow); color: #fff; }
+
+.sidebar-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+.admin-user { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.admin-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; }
+.admin-avatar i { color: #fff; font-size: 16px; }
+.admin-name { color: #fff; font-size: 13px; font-weight: 500; }
+.admin-role { color: rgba(255,255,255,0.4); font-size: 11px; }
+
+/* MAIN */
+.main { margin-left: var(--sidebar-width); flex: 1; padding: 28px 32px; max-width: 1100px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.topbar-title { font-size: 22px; font-weight: 700; }
+.topbar-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+.topbar-actions { display: flex; gap: 10px; }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+.stat-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.stat-icon i { font-size: 20px; }
+.stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+.stat-icon.green { background: var(--green-light); color: var(--green); }
+.stat-icon.orange { background: var(--orange-light); color: var(--orange); }
+.stat-icon.red { background: var(--danger-light); color: var(--danger); }
+.stat-trend { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 10px; }
+.stat-trend.up { background: var(--green-light); color: var(--green); }
+.stat-trend.warn { background: var(--yellow-light); color: var(--yellow); }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 13px; color: var(--text-secondary); }
+
+/* FILTER BAR */
+.filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-hint); font-size: 17px; }
+.search-input { width: 100%; padding: 9px 14px 9px 36px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--surface); outline: none; transition: border-color 0.2s; }
+.search-input:focus { border-color: var(--primary); }
+.filter-select { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--surface); outline: none; cursor: pointer; }
+.btn-add { display: flex; align-items: center; gap: 6px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.btn-add:hover { background: var(--primary-dark); }
+.btn-add i { font-size: 16px; }
+
+/* TABLE */
+.table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 700px; }
+thead { background: var(--bg); }
+th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+
+.shop-cell { display: flex; align-items: center; gap: 10px; }
+.shop-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.shop-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.shop-phone { font-size: 12px; color: var(--text-secondary); }
+
+.plan-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+.plan-badge.basic { background: var(--primary-light); color: var(--primary); }
+.plan-badge.standard { background: var(--purple-light); color: var(--purple); }
+.plan-badge.pro { background: linear-gradient(135deg, var(--yellow-light), var(--orange-light)); color: var(--orange); }
+.plan-badge.trial { background: var(--accent-light); color: #0F6E56; }
+
+.status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 20px; }
+.status-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+.status-badge.active { background: var(--green-light); color: #166534; }
+.status-badge.active .dot { background: var(--green); }
+.status-badge.trial { background: var(--accent-light); color: #0F6E56; }
+.status-badge.trial .dot { background: var(--accent); }
+.status-badge.expired { background: var(--danger-light); color: var(--danger); }
+.status-badge.expired .dot { background: var(--danger); }
+.status-badge.pending { background: var(--yellow-light); color: #92400E; }
+.status-badge.pending .dot { background: var(--yellow); }
+
+.action-cell { display: flex; align-items: center; gap: 6px; }
+.action-btn { width: 30px; height: 30px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 15px; transition: all 0.2s; }
+.action-btn:hover { border-color: var(--primary); color: var(--primary); }
+.action-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+/* Toggle switch inline */
+.toggle { position: relative; width: 40px; height: 22px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 22px; transition: all 0.3s; }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; left: 3px; bottom: 3px; background: #fff; transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.toggle input:checked + .toggle-slider { background: var(--green); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--surface); border-radius: 16px; padding: 24px; width: 100%; max-width: 440px; box-shadow: var(--shadow-lg); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.modal-title { font-size: 16px; font-weight: 700; }
+.modal-close { width: 32px; height: 32px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 18px; }
+.modal-body { display: flex; flex-direction: column; gap: 14px; }
+.modal-form-group { display: flex; flex-direction: column; gap: 6px; }
+.modal-label { font-size: 13px; font-weight: 500; }
+.modal-input { padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; transition: border-color 0.2s; }
+.modal-input:focus { border-color: var(--primary); }
+.modal-actions { display: flex; gap: 10px; margin-top: 8px; }
+.modal-btn-cancel { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: none; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; color: var(--text-secondary); }
+.modal-btn-save { flex: 2; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* EXPIRE WARNING */
+.expire-chip { font-size: 11px; color: var(--danger); font-weight: 600; display: flex; align-items: center; gap: 3px; }
+.expire-chip i { font-size: 12px; }
+.expire-ok { font-size: 11px; color: var(--text-hint); }
+
+/* TOAST */
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1d2e; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 999; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+  .main { margin-left: 0; padding: 20px 16px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .topbar { flex-wrap: wrap; gap: 12px; }
+}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <div>
+      <div class="logo-text">Vpost</div>
+    </div>
+    <span class="logo-admin-badge">ADMIN</span>
+  </div>
+
+  <div class="sidebar-section">Quản lý</div>
+  <button class="nav-item active" onclick="showSection('customers')"><i class="ti ti-users"></i>Khách hàng<span class="nav-badge" id="expireBadge">2</span></button>
+  <button class="nav-item" onclick="showSection('stats')"><i class="ti ti-chart-bar"></i>Thống kê</button>
+  <button class="nav-item" onclick="showSection('payments')"><i class="ti ti-cash"></i>Thanh toán<span class="nav-badge yellow" id="pendingBadge">3</span></button>
+
+  <div class="sidebar-section">Hệ thống</div>
+  <button class="nav-item" onclick="showSection('settings')"><i class="ti ti-settings"></i>Cài đặt hệ thống</button>
+  <a class="nav-item" href="login.html"><i class="ti ti-logout"></i>Đăng xuất</a>
+
+  <div class="sidebar-bottom">
+    <div class="admin-user">
+      <div class="admin-avatar"><i class="ti ti-shield"></i></div>
+      <div>
+        <div class="admin-name">Admin</div>
+        <div class="admin-role">Quản trị viên</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- SECTION: CUSTOMERS -->
+  <div id="sectionCustomers">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Quản lý khách hàng</div>
+        <div class="topbar-sub">Danh sách tất cả shop đang sử dụng Vpost</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-add" onclick="openAddModal()"><i class="ti ti-plus"></i>Thêm khách hàng</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon blue"><i class="ti ti-users"></i></div>
+          <span class="stat-trend up">+3 tháng này</span>
+        </div>
+        <div class="stat-value" id="statTotal">12</div>
+        <div class="stat-label">Tổng khách hàng</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon green"><i class="ti ti-circle-check"></i></div>
+          <span class="stat-trend up">Đang hoạt động</span>
+        </div>
+        <div class="stat-value" id="statActive">8</div>
+        <div class="stat-label">Đang dùng</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon orange"><i class="ti ti-clock"></i></div>
+          <span class="stat-trend warn">Cần theo dõi</span>
+        </div>
+        <div class="stat-value" id="statTrial">3</div>
+        <div class="stat-label">Đang dùng thử</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon red"><i class="ti ti-alert-circle"></i></div>
+          <span class="stat-trend warn">Cần liên hệ</span>
+        </div>
+        <div class="stat-value" id="statExpired">2</div>
+        <div class="stat-label">Hết hạn</div>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <i class="ti ti-search"></i>
+        <input class="search-input" type="text" placeholder="Tìm tên shop, số điện thoại..." oninput="filterTable(this.value)">
+      </div>
+      <select class="filter-select" onchange="filterByStatus(this.value)">
+        <option value="">Tất cả trạng thái</option>
+        <option value="active">Đang dùng</option>
+        <option value="trial">Dùng thử</option>
+        <option value="expired">Hết hạn</option>
+        <option value="pending">Chờ kích hoạt</option>
+      </select>
+      <select class="filter-select" onchange="filterByPlan(this.value)">
+        <option value="">Tất cả gói</option>
+        <option value="trial">Dùng thử</option>
+        <option value="basic">Cơ bản</option>
+        <option value="standard">Tiêu chuẩn</option>
+        <option value="pro">Pro</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Shop</th>
+              <th>Gói dịch vụ</th>
+              <th>Trạng thái</th>
+              <th>Ngày hết hạn</th>
+              <th>Kích hoạt</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="customerTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: STATS -->
+  <div id="sectionStats" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Thống kê</div>
+        <div class="topbar-sub">Tổng quan hoạt động hệ thống</div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px;text-align:center;color:var(--text-secondary);">
+      <i class="ti ti-chart-bar" style="font-size:48px;margin-bottom:12px;display:block;color:var(--border)"></i>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Tính năng đang phát triển</div>
+      <div style="font-size:13px">Biểu đồ thống kê doanh thu, bài đăng sẽ có trong phiên bản tiếp theo</div>
+    </div>
+  </div>
+
+  <!-- SECTION: PAYMENTS -->
+  <div id="sectionPayments" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Thanh toán chờ xác nhận</div>
+        <div class="topbar-sub">Các shop đã chuyển khoản, chờ admin kích hoạt</div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Shop</th><th>Gói muốn đăng ký</th><th>Số tiền</th><th>Thời gian</th><th>Thao tác</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="shop-cell"><div class="shop-avatar">T</div><div><div class="shop-name">Tiệm Bánh Mì Tuấn</div><div class="shop-phone">0901 234 567</div></div></div></td>
+              <td><span class="plan-badge standard">Tiêu chuẩn</span></td>
+              <td style="font-weight:600;color:var(--green)">350.000 ₫</td>
+              <td style="color:var(--text-secondary);font-size:12px">Hôm nay, 09:23</td>
+              <td><div class="action-cell">
+                <button class="btn-add" style="font-size:12px;padding:6px 12px" onclick="showToast('Đã kích hoạt Tiệm Bánh Mì Tuấn! ✅')"><i class="ti ti-check"></i>Kích hoạt</button>
+                <button class="action-btn danger" onclick="showToast('Đã từ chối!')"><i class="ti ti-x"></i></button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div class="shop-cell"><div class="shop-avatar" style="background:linear-gradient(135deg,#48cfad,#38b2ac)">M</div><div><div class="shop-name">Mỹ Phẩm Lan Anh</div><div class="shop-phone">0901 234 567</div></div></div></td>
+              <td><span class="plan-badge basic">Cơ bản</span></td>
+              <td style="font-weight:600;color:var(--green)">200.000 ₫</td>
+              <td style="color:var(--text-secondary);font-size:12px">Hôm nay, 08:10</td>
+              <td><div class="action-cell">
+                <button class="btn-add" style="font-size:12px;padding:6px 12px" onclick="showToast('Đã kích hoạt Mỹ Phẩm Lan Anh! ✅')"><i class="ti ti-check"></i>Kích hoạt</button>
+                <button class="action-btn danger" onclick="showToast('Đã từ chối!')"><i class="ti ti-x"></i></button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div class="shop-cell"><div class="shop-avatar" style="background:linear-gradient(135deg,#FF8C42,#e05a00)">F</div><div><div class="shop-name">Fashion Hằng Boutique</div><div class="shop-phone">0987 654 321</div></div></div></td>
+              <td><span class="plan-badge pro">Pro</span></td>
+              <td style="font-weight:600;color:var(--green)">700.000 ₫</td>
+              <td style="color:var(--text-secondary);font-size:12px">Hôm qua, 21:45</td>
+              <td><div class="action-cell">
+                <button class="btn-add" style="font-size:12px;padding:6px 12px" onclick="showToast('Đã kích hoạt Fashion Hằng Boutique! ✅')"><i class="ti ti-check"></i>Kích hoạt</button>
+                <button class="action-btn danger" onclick="showToast('Đã từ chối!')"><i class="ti ti-x"></i></button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL thêm / chỉnh sửa khách hàng -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Thêm khách hàng mới</div>
+      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-form-group">
+        <label class="modal-label">Tên shop</label>
+        <input class="modal-input" id="modalShopName" type="text" placeholder="Ví dụ: Tiệm Cà Phê Hương Xưa">
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Số điện thoại</label>
+        <input class="modal-input" id="modalPhone" type="tel" placeholder="0912 345 678">
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Gói dịch vụ</label>
+        <select class="modal-input" id="modalPlan">
+          <option value="trial">Dùng thử (3 ngày)</option>
+          <option value="basic">Cơ bản — 200k/tháng</option>
+          <option value="standard">Tiêu chuẩn — 350k/tháng</option>
+          <option value="pro">Pro — 700k/tháng</option>
+        </select>
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Ngày hết hạn</label>
+        <input class="modal-input" id="modalExpire" type="date">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn-cancel" onclick="closeModal()">Huỷ</button>
+        <button class="modal-btn-save" onclick="saveCustomer()">Lưu khách hàng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/auth.js"></script>
+<script>
+let customers = VpostAuth.getCustomers();
+
+
+
+
+
+
+
+
+
+
+
+
+  { id:10, name:'Spa & Nail Luxury', phone:'0990 567 890', plan:'pro', status:'active', expire:'2025-09-15', enabled:true, initial:'S' },
+];
+
+let editingId = null;
+let currentFilter = '';
+let currentStatusFilter = '';
+let currentPlanFilter = '';
+
+const gradients = [
+  'linear-gradient(135deg,#2D6BE4,#7C5CFC)',
+  'linear-gradient(135deg,#48cfad,#38b2ac)',
+  'linear-gradient(135deg,#FF8C42,#e05a00)',
+  'linear-gradient(135deg,#E24B4A,#c0392b)',
+  'linear-gradient(135deg,#F59E0B,#d97706)',
+];
+
+const planLabels = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
+const planClass = { trial:'trial', basic:'basic', standard:'standard', pro:'pro' };
+const statusLabels = { active:'Đang dùng', trial:'Dùng thử', expired:'Hết hạn', pending:'Chờ kích hoạt' };
+
+function daysLeft(dateStr) {
+  const diff = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+  return diff;
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('customerTable');
+  tbody.innerHTML = '';
+  data.forEach((c, i) => {
+    const days = daysLeft(c.expire);
+    const expireHtml = days < 0
+      ? `<div class="expire-chip"><i class="ti ti-alert-circle"></i>Hết hạn ${Math.abs(days)} ngày trước</div>`
+      : days <= 5
+      ? `<div class="expire-chip"><i class="ti ti-clock"></i>Còn ${days} ngày</div>`
+      : `<div class="expire-ok">${new Date(c.expire).toLocaleDateString('vi-VN')}</div>`;
+
+    tbody.innerHTML += `
+      <tr id="row${c.id}">
+        <td>
+          <div class="shop-cell">
+            <div class="shop-avatar" style="background:${gradients[i % gradients.length]}">${c.initial}</div>
+            <div>
+              <div class="shop-name">${c.name}</div>
+              <div class="shop-phone">${c.phone}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="plan-badge ${planClass[c.plan]}">${planLabels[c.plan]}</span></td>
+        <td><span class="status-badge ${c.status}"><span class="dot"></span>${statusLabels[c.status]}</span></td>
+        <td>${expireHtml}</td>
+        <td>
+          <label class="toggle">
+            <input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleCustomer(${c.id}, this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </td>
+        <td>
+          <div class="action-cell">
+            <button class="action-btn" onclick="openEditModal(${c.id})" title="Chỉnh sửa"><i class="ti ti-edit"></i></button>
+            <button class="action-btn" onclick="extendPlan(${c.id})" title="Gia hạn"><i class="ti ti-calendar-plus"></i></button>
+            <button class="action-btn danger" onclick="deleteCustomer(${c.id})" title="Xoá"><i class="ti ti-trash"></i></button>
+          </div>
+        </td>
+      </tr>`;
+  });
+
+  // Cập nhật stats
+  document.getElementById('statTotal').textContent = customers.length;
+  document.getElementById('statActive').textContent = customers.filter(c => c.status === 'active').length;
+  document.getElementById('statTrial').textContent = customers.filter(c => c.status === 'trial').length;
+  document.getElementById('statExpired').textContent = customers.filter(c => c.status === 'expired').length;
+  const expiring = customers.filter(c => daysLeft(c.expire) >= 0 && daysLeft(c.expire) <= 5).length;
+  document.getElementById('expireBadge').textContent = expiring;
+  document.getElementById('expireBadge').style.display = expiring > 0 ? '' : 'none';
+}
+
+function getFiltered() {
+  return customers.filter(c => {
+    const matchSearch = !currentFilter ||
+      c.name.toLowerCase().includes(currentFilter.toLowerCase()) ||
+      c.phone.includes(currentFilter);
+    const matchStatus = !currentStatusFilter || c.status === currentStatusFilter;
+    const matchPlan = !currentPlanFilter || c.plan === currentPlanFilter;
+    return matchSearch && matchStatus && matchPlan;
+  });
+}
+
+function filterTable(val) { currentFilter = val; renderTable(getFiltered()); }
+function filterByStatus(val) { currentStatusFilter = val; renderTable(getFiltered()); }
+function filterByPlan(val) { currentPlanFilter = val; renderTable(getFiltered()); }
+
+function toggleCustomer(id, enabled) {
+  const c = customers.find(x => x.id === id);
+  if (c) {
+    c.enabled = enabled;
+    c.status = enabled ? (c.plan === 'trial' ? 'trial' : 'active') : 'pending';
+    // Lưu vào VpostAuth — ảnh hưởng ngay tới trang khách
+    VpostAuth.saveCustomers(customers);
+    showToast(enabled ? `✅ Đã kích hoạt ${c.name}!` : `⏸️ Đã tắt ${c.name} — shop sẽ bị khoá ngay`);
+    renderTable(getFiltered());
+  }
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Thêm khách hàng mới';
+  document.getElementById('modalShopName').value = '';
+  document.getElementById('modalPhone').value = '';
+  document.getElementById('modalPlan').value = 'trial';
+  const d = new Date(); d.setDate(d.getDate() + 3);
+  document.getElementById('modalExpire').value = d.toISOString().split('T')[0];
+  document.getElementById('modal').classList.add('show');
+}
+
+function openEditModal(id) {
+  const c = customers.find(x => x.id === id);
+  if (!c) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Chỉnh sửa khách hàng';
+  document.getElementById('modalShopName').value = c.name;
+  document.getElementById('modalPhone').value = c.phone;
+  document.getElementById('modalPlan').value = c.plan;
+  document.getElementById('modalExpire').value = c.expire;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+function saveCustomer() {
+  const name = document.getElementById('modalShopName').value.trim();
+  const phone = document.getElementById('modalPhone').value.trim().replace(/\s/g,'');
+  const plan = document.getElementById('modalPlan').value;
+  const expire = document.getElementById('modalExpire').value;
+  if (!name || !phone) { showToast('Vui lòng điền đầy đủ thông tin!'); return; }
+
+  if (editingId) {
+    const c = customers.find(x => x.id === editingId);
+    if (c) { c.name = name; c.phone = phone; c.plan = plan; c.expire = expire; c.initial = name[0].toUpperCase(); c.status = plan === 'trial' ? 'trial' : 'active'; }
+    showToast('Đã cập nhật thông tin! ✅');
+  } else {
+    customers.push({ id: Date.now(), name, phone, plan, status: plan === 'trial' ? 'trial' : 'pending', expire, enabled: plan === 'trial', initial: name[0].toUpperCase() });
+    showToast('Đã thêm khách hàng mới! 🎉');
+  }
+  // Lưu vào VpostAuth — đồng bộ ngay
+  VpostAuth.saveCustomers(customers);
+  closeModal();
+  renderTable(getFiltered());
+}
+
+function deleteCustomer(id) {
+  const c = customers.find(x => x.id === id);
+  if (c && confirm(`Xoá khách hàng "${c.name}"?`)) {
+    customers = customers.filter(x => x.id !== id);
+    VpostAuth.saveCustomers(customers);
+    renderTable(getFiltered());
+    showToast('Đã xoá khách hàng!');
+  }
+}
+
+function extendPlan(id) {
+  const c = customers.find(x => x.id === id);
+  if (!c) return;
+  // Dùng VpostAuth.extendCustomer để đồng bộ
+  VpostAuth.extendCustomer(c.phone, 1);
+  customers = VpostAuth.getCustomers();
+  renderTable(getFiltered());
+  showToast(`Đã gia hạn 1 tháng cho ${c.name}! 📅`);
+}
+
+function showSection(section) {
+  ['sectionCustomers','sectionStats','sectionPayments'].forEach(s => {
+    document.getElementById(s).style.display = s === `section${section.charAt(0).toUpperCase()+section.slice(1)}` ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Init
+renderTable(customers);
+</script>
+</body>
+</html>

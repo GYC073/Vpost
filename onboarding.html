@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thiết lập shop — Vpost</title>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #2D6BE4; --primary-dark: #1a4fa8; --primary-light: #e8f0fd;
+  --purple: #7C5CFC; --accent: #48cfad; --accent-light: #e1f5ee;
+  --text: #1a1d2e; --text-secondary: #6B7280; --text-hint: #9CA3AF;
+  --border: #E8EAF0; --bg: #F5F6FA; --surface: #ffffff;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.07); --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+}
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; padding: 0;
+}
+
+.onboard-header {
+  background: linear-gradient(135deg, #1a1d2e 0%, #2D6BE4 100%);
+  padding: 20px 24px 60px;
+  position: relative; overflow: hidden;
+}
+.onboard-header::after {
+  content: '';
+  position: absolute; bottom: -30px; left: 0; right: 0;
+  height: 60px;
+  background: var(--bg);
+  border-radius: 30px 30px 0 0;
+}
+.ob-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+.ob-logo-icon {
+  width: 32px; height: 32px; background: rgba(255,255,255,0.2);
+  border-radius: 9px; display: flex; align-items: center; justify-content: center;
+}
+.ob-logo-icon i { color: #fff; font-size: 16px; }
+.ob-logo-name { color: #fff; font-size: 16px; font-weight: 700; }
+
+.ob-steps {
+  display: flex; align-items: center; gap: 0;
+  position: relative; z-index: 1;
+}
+.ob-step {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  flex: 1;
+}
+.ob-step-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  border: 2px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.5);
+  background: transparent;
+  transition: all 0.3s;
+}
+.ob-step-circle.active { background: #fff; color: var(--primary); border-color: #fff; }
+.ob-step-circle.done { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ob-step-label { font-size: 10px; color: rgba(255,255,255,0.5); text-align: center; }
+.ob-step-label.active { color: #fff; font-weight: 600; }
+.ob-step-line { flex: 1; height: 2px; background: rgba(255,255,255,0.2); margin-bottom: 18px; max-width: 40px; }
+.ob-step-line.done { background: var(--accent); }
+
+.ob-body { padding: 24px 20px; max-width: 480px; margin: 0 auto; }
+
+.ob-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.ob-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
+
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.form-input-wrap { position: relative; }
+.form-input-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 17px; color: var(--text-hint); }
+.form-input {
+  width: 100%; padding: 11px 14px 11px 38px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--text); background: var(--surface);
+  outline: none; transition: all 0.2s;
+}
+.form-input:focus { border-color: var(--primary); }
+.form-input::placeholder { color: var(--text-hint); }
+.form-textarea {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--text); background: var(--surface);
+  outline: none; transition: all 0.2s; resize: none; min-height: 90px; line-height: 1.6;
+}
+.form-textarea:focus { border-color: var(--primary); }
+.form-textarea::placeholder { color: var(--text-hint); }
+
+.industry-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.industry-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface);
+  color: var(--text-secondary); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; text-align: left;
+  font-family: 'DM Sans', sans-serif;
+}
+.industry-btn i { font-size: 17px; }
+.industry-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+.industry-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+.tone-grid { display: flex; flex-direction: column; gap: 8px; }
+.tone-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface);
+  cursor: pointer; transition: all 0.2s; text-align: left;
+  font-family: 'DM Sans', sans-serif;
+}
+.tone-emoji { font-size: 22px; flex-shrink: 0; }
+.tone-info-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.tone-info-desc { font-size: 12px; color: var(--text-secondary); }
+.tone-btn:hover { border-color: var(--primary); }
+.tone-btn.active { border-color: var(--primary); background: var(--primary-light); }
+.tone-btn.active .tone-info-name { color: var(--primary); }
+.tone-check { margin-left: auto; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tone-btn.active .tone-check { background: var(--primary); border-color: var(--primary); }
+.tone-btn.active .tone-check i { color: #fff; font-size: 12px; }
+
+.ob-actions {
+  display: flex; gap: 10px; margin-top: 28px;
+}
+.btn-next {
+  flex: 1; padding: 13px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  color: #fff; border: none; border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: all 0.2s;
+}
+.btn-next:hover { opacity: 0.9; }
+.btn-next i { font-size: 16px; }
+.btn-back {
+  padding: 13px 16px;
+  background: var(--surface); color: var(--text-secondary);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.btn-back:hover { border-color: var(--primary); color: var(--primary); }
+
+.success-wrap {
+  text-align: center; padding: 20px 0;
+}
+.success-icon {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--accent), #38b2ac);
+  border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+  animation: pop 0.4s ease;
+}
+.success-icon i { color: #fff; font-size: 36px; }
+@keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.success-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.success-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.6; }
+.trial-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--accent-light), var(--primary-light));
+  border: 1px solid rgba(72,207,173,0.3);
+  border-radius: var(--radius); padding: 12px 20px;
+  margin-bottom: 28px;
+  font-size: 14px; font-weight: 600; color: var(--text);
+}
+.trial-badge i { color: var(--accent); font-size: 20px; }
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="onboard-header">
+  <div class="ob-logo">
+    <div class="ob-logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <span class="ob-logo-name">Vpost</span>
+  </div>
+  <div class="ob-steps" id="obSteps">
+    <div class="ob-step">
+      <div class="ob-step-circle active" id="step1Circle">1</div>
+      <div class="ob-step-label active" id="step1Label">Shop</div>
+    </div>
+    <div class="ob-step-line" id="line1"></div>
+    <div class="ob-step">
+      <div class="ob-step-circle" id="step2Circle">2</div>
+      <div class="ob-step-label" id="step2Label">Ngành hàng</div>
+    </div>
+    <div class="ob-step-line" id="line2"></div>
+    <div class="ob-step">
+      <div class="ob-step-circle" id="step3Circle">3</div>
+      <div class="ob-step-label" id="step3Label">Tone AI</div>
+    </div>
+    <div class="ob-step-line" id="line3"></div>
+    <div class="ob-step">
+      <div class="ob-step-circle" id="step4Circle">4</div>
+      <div class="ob-step-label" id="step4Label">Hoàn tất</div>
+    </div>
+  </div>
+</div>
+
+<div class="ob-body">
+  <!-- Step 1: Thông tin shop -->
+  <div id="step1">
+    <div class="ob-title">Thông tin shop của bạn</div>
+    <div class="ob-sub">AI sẽ dùng thông tin này để viết caption phù hợp nhất</div>
+    <div class="form-group">
+      <label class="form-label">Tên shop</label>
+      <div class="form-input-wrap">
+        <i class="ti ti-store"></i>
+        <input class="form-input" id="shopName" type="text" placeholder="Ví dụ: Tiệm Cà Phê Hương Xưa">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Địa chỉ (tuỳ chọn)</label>
+      <div class="form-input-wrap">
+        <i class="ti ti-map-pin"></i>
+        <input class="form-input" id="shopAddr" type="text" placeholder="Ví dụ: 123 Đường Hoa, Quận 1, TP.HCM">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mô tả ngắn về shop</label>
+      <textarea class="form-textarea" id="shopDesc" placeholder="Ví dụ: Tiệm cà phê phong cách hoài cổ, chuyên cà phê truyền thống và thức uống sáng tạo. Không gian yên tĩnh, giá bình dân..."></textarea>
+    </div>
+    <div class="ob-actions">
+      <button class="btn-next" onclick="goStep(2)">
+        Tiếp theo <i class="ti ti-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2: Ngành hàng -->
+  <div id="step2" style="display:none">
+    <div class="ob-title">Shop bạn thuộc ngành nào?</div>
+    <div class="ob-sub">AI sẽ tạo caption đúng phong cách ngành hàng của bạn</div>
+    <div class="industry-grid">
+      <button class="industry-btn" onclick="selectIndustry(this, 'coffee')"><i class="ti ti-coffee"></i>Cà phê / Đồ uống</button>
+      <button class="industry-btn" onclick="selectIndustry(this, 'fashion')"><i class="ti ti-hanger"></i>Thời trang</button>
+      <button class="industry-btn" onclick="selectIndustry(this, 'beauty')"><i class="ti ti-sparkles"></i>Mỹ phẩm / Làm đẹp</button>
+      <button class="industry-btn" onclick="selectIndustry(this, 'food')"><i class="ti ti-tools-kitchen-2"></i>Ẩm thực / Nhà hàng</button>
+      <button class="industry-btn" onclick="selectIndustry(this, 'tech')"><i class="ti ti-device-mobile"></i>Điện tử / Công nghệ</button>
+      <button class="industry-btn" onclick="selectIndustry(this, 'home')"><i class="ti ti-sofa"></i>Nội thất / Gia dụng</button>
+      <button class="industry-btn" onclick="selectIndustry(this, 'health')"><i class="ti ti-heart-plus"></i>Sức khoẻ / Dược phẩm</button>
+      <button class="industry-btn" onclick="selectIndustry(this, 'other')"><i class="ti ti-gift"></i>Ngành khác</button>
+    </div>
+    <div class="ob-actions">
+      <button class="btn-back" onclick="goStep(1)"><i class="ti ti-arrow-left"></i></button>
+      <button class="btn-next" onclick="goStep(3)">Tiếp theo <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Step 3: Tone -->
+  <div id="step3" style="display:none">
+    <div class="ob-title">Chọn tone bài đăng</div>
+    <div class="ob-sub">AI sẽ dùng tone này mỗi ngày. Bạn có thể thay đổi từng bài sau</div>
+    <div class="tone-grid">
+      <button class="tone-btn active" onclick="selectTone(this, 'fun')">
+        <span class="tone-emoji">😄</span>
+        <div><div class="tone-info-name">Vui vẻ</div><div class="tone-info-desc">Năng lượng, gần gũi, dễ tương tác</div></div>
+        <div class="tone-check"><i class="ti ti-check"></i></div>
+      </button>
+      <button class="tone-btn" onclick="selectTone(this, 'friendly')">
+        <span class="tone-emoji">🤝</span>
+        <div><div class="tone-info-name">Thân thiện</div><div class="tone-info-desc">Ấm áp, chân thành, tạo tin tưởng</div></div>
+        <div class="tone-check"><i class="ti ti-check"></i></div>
+      </button>
+      <button class="tone-btn" onclick="selectTone(this, 'luxury')">
+        <span class="tone-emoji">💎</span>
+        <div><div class="tone-info-name">Sang trọng</div><div class="tone-info-desc">Chuyên nghiệp, cao cấp, uy tín</div></div>
+        <div class="tone-check"><i class="ti ti-check"></i></div>
+      </button>
+      <button class="tone-btn" onclick="selectTone(this, 'sale')">
+        <span class="tone-emoji">🔥</span>
+        <div><div class="tone-info-name">Chốt sale mạnh</div><div class="tone-info-desc">Kêu gọi hành động, tạo urgency</div></div>
+        <div class="tone-check"><i class="ti ti-check"></i></div>
+      </button>
+      <button class="tone-btn" onclick="selectTone(this, 'genz')">
+        <span class="tone-emoji">✌️</span>
+        <div><div class="tone-info-name">Gen Z</div><div class="tone-info-desc">Trendy, cool, hợp giới trẻ</div></div>
+        <div class="tone-check"><i class="ti ti-check"></i></div>
+      </button>
+    </div>
+    <div class="ob-actions">
+      <button class="btn-back" onclick="goStep(2)"><i class="ti ti-arrow-left"></i></button>
+      <button class="btn-next" onclick="finishOnboarding()">Hoàn tất <i class="ti ti-check"></i></button>
+    </div>
+  </div>
+
+  <!-- Step 4: Thành công -->
+  <div id="step4" style="display:none">
+    <div class="success-wrap">
+      <div class="success-icon"><i class="ti ti-check"></i></div>
+      <div class="success-title">Thiết lập hoàn tất! 🎉</div>
+      <div class="success-sub">Shop của bạn đã sẵn sàng. AI sẽ tạo bài đăng mỗi ngày theo đúng phong cách bạn chọn.</div>
+      <div class="trial-badge"><i class="ti ti-gift"></i>Bạn có <strong>3 ngày dùng thử miễn phí</strong> bắt đầu từ hôm nay!</div>
+      <button class="btn-next" style="width:100%; justify-content:center" onclick="window.location.href='index.html'">
+        <i class="ti ti-rocket"></i> Bắt đầu sử dụng Vpost
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedIndustry = '';
+let selectedTone = 'fun';
+let currentStep = 1;
+
+function goStep(step) {
+  document.getElementById(`step${currentStep}`).style.display = 'none';
+  document.getElementById(`step${step}`).style.display = 'block';
+
+  // Update step circles
+  for (let i = 1; i <= 4; i++) {
+    const circle = document.getElementById(`step${i}Circle`);
+    const label = document.getElementById(`step${i}Label`);
+    if (i < step) {
+      circle.className = 'ob-step-circle done';
+      circle.innerHTML = '<i class="ti ti-check" style="font-size:13px"></i>';
+    } else if (i === step) {
+      circle.className = 'ob-step-circle active';
+      circle.innerHTML = i;
+      label.className = 'ob-step-label active';
+    } else {
+      circle.className = 'ob-step-circle';
+      circle.innerHTML = i;
+      label.className = 'ob-step-label';
+    }
+    if (i < 4) {
+      document.getElementById(`line${i}`).className = i < step ? 'ob-step-line done' : 'ob-step-line';
+    }
+  }
+  currentStep = step;
+}
+
+function selectIndustry(btn, industry) {
+  document.querySelectorAll('.industry-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedIndustry = industry;
+}
+
+function selectTone(btn, tone) {
+  document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedTone = tone;
+}
+
+function finishOnboarding() {
+  const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+  user.shopName = document.getElementById('shopName').value || user.name;
+  user.shopAddr = document.getElementById('shopAddr').value;
+  user.shopDesc = document.getElementById('shopDesc').value;
+  user.industry = selectedIndustry;
+  user.tone = selectedTone;
+  user.isNew = false;
+  localStorage.setItem('vpost_user', JSON.stringify(user));
+  goStep(4);
+}
+</script>
+</body>
+</html>

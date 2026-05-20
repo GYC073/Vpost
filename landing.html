@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vpost — Tự động đăng bài, tăng tương tác mỗi ngày</title>
+<meta name="description" content="Vpost giúp shop nhỏ tự động đăng bài Facebook mỗi ngày với AI viết caption, tạo video slideshow. Không cần biết marketing, chỉ cần 1 nút bấm.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:    #0A0C10;
+  --ink-70: #3D4149;
+  --ink-50: #6B7280;
+  --ink-20: #D1D5DB;
+  --ink-08: #F3F4F6;
+  --white:  #FFFFFF;
+  --blue:   #2563EB;
+  --blue-d: #1D4ED8;
+  --blue-l: #EFF6FF;
+  --green:  #059669;
+  --amber:  #D97706;
+  --f-display: 'Sora', sans-serif;
+  --f-body:    'DM Sans', sans-serif;
+}
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--f-body); background: var(--white); color: var(--ink); overflow-x: hidden; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5vw; height: 64px;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  transition: all 0.3s;
+}
+.nav-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.nav-logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.nav-logo-icon i { color: #fff; font-size: 16px; }
+.nav-logo-name { font-family: var(--f-display); font-size: 18px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; }
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a { font-size: 14px; font-weight: 500; color: var(--ink-50); text-decoration: none; transition: color 0.15s; }
+.nav-links a:hover { color: var(--ink); }
+.nav-cta { display: flex; gap: 10px; align-items: center; }
+.btn-ghost { padding: 8px 16px; border: 1.5px solid var(--ink-20); border-radius: 8px; font-family: var(--f-body); font-size: 13.5px; font-weight: 600; color: var(--ink-70); background: none; cursor: pointer; text-decoration: none; transition: all 0.15s; }
+.btn-ghost:hover { border-color: var(--ink-70); color: var(--ink); }
+.btn-primary { padding: 9px 20px; background: var(--blue); border: none; border-radius: 8px; font-family: var(--f-body); font-size: 13.5px; font-weight: 600; color: #fff; cursor: pointer; text-decoration: none; transition: all 0.15s; }
+.btn-primary:hover { background: var(--blue-d); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  padding: 100px 5vw 60px;
+  background: var(--white);
+  position: relative; overflow: hidden;
+}
+/* Subtle grid background */
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 40%, transparent 100%);
+}
+.hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; position: relative; z-index: 1; }
+.hero-badge { display: inline-flex; align-items: center; gap: 7px; background: var(--blue-l); border: 1px solid rgba(37,99,235,0.2); border-radius: 20px; padding: 5px 14px; font-size: 12.5px; font-weight: 600; color: var(--blue); margin-bottom: 20px; }
+.hero-badge i { font-size: 14px; }
+.hero-title {
+  font-family: var(--f-display);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 800; line-height: 1.12;
+  letter-spacing: -0.03em; color: var(--ink);
+  margin-bottom: 18px;
+}
+.hero-title .accent { color: var(--blue); }
+.hero-title .line2 { display: block; }
+.hero-desc { font-size: 16px; color: var(--ink-50); line-height: 1.7; margin-bottom: 32px; max-width: 460px; }
+.hero-desc strong { color: var(--ink-70); font-weight: 600; }
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 36px; }
+.btn-hero-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: var(--blue); color: #fff;
+  border: none; border-radius: 10px; font-family: var(--f-body);
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  text-decoration: none; transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.25);
+}
+.btn-hero-primary:hover { background: var(--blue-d); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,0.35); }
+.btn-hero-primary i { font-size: 18px; }
+.btn-hero-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 24px; background: none; color: var(--ink-70);
+  border: 1.5px solid var(--ink-20); border-radius: 10px;
+  font-family: var(--f-body); font-size: 15px; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: all 0.2s;
+}
+.btn-hero-ghost:hover { border-color: var(--ink-70); color: var(--ink); }
+.hero-social-proof { display: flex; align-items: center; gap: 12px; }
+.avatars { display: flex; }
+.avatars img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; margin-left: -8px; object-fit: cover; }
+.avatars img:first-child { margin-left: 0; }
+.social-text { font-size: 13px; color: var(--ink-50); }
+.social-text strong { color: var(--ink); font-weight: 600; }
+.stars { color: #F59E0B; font-size: 12px; letter-spacing: 1px; }
+
+/* Hero mockup */
+.hero-visual { position: relative; }
+.mockup-wrap {
+  background: var(--ink);
+  border-radius: 20px; padding: 3px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.15);
+  animation: floatY 4s ease-in-out infinite;
+}
+@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.mockup-bar { background: #1A1D2E; border-radius: 17px 17px 0 0; padding: 10px 16px; display: flex; align-items: center; gap: 6px; }
+.mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mockup-dot.r { background: #FF5F57; }
+.mockup-dot.y { background: #FFBD2E; }
+.mockup-dot.g { background: #28C840; }
+.mockup-url { flex: 1; background: rgba(255,255,255,0.08); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; }
+.mockup-screen { background: #F9FAFB; border-radius: 0 0 17px 17px; overflow: hidden; }
+.mockup-topbar { background: #0D0F14; padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+.m-logo { width: 22px; height: 22px; background: #2563EB; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.m-logo i { color: #fff; font-size: 11px; }
+.m-name { color: #fff; font-family: var(--f-display); font-size: 12px; font-weight: 700; }
+.mockup-body { padding: 12px; }
+.m-hero-img { width: 100%; height: 80px; border-radius: 10px; object-fit: cover; margin-bottom: 10px; }
+.m-card { background: #fff; border-radius: 10px; padding: 12px; border: 1px solid #F0F1F3; margin-bottom: 8px; }
+.m-card-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.m-platform { display: flex; align-items: center; gap: 6px; }
+.m-fb { width: 22px; height: 22px; background: #1877F2; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.m-fb i { color: #fff; font-size: 11px; }
+.m-pname { font-size: 11px; font-weight: 600; color: #0D0F14; }
+.m-badge { background: #FFFBEB; color: #D97706; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+.m-ai-label { font-size: 10px; color: #2563EB; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
+.m-caption { font-size: 10px; color: #3D4149; line-height: 1.6; margin-bottom: 10px; }
+.m-btns { display: flex; gap: 5px; }
+.m-btn-primary { flex: 1; background: #2563EB; color: #fff; border: none; border-radius: 6px; padding: 6px; font-size: 10px; font-weight: 600; text-align: center; }
+.m-btn-outline { background: #F9FAFB; color: #6B7280; border: 1px solid #F0F1F3; border-radius: 6px; padding: 6px 8px; font-size: 10px; }
+.m-stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 6px; }
+.m-stat { background: #fff; border: 1px solid #F0F1F3; border-radius: 8px; padding: 8px 10px; }
+.m-stat-val { font-family: var(--f-display); font-size: 14px; font-weight: 700; color: #0D0F14; }
+.m-stat-lbl { font-size: 10px; color: #9CA3AF; }
+
+/* Floating chips */
+.chip {
+  position: absolute; background: #fff;
+  border-radius: 12px; padding: 8px 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  font-size: 12px; font-weight: 600; color: var(--ink);
+  display: flex; align-items: center; gap: 7px;
+  white-space: nowrap; border: 1px solid rgba(0,0,0,0.06);
+}
+.chip i { font-size: 16px; }
+.chip-1 { top: -16px; right: -20px; animation: floatChip1 3s ease-in-out infinite; }
+.chip-2 { bottom: 40px; left: -28px; animation: floatChip2 3.5s ease-in-out infinite; }
+@keyframes floatChip1 { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-6px) rotate(1deg)} }
+@keyframes floatChip2 { 0%,100%{transform:translateY(0) rotate(2deg)} 50%{transform:translateY(-8px) rotate(-1deg)} }
+
+/* ── LOGOS ── */
+.logos-section { padding: 32px 5vw; border-top: 1px solid var(--ink-08); border-bottom: 1px solid var(--ink-08); background: var(--ink-08); }
+.logos-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+.logos-label { font-size: 13px; color: var(--ink-50); margin-bottom: 20px; font-weight: 500; }
+.logos-row { display: flex; align-items: center; justify-content: center; gap: 36px; flex-wrap: wrap; }
+.logo-item { display: flex; align-items: center; gap: 7px; color: var(--ink-50); font-size: 14px; font-weight: 600; opacity: 0.6; transition: opacity 0.2s; }
+.logo-item:hover { opacity: 1; }
+.logo-item i { font-size: 22px; }
+
+/* ── HOW IT WORKS ── */
+.section { padding: 88px 5vw; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--blue-l); color: var(--blue); font-size: 12.5px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 14px; }
+.section-title { font-family: var(--f-display); font-size: clamp(26px, 3vw, 40px); font-weight: 800; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 12px; line-height: 1.2; }
+.section-sub { font-size: 16px; color: var(--ink-50); max-width: 520px; line-height: 1.7; }
+
+.steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 52px; }
+.step-card { position: relative; }
+.step-num {
+  width: 36px; height: 36px; background: var(--blue); color: #fff;
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-display); font-size: 15px; font-weight: 800;
+  margin-bottom: 16px;
+}
+.step-arrow { position: absolute; top: 18px; right: -16px; color: var(--ink-20); font-size: 22px; z-index: 1; }
+.step-title { font-family: var(--f-display); font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.01em; }
+.step-desc { font-size: 14px; color: var(--ink-50); line-height: 1.6; }
+
+/* ── FEATURES ── */
+.features-section { padding: 88px 5vw; background: var(--ink-08); }
+.features-inner { max-width: 1100px; margin: 0 auto; }
+.features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 52px; }
+.feature-card {
+  background: var(--white); border-radius: 16px; padding: 24px;
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: all 0.2s; cursor: default;
+}
+.feature-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); border-color: rgba(37,99,235,0.15); }
+.feature-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.feature-icon i { font-size: 22px; }
+.feature-icon.blue   { background: var(--blue-l); color: var(--blue); }
+.feature-icon.green  { background: #ECFDF5; color: var(--green); }
+.feature-icon.amber  { background: #FFFBEB; color: var(--amber); }
+.feature-icon.purple { background: #F5F3FF; color: #7C3AED; }
+.feature-icon.rose   { background: #FFF1F2; color: #E11D48; }
+.feature-icon.cyan   { background: #ECFEFF; color: #0891B2; }
+.feature-title { font-family: var(--f-display); font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.01em; }
+.feature-desc { font-size: 13.5px; color: var(--ink-50); line-height: 1.65; }
+
+/* ── PRICING ── */
+.pricing-section { padding: 88px 5vw; }
+.pricing-inner { max-width: 900px; margin: 0 auto; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 52px; }
+.pricing-card {
+  background: var(--white); border: 1.5px solid var(--ink-20);
+  border-radius: 20px; padding: 28px 24px;
+  transition: all 0.2s; position: relative;
+}
+.pricing-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+.pricing-card.featured {
+  border-color: var(--blue); background: var(--ink);
+  transform: scale(1.04);
+  box-shadow: 0 20px 48px rgba(37,99,235,0.2);
+}
+.pricing-card.featured:hover { transform: scale(1.04) translateY(-3px); }
+.popular-tag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--blue); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 14px; border-radius: 20px; white-space: nowrap; }
+.pricing-plan { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-50); margin-bottom: 6px; }
+.pricing-card.featured .pricing-plan { color: rgba(255,255,255,0.5); }
+.pricing-price { font-family: var(--f-display); font-size: 36px; font-weight: 800; color: var(--ink); letter-spacing: -0.03em; margin-bottom: 2px; }
+.pricing-card.featured .pricing-price { color: #fff; }
+.pricing-period { font-size: 13px; color: var(--ink-50); margin-bottom: 20px; }
+.pricing-card.featured .pricing-period { color: rgba(255,255,255,0.5); }
+.pricing-divider { height: 1px; background: var(--ink-08); margin-bottom: 20px; }
+.pricing-card.featured .pricing-divider { background: rgba(255,255,255,0.1); }
+.pricing-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.pricing-features li { display: flex; align-items: center; gap: 9px; font-size: 13.5px; color: var(--ink-70); }
+.pricing-card.featured .pricing-features li { color: rgba(255,255,255,0.8); }
+.pricing-features li i { font-size: 16px; color: var(--green); flex-shrink: 0; }
+.pricing-card.featured .pricing-features li i { color: #34D399; }
+.pricing-features li.dim { color: var(--ink-20); }
+.pricing-card.featured .pricing-features li.dim { color: rgba(255,255,255,0.2); }
+.pricing-features li.dim i { color: var(--ink-20); }
+.btn-pricing {
+  width: 100%; padding: 12px; border-radius: 10px;
+  font-family: var(--f-body); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; border: none;
+  text-decoration: none; display: block; text-align: center;
+}
+.btn-pricing.outline { background: none; border: 1.5px solid var(--ink-20); color: var(--ink-70); }
+.btn-pricing.outline:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-l); }
+.btn-pricing.filled { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+.btn-pricing.filled:hover { background: var(--blue-d); transform: translateY(-1px); }
+.btn-pricing.white { background: #fff; color: var(--ink); }
+.btn-pricing.white:hover { background: var(--blue-l); color: var(--blue); }
+.pricing-note { text-align: center; margin-top: 24px; font-size: 13px; color: var(--ink-50); }
+.pricing-note strong { color: var(--green); }
+
+/* ── TESTIMONIALS ── */
+.testimonials-section { padding: 88px 5vw; background: var(--ink-08); }
+.testimonials-inner { max-width: 1100px; margin: 0 auto; }
+.testimonials-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 52px; }
+.testimonial-card { background: var(--white); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.06); }
+.t-stars { color: #F59E0B; font-size: 14px; letter-spacing: 2px; margin-bottom: 12px; }
+.t-text { font-size: 14px; color: var(--ink-70); line-height: 1.7; margin-bottom: 16px; font-style: italic; }
+.t-text::before { content: '"'; }
+.t-text::after  { content: '"'; }
+.t-author { display: flex; align-items: center; gap: 10px; }
+.t-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.t-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+.t-shop { font-size: 12px; color: var(--ink-50); }
+
+/* ── FAQ ── */
+.faq-section { padding: 88px 5vw; }
+.faq-inner { max-width: 700px; margin: 0 auto; }
+.faq-list { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+.faq-item { border: 1.5px solid var(--ink-08); border-radius: 12px; overflow: hidden; transition: border-color 0.2s; }
+.faq-item.open { border-color: rgba(37,99,235,0.2); }
+.faq-q { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; cursor: pointer; gap: 12px; }
+.faq-q-text { font-size: 15px; font-weight: 600; color: var(--ink); }
+.faq-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--ink-08); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.25s; }
+.faq-item.open .faq-icon { background: var(--blue); transform: rotate(45deg); }
+.faq-icon i { font-size: 16px; color: var(--ink-50); }
+.faq-item.open .faq-icon i { color: #fff; }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; }
+.faq-item.open .faq-a { max-height: 200px; padding: 0 20px 18px; }
+.faq-a p { font-size: 14px; color: var(--ink-50); line-height: 1.7; }
+
+/* ── CTA ── */
+.cta-section { padding: 88px 5vw; }
+.cta-inner { max-width: 700px; margin: 0 auto; text-align: center; }
+.cta-box {
+  background: var(--ink); border-radius: 24px; padding: 56px 48px;
+  position: relative; overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(37,99,235,0.25);
+}
+.cta-box::after {
+  content: '';
+  position: absolute; bottom: -40px; left: -40px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: rgba(37,99,235,0.12);
+}
+.cta-title { font-family: var(--f-display); font-size: clamp(24px, 3vw, 36px); font-weight: 800; color: #fff; letter-spacing: -0.03em; margin-bottom: 12px; line-height: 1.2; position: relative; z-index: 1; }
+.cta-sub { font-size: 15px; color: rgba(255,255,255,0.6); margin-bottom: 28px; position: relative; z-index: 1; }
+.cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+.btn-cta-white { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: #fff; color: var(--ink); border: none; border-radius: 10px; font-family: var(--f-body); font-size: 15px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+.btn-cta-white:hover { background: var(--blue-l); color: var(--blue); transform: translateY(-2px); }
+.btn-cta-ghost { display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 10px; font-family: var(--f-body); font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+.btn-cta-ghost:hover { background: rgba(255,255,255,0.18); }
+.cta-note { font-size: 12.5px; color: rgba(255,255,255,0.4); margin-top: 16px; position: relative; z-index: 1; }
+
+/* ── FOOTER ── */
+footer { background: var(--ink); padding: 48px 5vw 32px; }
+.footer-inner { max-width: 1100px; margin: 0 auto; }
+.footer-top { display: flex; justify-content: space-between; gap: 40px; margin-bottom: 40px; flex-wrap: wrap; }
+.footer-brand { max-width: 260px; }
+.footer-logo { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.footer-logo-icon { width: 28px; height: 28px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.footer-logo-icon i { color: #fff; font-size: 14px; }
+.footer-logo-name { font-family: var(--f-display); color: #fff; font-size: 16px; font-weight: 700; }
+.footer-tagline { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; }
+.footer-col-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.35); margin-bottom: 14px; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.footer-links a { font-size: 13.5px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: #fff; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.07); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+.footer-zalo { display: flex; align-items: center; gap: 7px; background: #0068FF; color: #fff; text-decoration: none; padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; transition: opacity 0.15s; }
+.footer-zalo:hover { opacity: 0.85; }
+.footer-zalo i { font-size: 16px; }
+
+/* ── SCROLL ANIMATIONS ── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+  .hero-visual { display: none; }
+  .steps-grid, .features-grid, .pricing-grid, .testimonials-grid { grid-template-columns: 1fr; }
+  .pricing-card.featured { transform: scale(1); }
+  .nav-links { display: none; }
+  .cta-box { padding: 40px 28px; }
+  .footer-top { flex-direction: column; }
+}
+@media (max-width: 600px) {
+  .hero { padding: 90px 5vw 48px; }
+  .section, .features-section, .pricing-section, .testimonials-section, .faq-section, .cta-section { padding: 60px 5vw; }
+  .hero-actions { flex-direction: column; }
+  .btn-hero-primary, .btn-hero-ghost { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <span class="nav-logo-name">Vpost</span>
+  </a>
+  <div class="nav-links">
+    <a href="#how">Cách hoạt động</a>
+    <a href="#features">Tính năng</a>
+    <a href="#pricing">Bảng giá</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-cta">
+    <a href="login.html" class="btn-ghost">Đăng nhập</a>
+    <a href="login.html#register" class="btn-primary">Dùng thử miễn phí</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge reveal"><i class="ti ti-sparkles"></i>AI viết bài — bạn tập trung bán hàng</div>
+      <h1 class="hero-title reveal reveal-delay-1">
+        Fanpage sống động
+        <span class="line2">mỗi ngày — <span class="accent">không cần nghĩ.</span></span>
+      </h1>
+      <p class="hero-desc reveal reveal-delay-2">
+        Vpost tự động tạo caption, đăng bài Facebook và tạo video slideshow cho shop của bạn. <strong>Chỉ cần 1 nút bấm</strong> — AI lo phần còn lại.
+      </p>
+      <div class="hero-actions reveal reveal-delay-2">
+        <a href="login.html" class="btn-hero-primary"><i class="ti ti-rocket"></i>Dùng thử 3 ngày miễn phí</a>
+        <a href="#how" class="btn-hero-ghost"><i class="ti ti-play"></i>Xem cách hoạt động</a>
+      </div>
+      <div class="hero-social-proof reveal reveal-delay-3">
+        <div class="avatars">
+          <img src="https://images.unsplash.com/photo-1494790108755-2616b612b5bc?w=60&q=80" alt="">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&q=80" alt="">
+          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&q=80" alt="">
+        </div>
+        <div>
+          <div class="stars">★★★★★</div>
+          <div class="social-text"><strong>50+ shop</strong> đang dùng Vpost mỗi ngày</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mockup -->
+    <div class="hero-visual reveal reveal-delay-2">
+      <div style="position:relative">
+        <div class="mockup-wrap">
+          <div class="mockup-bar">
+            <div class="mockup-dot r"></div>
+            <div class="mockup-dot y"></div>
+            <div class="mockup-dot g"></div>
+            <div class="mockup-url">vpost.vn/app</div>
+          </div>
+          <div class="mockup-screen">
+            <div class="mockup-topbar">
+              <div class="m-logo"><i class="ti ti-pencil-star"></i></div>
+              <span class="m-name">Vpost</span>
+            </div>
+            <div class="mockup-body">
+              <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=400&q=70" class="m-hero-img" alt="">
+              <div class="m-card">
+                <div class="m-card-row">
+                  <div class="m-platform">
+                    <div class="m-fb"><i class="ti ti-brand-facebook"></i></div>
+                    <span class="m-pname">Fanpage của bạn</span>
+                  </div>
+                  <span class="m-badge">Chờ duyệt</span>
+                </div>
+                <div class="m-ai-label"><i class="ti ti-sparkles"></i> AI tạo caption</div>
+                <div class="m-caption">☕ Thứ Sáu rồi! Ghé tiệm mình thưởng thức ly bạc xỉu trân châu mới cực ngon nhé 🖤 DM hoặc comment bên dưới! #CaPhê #BạcXỉu</div>
+                <div class="m-btns">
+                  <div class="m-btn-primary">✓ Duyệt & Đăng</div>
+                  <div class="m-btn-outline">Lên lịch</div>
+                </div>
+              </div>
+              <div class="m-stats">
+                <div class="m-stat"><div class="m-stat-val">24</div><div class="m-stat-lbl">Bài đã đăng</div></div>
+                <div class="m-stat"><div class="m-stat-val">1.2k</div><div class="m-stat-lbl">Tương tác</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chip chip-1"><i class="ti ti-sparkles" style="color:#2563EB"></i>AI viết caption</div>
+        <div class="chip chip-2"><i class="ti ti-video" style="color:#059669"></i>Tạo video tự động</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<div class="logos-section">
+  <div class="logos-inner">
+    <div class="logos-label">Đăng bài lên các nền tảng phổ biến</div>
+    <div class="logos-row">
+      <div class="logo-item"><i class="ti ti-brand-facebook" style="color:#1877F2"></i>Facebook</div>
+      <div class="logo-item"><i class="ti ti-brand-instagram" style="color:#E1306C"></i>Instagram</div>
+      <div class="logo-item"><i class="ti ti-brand-tiktok"></i>TikTok <span style="font-size:11px;background:#F0F1F3;padding:2px 6px;border-radius:4px;margin-left:4px">Sắp có</span></div>
+      <div class="logo-item"><i class="ti ti-brand-hipchat" style="color:#0068FF"></i>Zalo <span style="font-size:11px;background:#F0F1F3;padding:2px 6px;border-radius:4px;margin-left:4px">Sắp có</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-inner">
+    <div class="section-tag reveal"><i class="ti ti-map"></i>Cách hoạt động</div>
+    <h2 class="section-title reveal reveal-delay-1">Đơn giản đến mức<br>ai cũng dùng được</h2>
+    <p class="section-sub reveal reveal-delay-2">Không cần biết marketing, không cần thuê người quản lý fanpage. Vpost làm thay bạn.</p>
+    <div class="steps-grid">
+      <div class="step-card reveal reveal-delay-1">
+        <div class="step-num">1</div>
+        <div class="step-arrow"><i class="ti ti-arrow-right"></i></div>
+        <div class="step-title">Nhập thông tin shop</div>
+        <div class="step-desc">Tên shop, ngành hàng, mô tả ngắn. Chỉ làm 1 lần duy nhất khi đăng ký.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-2">
+        <div class="step-num">2</div>
+        <div class="step-arrow"><i class="ti ti-arrow-right"></i></div>
+        <div class="step-title">AI tạo bài mỗi sáng</div>
+        <div class="step-desc">Mỗi ngày AI tự động tạo caption mới theo đúng phong cách và ngành hàng của bạn.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-3">
+        <div class="step-num">3</div>
+        <div class="step-title">Duyệt hoặc để AI tự đăng</div>
+        <div class="step-desc">Bạn vào duyệt bài, thêm ảnh rồi đăng. Bận không vào được? AI tự đăng lúc 10h sáng.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="features-inner">
+    <div class="section-tag reveal"><i class="ti ti-puzzle"></i>Tính năng</div>
+    <h2 class="section-title reveal reveal-delay-1">Mọi thứ shop nhỏ cần<br>để sống động trên mạng</h2>
+    <p class="section-sub reveal reveal-delay-2">Không phức tạp, không thừa tính năng — đúng cái cần, đúng lúc cần.</p>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon blue"><i class="ti ti-sparkles"></i></div>
+        <div class="feature-title">AI viết caption thông minh</div>
+        <div class="feature-desc">7 chủ đề xoay vòng mỗi ngày trong tuần, 7 cấu trúc bài khác nhau — caption không bao giờ nhàm chán.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon green"><i class="ti ti-clock-play"></i></div>
+        <div class="feature-title">Tự động đăng lúc 10h sáng</div>
+        <div class="feature-desc">Bận không vào app? Vpost tự đăng bài đúng giờ. Fanpage luôn hoạt động dù bạn đang bận giao hàng.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon amber"><i class="ti ti-video"></i></div>
+        <div class="feature-title">Tạo video slideshow</div>
+        <div class="feature-desc">Upload 2-5 ảnh sản phẩm → Vpost tạo video slideshow đẹp, có nhạc, tải về dùng cho Reels, TikTok, Story.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon purple"><i class="ti ti-adjustments"></i></div>
+        <div class="feature-title">5 tone giọng khác nhau</div>
+        <div class="feature-desc">Vui vẻ, thân thiện, sang trọng, chốt sale mạnh, Gen Z — AI viết đúng "chất" của shop bạn.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon rose"><i class="ti ti-users-plus"></i></div>
+        <div class="feature-title">Đăng bài tuyển dụng</div>
+        <div class="feature-desc">Cần tuyển nhân viên? Điền thông tin vào form — AI tạo bài đăng tuyển chuyên nghiệp ngay lập tức.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon cyan"><i class="ti ti-calendar"></i></div>
+        <div class="feature-title">Lịch đăng bài trực quan</div>
+        <div class="feature-desc">Xem tổng quan cả tháng, biết ngày nào đã đăng, ngày nào AI tự đăng, ngày nào đang chờ duyệt.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div style="text-align:center">
+      <div class="section-tag reveal" style="display:inline-flex"><i class="ti ti-tag"></i>Bảng giá</div>
+      <h2 class="section-title reveal reveal-delay-1">Giá hợp lý cho<br>mọi quy mô shop</h2>
+      <p class="section-sub reveal reveal-delay-2" style="margin:0 auto">Dùng thử 3 ngày miễn phí, không cần thẻ. Thanh toán linh hoạt theo tháng hoặc năm.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card reveal reveal-delay-1">
+        <div class="pricing-plan">Cơ bản</div>
+        <div class="pricing-price">200k</div>
+        <div class="pricing-period">/tháng</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><i class="ti ti-check"></i>1 bài đăng/ngày</li>
+          <li><i class="ti ti-check"></i>AI viết caption</li>
+          <li><i class="ti ti-check"></i>1 video slideshow/ngày</li>
+          <li><i class="ti ti-check"></i>Tự động đăng lúc 10h</li>
+          <li><i class="ti ti-check"></i>Lịch đăng bài</li>
+          <li class="dim"><i class="ti ti-x"></i>Nhiều tone giọng</li>
+        </ul>
+        <a href="login.html" class="btn-pricing outline">Bắt đầu dùng thử</a>
+      </div>
+      <div class="pricing-card featured reveal reveal-delay-2">
+        <div class="popular-tag">⭐ Phổ biến nhất</div>
+        <div class="pricing-plan">Tiêu chuẩn</div>
+        <div class="pricing-price">400k</div>
+        <div class="pricing-period">/tháng</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><i class="ti ti-check"></i>2 bài đăng/ngày</li>
+          <li><i class="ti ti-check"></i>AI viết caption đa dạng</li>
+          <li><i class="ti ti-check"></i>2 video slideshow/ngày</li>
+          <li><i class="ti ti-check"></i>5 tone giọng khác nhau</li>
+          <li><i class="ti ti-check"></i>Bài tuyển dụng</li>
+          <li><i class="ti ti-check"></i>Nhắc nhở qua Zalo</li>
+        </ul>
+        <a href="login.html" class="btn-pricing white">Bắt đầu dùng thử</a>
+      </div>
+      <div class="pricing-card reveal reveal-delay-3">
+        <div class="pricing-plan">Pro</div>
+        <div class="pricing-price">700k</div>
+        <div class="pricing-period">/tháng</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><i class="ti ti-check"></i>2 bài đăng/ngày</li>
+          <li><i class="ti ti-check"></i>AI caption nâng cao</li>
+          <li><i class="ti ti-check"></i>5 video slideshow/ngày</li>
+          <li><i class="ti ti-check"></i>Tone tuỳ chỉnh riêng</li>
+          <li><i class="ti ti-check"></i>Ưu tiên hỗ trợ</li>
+          <li><i class="ti ti-check"></i>Báo cáo tương tác</li>
+        </ul>
+        <a href="login.html" class="btn-pricing outline">Bắt đầu dùng thử</a>
+      </div>
+    </div>
+    <div class="pricing-note reveal">✅ <strong>3 ngày dùng thử miễn phí</strong> — Thanh toán qua chuyển khoản hoặc Momo. Hỗ trợ qua Zalo 24/7.</div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div class="testimonials-inner">
+    <div class="section-tag reveal"><i class="ti ti-quote"></i>Đánh giá</div>
+    <h2 class="section-title reveal reveal-delay-1">Shop nào cũng khen</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="t-stars">★★★★★</div>
+        <div class="t-text">Trước đây mình toàn quên đăng bài hoặc không biết viết gì. Từ khi dùng Vpost fanpage mình đăng đều hơn hẳn, khách cũng nhắn hỏi nhiều hơn.</div>
+        <div class="t-author">
+          <img src="https://images.unsplash.com/photo-1494790108755-2616b612b5bc?w=80&q=80" class="t-avatar" alt="">
+          <div>
+            <div class="t-name">Chị Hà My</div>
+            <div class="t-shop">Shop thời trang · Hà Nội</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="t-stars">★★★★★</div>
+        <div class="t-text">Tôi bán cà phê, bận từ sáng tới tối. Vpost tự động đăng bài mỗi ngày giúp tôi, chỉ cần thỉnh thoảng vào duyệt thêm ảnh là xong.</div>
+        <div class="t-author">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80" class="t-avatar" alt="">
+          <div>
+            <div class="t-name">Anh Minh Tuấn</div>
+            <div class="t-shop">Tiệm cà phê · TP.HCM</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-3">
+        <div class="t-stars">★★★★★</div>
+        <div class="t-text">Tính năng tạo video slideshow rất tiện, mình tải về đăng lên Reels luôn. Khách xem video tương tác nhiều hơn ảnh bình thường.</div>
+        <div class="t-author">
+          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80" class="t-avatar" alt="">
+          <div>
+            <div class="t-name">Chị Ngọc Trinh</div>
+            <div class="t-shop">Mỹ phẩm · Đà Nẵng</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div style="text-align:center">
+      <div class="section-tag reveal" style="display:inline-flex"><i class="ti ti-help"></i>Câu hỏi thường gặp</div>
+      <h2 class="section-title reveal reveal-delay-1">Vẫn còn thắc mắc?</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item reveal" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Dùng thử miễn phí như thế nào?</span><div class="faq-icon"><i class="ti ti-plus"></i></div></div>
+        <div class="faq-a"><p>Đăng ký tài khoản → dùng miễn phí 3 ngày đầy đủ tính năng. Sau 3 ngày muốn tiếp tục thì liên hệ admin qua Zalo để chọn gói và thanh toán. Không cần thẻ tín dụng, không tự động trừ tiền.</p></div>
+      </div>
+      <div class="faq-item reveal reveal-delay-1" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Thanh toán như thế nào?</span><div class="faq-icon"><i class="ti ti-plus"></i></div></div>
+        <div class="faq-a"><p>Chuyển khoản ngân hàng hoặc Momo. Sau khi thanh toán, admin sẽ kích hoạt tài khoản trong vòng 30 phút trong giờ hành chính. Không thu phí qua app để tránh các khoản phí trung gian.</p></div>
+      </div>
+      <div class="faq-item reveal reveal-delay-2" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Vpost có tự đăng bài lên Facebook của tôi không?</span><div class="faq-icon"><i class="ti ti-plus"></i></div></div>
+        <div class="faq-a"><p>Có — nhưng chỉ đăng lên Fanpage (trang doanh nghiệp), không phải tài khoản cá nhân. Bạn cần kết nối Fanpage trong phần Cài đặt. Nếu không vào duyệt trước 10h sáng, Vpost sẽ tự đăng bài AI đã chuẩn bị.</p></div>
+      </div>
+      <div class="faq-item reveal reveal-delay-3" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Caption AI có viết đúng ngành hàng của tôi không?</span><div class="faq-icon"><i class="ti ti-plus"></i></div></div>
+        <div class="faq-a"><p>Có. Khi đăng ký, bạn điền tên shop, ngành hàng và mô tả ngắn. AI sẽ dùng thông tin đó để viết caption phù hợp với từng ngành: cà phê, thời trang, mỹ phẩm, đồ ăn, v.v. Bạn cũng có thể thêm gợi ý cho từng bài cụ thể.</p></div>
+      </div>
+      <div class="faq-item reveal" onclick="toggleFaq(this)">
+        <div class="faq-q"><span class="faq-q-text">Video slideshow xuất được định dạng gì?</span><div class="faq-icon"><i class="ti ti-plus"></i></div></div>
+        <div class="faq-a"><p>Video được xuất dưới dạng MP4, tải về điện thoại hoặc máy tính. Bạn có thể đăng lên Facebook Reels, TikTok, Instagram Story, hoặc bất kỳ nền tảng nào bạn muốn. Vpost không giới hạn bạn chỉ dùng cho 1 nền tảng.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-box reveal">
+      <div class="cta-title">Bắt đầu ngay hôm nay —<br>miễn phí 3 ngày đầu</div>
+      <div class="cta-sub">Không cần thẻ tín dụng. Không tự động trừ tiền. Chỉ cần số điện thoại.</div>
+      <div class="cta-actions">
+        <a href="login.html" class="btn-cta-white"><i class="ti ti-rocket"></i>Đăng ký dùng thử</a>
+        <a href="https://zalo.me/0789434345" target="_blank" class="btn-cta-ghost"><i class="ti ti-brand-hipchat"></i>Hỏi qua Zalo</a>
+      </div>
+      <div class="cta-note">Hỗ trợ qua Zalo trong giờ hành chính · Phản hồi trong 30 phút</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon"><i class="ti ti-pencil-star"></i></div>
+          <span class="footer-logo-name">Vpost</span>
+        </div>
+        <div class="footer-tagline">Giúp shop nhỏ tự động đăng bài, tăng tương tác mỗi ngày mà không cần tốn thời gian.</div>
+      </div>
+      <div>
+        <div class="footer-col-title">Sản phẩm</div>
+        <ul class="footer-links">
+          <li><a href="#features">Tính năng</a></li>
+          <li><a href="#pricing">Bảng giá</a></li>
+          <li><a href="#how">Cách hoạt động</a></li>
+          <li><a href="login.html">Đăng ký</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Hỗ trợ</div>
+        <ul class="footer-links">
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="https://zalo.me/0789434345" target="_blank">Zalo hỗ trợ</a></li>
+          <li><a href="#">Chính sách bảo mật</a></li>
+          <li><a href="#">Điều khoản sử dụng</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 Vpost. Được tạo ra tại Việt Nam 🇻🇳</div>
+      <a href="https://zalo.me/0789434345" target="_blank" class="footer-zalo">
+        <i class="ti ti-brand-hipchat"></i> Zalo hỗ trợ
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// FAQ toggle
+function toggleFaq(item) {
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// Navbar scroll
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  nav.style.boxShadow = window.scrollY > 20 ? '0 2px 20px rgba(0,0,0,0.08)' : 'none';
+});
+
+// Hero reveal on load
+document.querySelectorAll('.hero .reveal').forEach((el, i) => {
+  setTimeout(() => el.classList.add('visible'), 100 + i * 120);
+});
+</script>
+</body>
+</html>

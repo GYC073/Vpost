@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tài khoản — Vpost</title>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #2D6BE4; --primary-dark: #1a4fa8; --primary-light: #e8f0fd;
+  --accent: #48cfad; --danger: #E24B4A; --orange: #FF8C42;
+  --text: #1a1d2e; --text-secondary: #6B7280;
+  --border: #E8EAF0; --bg: #F5F6FA; --surface: #fff;
+  --radius: 12px; --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+}
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.card {
+  background: var(--surface); border-radius: 20px;
+  padding: 36px 28px; max-width: 400px; width: 100%;
+  box-shadow: var(--shadow-lg); text-align: center;
+}
+.icon-wrap {
+  width: 80px; height: 80px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.icon-wrap.expired { background: #fff0e6; }
+.icon-wrap.disabled { background: #fef2f2; }
+.icon-wrap i { font-size: 36px; }
+.icon-wrap.expired i { color: var(--orange); }
+.icon-wrap.disabled i { color: var(--danger); }
+h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.sub { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
+.info-box {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 24px; text-align: left;
+}
+.info-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+.info-label { color: var(--text-secondary); }
+.info-value { font-weight: 600; }
+.info-value.danger { color: var(--danger); }
+.info-value.orange { color: var(--orange); }
+.zalo-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px;
+  background: #0068FF; color: #fff;
+  border: none; border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  margin-bottom: 10px; text-decoration: none;
+  transition: opacity 0.2s;
+}
+.zalo-btn:hover { opacity: 0.9; }
+.zalo-btn i { font-size: 18px; }
+.logout-btn {
+  width: 100%; padding: 11px;
+  background: none; border: 1px solid var(--border);
+  border-radius: var(--radius); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--text-secondary); cursor: pointer;
+  transition: all 0.2s;
+}
+.logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+.plan-grid { display: flex; gap: 8px; margin-bottom: 20px; }
+.plan-card {
+  flex: 1; background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 12px 8px; text-align: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.plan-card:hover { border-color: var(--primary); }
+.plan-card.recommended { border-color: var(--primary); background: var(--primary-light); }
+.plan-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+.plan-price { font-size: 15px; font-weight: 700; color: var(--primary); }
+.plan-period { font-size: 10px; color: var(--text-secondary); }
+.recommended-tag {
+  font-size: 9px; font-weight: 700; background: var(--primary); color: #fff;
+  padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px;
+}
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="card" id="mainCard">
+  <!-- Content được render bởi JS dựa trên lý do khoá -->
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+VpostAuth.seedDemoData();
+const access = VpostAuth.checkAccess();
+const user = VpostAuth.getCurrentUser();
+const card = document.getElementById('mainCard');
+
+function renderExpired(customer) {
+  const planNames = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
+  card.innerHTML = `
+    <div class="icon-wrap expired"><i class="ti ti-clock-off"></i></div>
+    <h1>Tài khoản đã hết hạn</h1>
+    <p class="sub">Gói dịch vụ của bạn đã hết hạn. Liên hệ admin để gia hạn và tiếp tục sử dụng Vpost nhé!</p>
+    <div class="info-box">
+      <div class="info-row"><span class="info-label">Shop</span><span class="info-value">${user.shopName || user.name || 'Shop'}</span></div>
+      <div class="info-row"><span class="info-label">Gói</span><span class="info-value">${planNames[customer?.plan] || 'Cơ bản'}</span></div>
+      <div class="info-row"><span class="info-label">Hết hạn</span><span class="info-value danger">${customer?.expire ? new Date(customer.expire).toLocaleDateString('vi-VN') : 'N/A'}</span></div>
+    </div>
+    <p style="font-size:13px;font-weight:600;margin-bottom:12px">Gia hạn ngay — chọn gói phù hợp:</p>
+    <div class="plan-grid">
+      <div class="plan-card">
+        <div class="plan-name">Cơ bản</div>
+        <div class="plan-price">200k</div>
+        <div class="plan-period">/tháng</div>
+      </div>
+      <div class="plan-card recommended">
+        <div class="recommended-tag">⭐ Phổ biến</div>
+        <div class="plan-name">Tiêu chuẩn</div>
+        <div class="plan-price">400k</div>
+        <div class="plan-period">/tháng</div>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">700k</div>
+        <div class="plan-period">/tháng</div>
+      </div>
+    </div>
+    <a class="zalo-btn" href="https://zalo.me/0789434345" target="_blank">
+      <i class="ti ti-brand-hipchat"></i> Liên hệ qua Zalo để gia hạn
+    </a>
+    <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i> Đăng xuất</button>`;
+}
+
+function renderDisabled(customer) {
+  card.innerHTML = `
+    <div class="icon-wrap disabled"><i class="ti ti-lock"></i></div>
+    <h1>Tài khoản tạm khoá</h1>
+    <p class="sub">Tài khoản của bạn đang tạm thời bị khoá. Vui lòng liên hệ admin để được hỗ trợ và kích hoạt lại nhé!</p>
+    <div class="info-box">
+      <div class="info-row"><span class="info-label">Shop</span><span class="info-value">${user.shopName || user.name || 'Shop'}</span></div>
+      <div class="info-row"><span class="info-label">Trạng thái</span><span class="info-value danger">Đang tạm khoá</span></div>
+      <div class="info-row"><span class="info-label">Lý do</span><span class="info-value orange">Chờ xác nhận thanh toán</span></div>
+    </div>
+    <a class="zalo-btn" href="https://zalo.me/0789434345" target="_blank">
+      <i class="ti ti-brand-hipchat"></i> Nhắn Zalo cho admin ngay
+    </a>
+    <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i> Đăng xuất</button>`;
+}
+
+function logout() {
+  localStorage.removeItem('vpost_user');
+  window.location.href = 'login.html';
+}
+
+// Render theo lý do
+if (access.reason === 'expired') renderExpired(access.customer);
+else if (access.reason === 'disabled') renderDisabled(access.customer);
+else window.location.href = 'index.html'; // Đã OK thì về trang chủ
+</script>
+</body>
+</html>

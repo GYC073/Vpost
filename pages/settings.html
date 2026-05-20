@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cài đặt — Vpost</title>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .shop-profile-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  .shop-profile-cover { position: relative; height: 110px; }
+  .shop-profile-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shop-profile-cover-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.2); }
+  .change-cover-btn {
+    position: absolute; bottom: 8px; right: 10px;
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(0,0,0,0.5); color: #fff;
+    border: none; border-radius: 20px;
+    padding: 5px 12px; font-size: 11px; font-weight: 500;
+    font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+  .change-cover-btn i { font-size: 13px; }
+  .shop-profile-body {
+    padding: 0 16px 16px;
+    display: flex; align-items: flex-end; gap: 12px;
+    margin-top: -28px;
+  }
+  .shop-profile-avatar-wrap { position: relative; flex-shrink: 0; }
+  .shop-profile-avatar {
+    width: 64px; height: 64px; border-radius: 16px;
+    border: 3px solid var(--surface); object-fit: cover;
+    display: block; box-shadow: var(--shadow);
+  }
+  .change-avatar-btn {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    border: 2px solid var(--surface); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .shop-profile-info { padding-top: 28px; }
+  .shop-profile-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .shop-profile-industry { font-size: 12px; color: var(--text-secondary); }
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .settings-section-title {
+    font-size: 12px; font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .settings-section-title i { font-size: 15px; color: var(--primary); }
+
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-left { flex: 1; min-width: 0; }
+  .settings-row-label { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .settings-row-sub { font-size: 12px; color: var(--text-secondary); }
+
+  .settings-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 13px; color: var(--text);
+    background: var(--bg);
+    outline: none; transition: border-color 0.2s;
+    margin-top: 6px;
+  }
+  .settings-input:focus { border-color: var(--primary); background: #fff; }
+
+  .settings-select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 13px; color: var(--text);
+    background: var(--bg);
+    outline: none; cursor: pointer;
+    min-width: 140px;
+  }
+
+  /* Toggle switch */
+  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--border); border-radius: 24px;
+    transition: all 0.3s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; border-radius: 50%;
+    left: 3px; bottom: 3px;
+    background: #fff; transition: all 0.3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .toggle input:checked + .toggle-slider { background: var(--primary); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  .fb-connect-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: #1877F2; color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 9px 16px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .fb-connect-btn:hover { background: #1558b0; }
+  .fb-connect-btn i { font-size: 16px; }
+  .fb-connect-btn.connected { background: var(--accent-light); color: #0F6E56; border: 1px solid rgba(72,207,173,0.4); }
+
+  .plan-card {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .plan-card::after {
+    content: '';
+    position: absolute; top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .plan-card-name { font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .plan-card-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .plan-card-expire { font-size: 13px; opacity: 0.8; margin-bottom: 16px; }
+  .plan-upgrade-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.2); color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px; padding: 7px 16px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .plan-upgrade-btn:hover { background: rgba(255,255,255,0.3); }
+
+  .save-btn {
+    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    background: var(--primary); color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 13px; font-size: 14px; font-weight: 600;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    cursor: pointer; transition: all 0.2s;
+    margin-bottom: 32px;
+  }
+  .save-btn:hover { background: var(--primary-dark); }
+
+  .time-input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 13px; color: var(--text);
+    background: var(--bg);
+    outline: none;
+  }
+  .time-input:focus { border-color: var(--primary); }
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <span class="logo-text">Vpost</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="../index.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+    <a href="calendar.html" class="nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+    <a href="caption.html" class="nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+    <a href="settings.html" class="nav-item active"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+  </nav>
+  <div class="sidebar-plan">
+    <div class="plan-badge">Gói Cơ Bản</div>
+    <div class="plan-expire">Hết hạn: 15/06/2025</div>
+    <div class="plan-days">Còn 30 ngày</div>
+  </div>
+</aside>
+
+<header class="mobile-topbar">
+  <button class="menu-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+  <div class="mobile-logo">
+    <div class="logo-icon sm"><i class="ti ti-pencil-star"></i></div>
+    <span>Vpost</span>
+  </div>
+  <button class="notif-btn"><i class="ti ti-bell"></i></button>
+</header>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<main class="main">
+  <div class="page-header">
+    <h1 class="page-title">⚙️ Cài đặt</h1>
+    <p class="page-sub">Thiết lập một lần, dùng mãi mãi</p>
+  </div>
+
+  <!-- Shop profile card -->
+  <div class="shop-profile-card">
+    <div class="shop-profile-cover">
+      <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80" alt="cover">
+      <div class="shop-profile-cover-overlay"></div>
+      <button class="change-cover-btn"><i class="ti ti-camera"></i> Đổi ảnh bìa</button>
+    </div>
+    <div class="shop-profile-body">
+      <div class="shop-profile-avatar-wrap">
+        <img class="shop-profile-avatar" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&q=80" alt="avatar">
+        <button class="change-avatar-btn"><i class="ti ti-camera"></i></button>
+      </div>
+      <div class="shop-profile-info">
+        <div class="shop-profile-name">Tiệm Cà Phê Hương Xưa</div>
+        <div class="shop-profile-industry">☕ Cà phê / Đồ uống</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gói dịch vụ -->
+  <div class="plan-card">
+    <div class="plan-card-name">Gói hiện tại</div>
+    <div class="plan-card-title">Cơ Bản — 1 bài/ngày</div>
+    <div class="plan-card-expire">Hết hạn: 15/06/2025 · Còn 30 ngày</div>
+    <button class="plan-upgrade-btn" onclick="showToast('Liên hệ admin để nâng cấp gói! 📞')">
+      <i class="ti ti-arrow-up-circle"></i> Nâng cấp gói
+    </button>
+  </div>
+
+  <!-- Thông tin shop -->
+  <div class="settings-section">
+    <div class="settings-section-title"><i class="ti ti-store"></i>Thông tin shop</div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Tên shop</div>
+        <input class="settings-input" type="text" value="Tiệm Cà Phê Hương Xưa" placeholder="Tên shop của bạn">
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Ngành hàng</div>
+        <select class="settings-input" style="margin-top:6px">
+          <option>☕ Cà phê / Đồ uống</option>
+          <option>👗 Thời trang</option>
+          <option>💄 Mỹ phẩm / Làm đẹp</option>
+          <option>🍜 Ẩm thực / Nhà hàng</option>
+          <option>📱 Điện tử / Công nghệ</option>
+          <option>🏠 Nội thất / Gia dụng</option>
+          <option>💊 Sức khoẻ / Dược phẩm</option>
+          <option>🎁 Quà tặng / Khác</option>
+        </select>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Địa chỉ</div>
+        <input class="settings-input" type="text" value="123 Đường Hoa, Quận 1, TP.HCM" placeholder="Địa chỉ shop">
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Mô tả ngắn cho AI</div>
+        <div class="settings-row-sub">AI sẽ dùng thông tin này để viết caption phù hợp hơn</div>
+        <textarea class="settings-input" rows="3" placeholder="Ví dụ: Tiệm cà phê phong cách hoài cổ, chuyên các loại cà phê truyền thống và thức uống sáng tạo. Giá bình dân, không gian yên tĩnh...">Tiệm cà phê phong cách hoài cổ, chuyên các loại cà phê truyền thống và thức uống sáng tạo. Giá bình dân, không gian yên tĩnh.</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kết nối mạng xã hội -->
+  <div class="settings-section">
+    <div class="settings-section-title"><i class="ti ti-share"></i>Kết nối mạng xã hội</div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Facebook Fanpage</div>
+        <div class="settings-row-sub">Tiệm Cà Phê Hương Xưa · Đã kết nối</div>
+      </div>
+      <button class="fb-connect-btn connected" onclick="showToast('Fanpage đã được kết nối ✅')">
+        <i class="ti ti-brand-facebook"></i> Đã kết nối
+      </button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">TikTok</div>
+        <div class="settings-row-sub">Chưa kết nối — sắp ra mắt</div>
+      </div>
+      <button class="fb-connect-btn" style="background:#1a1a1a; opacity:0.5; cursor:not-allowed">
+        <i class="ti ti-brand-tiktok"></i> Sắp ra mắt
+      </button>
+    </div>
+  </div>
+
+  <!-- Tone mặc định -->
+  <div class="settings-section">
+    <div class="settings-section-title"><i class="ti ti-adjustments"></i>Tone bài đăng mặc định</div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Tone AI sẽ dùng mỗi ngày</div>
+        <div class="settings-row-sub">Có thể thay đổi từng bài trên trang chủ</div>
+      </div>
+      <select class="settings-select">
+        <option>😄 Vui vẻ</option>
+        <option>🤝 Thân thiện</option>
+        <option>💎 Sang trọng</option>
+        <option>🔥 Chốt sale mạnh</option>
+        <option>✌️ Gen Z</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Giờ đăng -->
+  <div class="settings-section">
+    <div class="settings-section-title"><i class="ti ti-clock"></i>Giờ đăng bài</div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Giờ tự động đăng</div>
+        <div class="settings-row-sub">Nếu chưa duyệt, AI sẽ tự đăng vào giờ này</div>
+      </div>
+      <input class="time-input" type="time" value="10:00">
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Giờ đăng bài thủ công</div>
+        <div class="settings-row-sub">Giờ mặc định khi bạn bấm "Lên lịch"</div>
+      </div>
+      <input class="time-input" type="time" value="20:00">
+    </div>
+  </div>
+
+  <!-- Thông báo -->
+  <div class="settings-section">
+    <div class="settings-section-title"><i class="ti ti-bell"></i>Thông báo nhắc nhở</div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Nhắc duyệt bài hàng ngày</div>
+        <div class="settings-row-sub">Thông báo mỗi sáng để bạn vào duyệt bài</div>
+      </div>
+      <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Thông báo khi AI tự đăng</div>
+        <div class="settings-row-sub">Báo khi AI đã tự đăng bài cho bạn</div>
+      </div>
+      <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Thông báo tương tác</div>
+        <div class="settings-row-sub">Khi có lượt like, comment mới</div>
+      </div>
+      <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+    </div>
+  </div>
+
+  <button class="save-btn" onclick="showToast('Đã lưu cài đặt thành công! ✅')">
+    <i class="ti ti-device-floppy"></i> Lưu cài đặt
+  </button>
+</main>
+
+<nav class="mobile-nav">
+  <a href="../index.html" class="mobile-nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+  <a href="calendar.html" class="mobile-nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+  <a href="caption.html" class="mobile-nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+  <a href="settings.html" class="mobile-nav-item active"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+</nav>
+
+<div class="toast" id="toast"></div>
+<script src="../js/auth.js"></script>
+<script src="../js/app.js"></script>
+</body>
+</html>

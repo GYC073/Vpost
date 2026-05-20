@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Caption — Vpost</title>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .caption-banner {
+    position: relative; border-radius: var(--radius); overflow: hidden;
+    height: 120px; margin-bottom: 20px;
+  }
+  .caption-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .caption-banner-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(124,92,252,0.85) 0%, rgba(45,107,228,0.75) 100%);
+    display: flex; align-items: center; padding: 0 20px;
+  }
+  .caption-banner-text { display: flex; align-items: center; gap: 14px; }
+  .caption-banner-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .caption-banner-icon i { color: #fff; font-size: 24px; }
+  .caption-banner-title { color: #fff; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .caption-banner-sub { color: rgba(255,255,255,0.8); font-size: 12px; }
+  .hiring-note { font-size:12px; color:#92400E; background:#FFFBEB; border:1px solid #FDE68A; border-radius:var(--r,10px); padding:8px 12px; margin-bottom:14px; line-height:1.5; }
+  .hiring-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .hiring-field { display:flex; flex-direction:column; gap:5px; }
+  .hiring-label { font-size:12.5px; font-weight:600; color:#2A2D35; }
+  .req { color:#DC2626; }
+  .hiring-input { padding:9px 12px; border:1px solid #F0F1F3; border-radius:8px; font-family:inherit; font-size:13px; color:#0D0F14; background:#F9FAFB; outline:none; width:100%; }
+  .hiring-input:focus { border-color:#2563EB; background:#fff; }
+  .hiring-input::placeholder { color:#9CA3AF; }
+  @media(max-width:480px){.hiring-grid{grid-template-columns:1fr}}
+  .topic-btn {    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    text-align: left;
+  }
+  .topic-btn i { font-size: 16px; }
+  .topic-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .topic-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .section-label {
+    font-size: 13px; font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .section-label i { font-size: 16px; color: var(--primary); }
+
+  .generate-btn {
+    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--primary) 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-size: 15px; font-weight: 600;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .generate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .generate-btn i { font-size: 18px; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+  .result-card:hover { border-color: var(--primary); }
+  .result-card.selected { border-color: var(--primary); background: var(--primary-light); }
+  .result-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .result-tag {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .result-tag.v1 { background: var(--purple-light); color: var(--purple); }
+  .result-tag.v2 { background: var(--accent-light); color: #0F6E56; }
+  .result-tag.v3 { background: var(--orange-light); color: var(--orange); }
+  .result-actions { display: flex; gap: 6px; }
+  .icon-action {
+    width: 30px; height: 30px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .icon-action:hover { border-color: var(--primary); color: var(--primary); }
+  .result-text { font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-line; }
+
+  .results-section { display: none; }
+  .results-section.show { display: block; }
+
+  .use-btn {
+    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    background: var(--primary);
+    color: #fff; border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    font-size: 14px; font-weight: 600;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    cursor: pointer; transition: all 0.2s;
+    margin-top: 16px;
+  }
+  .use-btn:hover { background: var(--primary-dark); }
+
+  .loading-bar {
+    display: none;
+    flex-direction: column; align-items: center; gap: 12px;
+    padding: 32px;
+    text-align: center;
+  }
+  .loading-bar.show { display: flex; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--purple);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .loading-text { font-size: 14px; color: var(--text-secondary); }
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <span class="logo-text">Vpost</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="../index.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+    <a href="calendar.html" class="nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+    <a href="caption.html" class="nav-item active"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+    <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+  </nav>
+  <div class="sidebar-plan">
+    <div class="plan-badge">Gói Cơ Bản</div>
+    <div class="plan-expire">Hết hạn: 15/06/2025</div>
+    <div class="plan-days">Còn 30 ngày</div>
+  </div>
+</aside>
+
+<header class="mobile-topbar">
+  <button class="menu-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+  <div class="mobile-logo">
+    <div class="logo-icon sm"><i class="ti ti-pencil-star"></i></div>
+    <span>Vpost</span>
+  </div>
+  <button class="notif-btn"><i class="ti ti-bell"></i></button>
+</header>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<main class="main">
+  <div class="page-header">
+    <h1 class="page-title">✨ AI Caption</h1>
+    <p class="page-sub">Tạo caption chuyên nghiệp chỉ trong vài giây</p>
+  </div>
+
+  <!-- Banner minh hoạ -->
+  <div class="caption-banner">
+    <img src="https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=900&q=80" alt="coffee banner" class="caption-banner-img">
+    <div class="caption-banner-overlay">
+      <div class="caption-banner-text">
+        <div class="caption-banner-icon"><i class="ti ti-sparkles"></i></div>
+        <div>
+          <div class="caption-banner-title">AI viết bài, bạn tập trung bán hàng</div>
+          <div class="caption-banner-sub">Chọn tone → Nhập ý tưởng → Đăng ngay</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tone -->
+  <div class="section-card">
+    <div class="section-label"><i class="ti ti-adjustments"></i>Tone bài đăng</div>
+    <select class="tone-select" id="toneSelect" style="width:100%">
+      <option value="fun">😄 Vui vẻ</option>
+      <option value="friendly">🤝 Thân thiện</option>
+      <option value="luxury">💎 Sang trọng</option>
+      <option value="sale">🔥 Chốt sale mạnh</option>
+      <option value="genz">✌️ Gen Z</option>
+    </select>
+  </div>
+
+  <!-- Chủ đề -->
+  <div class="section-card">
+    <div class="section-label"><i class="ti ti-tag"></i>Chủ đề bài đăng</div>
+    <div class="topic-grid">
+      <button class="topic-btn active" onclick="selectTopic(this, 'product')"><i class="ti ti-package"></i>Sản phẩm mới</button>
+      <button class="topic-btn" onclick="selectTopic(this, 'sale')"><i class="ti ti-discount"></i>Khuyến mãi</button>
+      <button class="topic-btn" onclick="selectTopic(this, 'interact')"><i class="ti ti-message-circle"></i>Tương tác</button>
+      <button class="topic-btn" onclick="selectTopic(this, 'quote')"><i class="ti ti-quote"></i>Quote / Mẹo</button>
+      <button class="topic-btn" onclick="selectTopic(this, 'checkin')"><i class="ti ti-map-pin"></i>Check-in / Sự kiện</button>
+      <button class="topic-btn" onclick="selectTopic(this, 'fallback')"><i class="ti ti-refresh"></i>Bài fallback</button>
+      <button class="topic-btn" onclick="selectTopic(this, 'hiring')"><i class="ti ti-users-plus"></i>Tuyển dụng</button>
+    </div>
+  </div>
+
+  <!-- Mô tả -->
+  <div class="section-card" id="normalDescSection">
+    <div class="section-label"><i class="ti ti-message-circle"></i>Gợi ý cho AI</div>
+    <textarea class="desc-textarea" id="userDesc" placeholder="Ví dụ: Ra mắt ly cam bưởi sả mới, giá 35k, thanh mát giải nhiệt mùa hè. Hoặc: Video khai trương tiệm, hãy viết caption chào mừng nhé!" style="min-height:100px; width:100%"></textarea>
+  </div>
+
+  <!-- Form tuyển dụng (ẩn mặc định) -->
+  <div class="section-card" id="hiringSection" style="display:none">
+    <div class="section-label"><i class="ti ti-users-plus"></i>Thông tin tuyển dụng</div>
+    <div class="hiring-note">AI sẽ viết bài tuyển dụng dựa trên thông tin bạn điền. Trùng lặp mỗi ngày là bình thường vì cùng 1 vị trí.</div>
+    <div class="hiring-grid">
+      <div class="hiring-field">
+        <label class="hiring-label">Vị trí tuyển <span class="req">*</span></label>
+        <input class="hiring-input" id="hiringPosition" type="text" placeholder="VD: Thu ngân, Phục vụ, Nhân viên bán hàng...">
+      </div>
+      <div class="hiring-field">
+        <label class="hiring-label">Số lượng</label>
+        <select class="hiring-input" id="hiringCount">
+          <option>1 người</option>
+          <option>2 người</option>
+          <option>3 người</option>
+          <option>Nhiều người</option>
+        </select>
+      </div>
+      <div class="hiring-field">
+        <label class="hiring-label">Mức lương</label>
+        <input class="hiring-input" id="hiringsalary" type="text" placeholder="VD: 6-8 triệu, thương lượng...">
+      </div>
+      <div class="hiring-field">
+        <label class="hiring-label">Giờ làm việc</label>
+        <input class="hiring-input" id="hiringHours" type="text" placeholder="VD: 8h-17h, ca sáng/tối...">
+      </div>
+      <div class="hiring-field" style="grid-column: 1/-1">
+        <label class="hiring-label">Yêu cầu</label>
+        <input class="hiring-input" id="hiringReq" type="text" placeholder="VD: Có kinh nghiệm, nhanh nhẹn, không cần kinh nghiệm...">
+      </div>
+      <div class="hiring-field" style="grid-column: 1/-1">
+        <label class="hiring-label">Cách liên hệ</label>
+        <input class="hiring-input" id="hiringContact" type="text" placeholder="VD: Nhắn tin inbox, gọi SĐT shop, ghé trực tiếp...">
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="section-card">
+    <div class="section-label"><i class="ti ti-photo"></i>Ảnh / Video <span style="font-weight:400; color:var(--text-hint); font-size:12px; margin-left:6px">Tuỳ chọn</span></div>
+    <div class="upload-zone" onclick="document.getElementById('captionFile').click()">
+      <div class="upload-preview" id="capPreview" style="display:none">
+        <img id="capImg" src="" alt="preview">
+        <button class="remove-img" onclick="removeCaptionImg(event)"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="upload-placeholder" id="capPlaceholder">
+        <i class="ti ti-cloud-upload"></i>
+        <span>Kéo thả hoặc bấm để tải lên</span>
+        <small>JPG, PNG, MP4</small>
+      </div>
+      <input type="file" id="captionFile" accept="image/*,video/*" style="display:none" onchange="handleCaptionFile(this)">
+    </div>
+  </div>
+
+  <!-- Generate button -->
+  <button class="generate-btn" onclick="generateCaptions()">
+    <i class="ti ti-sparkles"></i> Tạo Caption với AI
+  </button>
+
+  <!-- Loading -->
+  <div class="loading-bar" id="loadingBar">
+    <div class="spinner"></div>
+    <div class="loading-text">AI đang viết caption cho bạn...</div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="resultsSection">
+    <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:12px;">Chọn caption phù hợp:</div>
+
+    <div class="result-card" onclick="selectResult(this)">
+      <div class="result-header">
+        <span class="result-tag v1">Phiên bản 1</span>
+        <div class="result-actions">
+          <button class="icon-action" onclick="copyCaption(event, 0)" title="Sao chép"><i class="ti ti-copy"></i></button>
+        </div>
+      </div>
+      <div class="result-text" id="result1"></div>
+    </div>
+
+    <div class="result-card" onclick="selectResult(this)">
+      <div class="result-header">
+        <span class="result-tag v2">Phiên bản 2</span>
+        <div class="result-actions">
+          <button class="icon-action" onclick="copyCaption(event, 1)" title="Sao chép"><i class="ti ti-copy"></i></button>
+        </div>
+      </div>
+      <div class="result-text" id="result2"></div>
+    </div>
+
+    <div class="result-card" onclick="selectResult(this)">
+      <div class="result-header">
+        <span class="result-tag v3">Phiên bản 3</span>
+        <div class="result-actions">
+          <button class="icon-action" onclick="copyCaption(event, 2)" title="Sao chép"><i class="ti ti-copy"></i></button>
+        </div>
+      </div>
+      <div class="result-text" id="result3"></div>
+    </div>
+
+    <button class="use-btn" onclick="useCaption()">
+      <i class="ti ti-send"></i> Dùng caption này & Đăng bài
+    </button>
+  </div>
+
+</main>
+
+<nav class="mobile-nav">
+  <a href="../index.html" class="mobile-nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+  <a href="calendar.html" class="mobile-nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+  <a href="caption.html" class="mobile-nav-item active"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+  <a href="settings.html" class="mobile-nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+</nav>
+
+<div class="toast" id="toast"></div>
+<script src="../js/auth.js"></script>
+<script src="../js/caption-engine.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/app.js"></script>
+<script>
+let selectedTopic = 'product';
+let captionResults = [];
+
+function selectTopic(btn, topic) {
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedTopic = topic;
+  // Hiện/ẩn form tuyển dụng
+  const isHiring = topic === 'hiring';
+  document.getElementById('hiringSection').style.display = isHiring ? 'block' : 'none';
+  document.getElementById('normalDescSection').style.display = isHiring ? 'none' : 'block';
+}
+
+function selectResult(card) {
+  document.querySelectorAll('.result-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+}
+
+// Lấy thông tin shop từ localStorage
+function getShopInfo() {
+  try { return JSON.parse(localStorage.getItem('vpost_user') || '{}'); } catch { return {}; }
+}
+
+const toneDescriptions = {
+  fun: 'vui vẻ, năng lượng, dùng nhiều emoji, gần gũi, cuối bài hay có lời kêu gọi comment hoặc tag bạn bè',
+  friendly: 'thân thiện, ấm áp, chân thành, cảm ơn khách hàng, tạo cảm giác tin tưởng',
+  luxury: 'sang trọng, chuyên nghiệp, lịch sự, không dùng quá nhiều emoji, ngôn từ tinh tế',
+  sale: 'mạnh mẽ, tạo urgency, kêu gọi mua ngay, dùng chữ IN HOA cho điểm nhấn, có CTA rõ ràng',
+  genz: 'trendy, dùng tiếng lóng Gen Z Việt (fr fr, literally, vibe, aesthetic, slay), ngắn gọn, cool'
+};
+
+const topicDescriptions = {
+  product: 'giới thiệu sản phẩm/món mới',
+  sale: 'thông báo khuyến mãi, giảm giá, ưu đãi',
+  interact: 'bài tương tác — hỏi ý kiến khách hàng, poll, câu hỏi vui',
+  quote: 'chia sẻ câu quote hay hoặc mẹo nhỏ liên quan ngành hàng',
+  checkin: 'kêu gọi check-in, chia sẻ trải nghiệm tại shop, sự kiện',
+  fallback: 'bài đăng hàng ngày giữ tương tác khi không có sản phẩm mới'
+};
+
+async function generateCaptions() {
+  const loading = document.getElementById('loadingBar');
+  const results = document.getElementById('resultsSection');
+  const btn = document.querySelector('.generate-btn');
+
+  results.classList.remove('show');
+  loading.classList.add('show');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i> AI đang viết...';
+
+  const tone = document.getElementById('toneSelect').value;
+
+  try {
+    if (selectedTopic === 'hiring') {
+      // Build thông tin tuyển dụng từ form
+      const position = document.getElementById('hiringPosition').value.trim();
+      if (!position) { showToast('Vui lòng nhập vị trí cần tuyển!'); loading.classList.remove('show'); btn.disabled = false; btn.innerHTML = '<i class="ti ti-sparkles"></i> Tạo Caption với AI'; return; }
+      const count    = document.getElementById('hiringCount').value;
+      const salary   = document.getElementById('hiringsalary').value.trim();
+      const hours    = document.getElementById('hiringHours').value.trim();
+      const req      = document.getElementById('hiringReq').value.trim();
+      const contact  = document.getElementById('hiringContact').value.trim();
+      const shop     = CaptionEngine.getShopInfo();
+      const shopName = shop.shopName || shop.name || 'Shop';
+      const toneDesc = CaptionEngine.toneDescriptions[tone] || tone;
+
+      const hiringPrompt = `Bạn là chuyên gia viết caption tuyển dụng cho shop nhỏ Việt Nam đăng lên Facebook.
+
+Thông tin:
+- Tên shop: ${shopName}
+- Vị trí tuyển: ${position}
+- Số lượng: ${count}
+${salary  ? `- Mức lương: ${salary}` : ''}
+${hours   ? `- Giờ làm: ${hours}` : ''}
+${req     ? `- Yêu cầu: ${req}` : '- Yêu cầu: Không cần kinh nghiệm, được đào tạo'}
+${contact ? `- Liên hệ: ${contact}` : '- Liên hệ: Nhắn tin inbox hoặc comment bên dưới'}
+
+Tone giọng: ${toneDesc}
+
+Viết ĐÚNG 3 phiên bản bài đăng tuyển dụng KHÁC NHAU về cách mở đầu và diễn đạt nhưng CÙNG thông tin. Mỗi bài:
+- 60-120 chữ
+- Emoji phù hợp, thân thiện
+- Thông tin đầy đủ rõ ràng
+- Kêu gọi ứng tuyển ngay
+- 3-4 hashtag tuyển dụng tiếng Việt
+
+Trả lời ĐÚNG JSON, không thêm gì khác:
+{"captions":["bài 1","bài 2","bài 3"]}`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+          messages: [{ role: 'user', content: hiringPrompt }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.map(i => i.text || '').join('') || '';
+      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+      captionResults = parsed.captions;
+      showToast('Đã tạo 3 bài tuyển dụng! 👥');
+
+    } else {
+      // Dùng CaptionEngine bình thường
+      const userDesc = document.getElementById('userDesc').value;
+      const result = await CaptionEngine.generate({ tone, userDesc, topic: selectedTopic });
+      captionResults = result.captions;
+      const structureLabels = {
+        opening_hook:'🎯 Mở đầu gây chú ý', storytelling:'📖 Kể chuyện',
+        list_format:'📋 Danh sách', question_first:'❓ Hỏi trước',
+        social_proof:'⭐ Phản hồi khách', before_after:'🔄 Trước & Sau',
+        behind_scenes:'🎬 Hậu trường',
+      };
+      showToast(`Đã tạo caption — ${structureLabels[result.structure] || ''} ✨`);
+    }
+
+  } catch (err) {
+    const shop = CaptionEngine.getShopInfo();
+    captionResults = CaptionEngine.getFallback(shop.shopName, '', selectedTopic);
+    showToast('Đã tạo caption! ✨');
+  }
+
+  loading.classList.remove('show');
+  document.getElementById('result1').textContent = captionResults[0] || '';
+  document.getElementById('result2').textContent = captionResults[1] || '';
+  document.getElementById('result3').textContent = captionResults[2] || '';
+  document.querySelectorAll('.result-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.result-card').classList.add('selected');
+  results.classList.add('show');
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-sparkles"></i> Tạo Caption với AI';
+}
+
+function copyCaption(e, idx) {
+  e.stopPropagation();
+  if (captionResults[idx]) {
+    navigator.clipboard.writeText(captionResults[idx]).then(() => showToast('Đã sao chép caption! 📋'));
+  }
+}
+
+function useCaption() {
+  const selected = document.querySelector('.result-card.selected');
+  const idx = [...document.querySelectorAll('.result-card')].indexOf(selected);
+  if (captionResults[idx]) {
+    localStorage.setItem('vpost_selected_caption', captionResults[idx]);
+  }
+  showToast('Đang chuyển đến trang đăng bài... 🚀');
+  setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+}
+
+function handleCaptionFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('capPlaceholder').style.display = 'none';
+    document.getElementById('capPreview').style.display = 'block';
+    document.getElementById('capImg').src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeCaptionImg(e) {
+  e.stopPropagation();
+  document.getElementById('capPlaceholder').style.display = 'flex';
+  document.getElementById('capPreview').style.display = 'none';
+  document.getElementById('captionFile').value = '';
+}
+</script>
+</body>
+</html>
