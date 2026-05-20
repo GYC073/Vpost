@@ -183,12 +183,12 @@ tr:hover td { background: var(--bg); }
   </div>
 
   <div class="sidebar-section">Quản lý</div>
-  <button class="nav-item active" onclick="showSection('customers')"><i class="ti ti-users"></i>Khách hàng<span class="nav-badge" id="expireBadge">2</span></button>
-  <button class="nav-item" onclick="showSection('stats')"><i class="ti ti-chart-bar"></i>Thống kê</button>
-  <button class="nav-item" onclick="showSection('payments')"><i class="ti ti-cash"></i>Thanh toán<span class="nav-badge yellow" id="pendingBadge">3</span></button>
+  <button class="nav-item active" onclick="showSection('customers', event)"><i class="ti ti-users"></i>Khách hàng<span class="nav-badge" id="expireBadge">2</span></button>
+  <button class="nav-item" onclick="showSection('stats', event)"><i class="ti ti-chart-bar"></i>Thống kê</button>
+  <button class="nav-item" onclick="showSection('payments', event)"><i class="ti ti-cash"></i>Thanh toán<span class="nav-badge yellow" id="pendingBadge">3</span></button>
 
   <div class="sidebar-section">Hệ thống</div>
-  <button class="nav-item" onclick="showSection('settings')"><i class="ti ti-settings"></i>Cài đặt hệ thống</button>
+  <button class="nav-item" onclick="showSection('settings', event)"><i class="ti ti-settings"></i>Cài đặt hệ thống</button>
   <a class="nav-item" href="login.html"><i class="ti ti-logout"></i>Đăng xuất</a>
 
   <div class="sidebar-bottom">
@@ -404,21 +404,10 @@ tr:hover td { background: var(--bg); }
 
 <script src="js/auth.js"></script>
 <script>
+// Tạo data mẫu nếu chưa có (chạy 1 lần khi admin mở trang lần đầu)
+if (window.VpostAuth && VpostAuth.seedDemoData) VpostAuth.seedDemoData();
+
 let customers = VpostAuth.getCustomers();
-
-
-
-
-
-
-
-
-
-
-
-
-  { id:10, name:'Spa & Nail Luxury', phone:'0990 567 890', plan:'pro', status:'active', expire:'2025-09-15', enabled:true, initial:'S' },
-];
 
 let editingId = null;
 let currentFilter = '';
@@ -586,12 +575,14 @@ function extendPlan(id) {
   showToast(`Đã gia hạn 1 tháng cho ${c.name}! 📅`);
 }
 
-function showSection(section) {
-  ['sectionCustomers','sectionStats','sectionPayments'].forEach(s => {
-    document.getElementById(s).style.display = s === `section${section.charAt(0).toUpperCase()+section.slice(1)}` ? 'block' : 'none';
+function showSection(section, evt) {
+  ['sectionCustomers','sectionStats','sectionPayments','sectionSettings'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.style.display = s === `section${section.charAt(0).toUpperCase()+section.slice(1)}` ? 'block' : 'none';
   });
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  const trigger = (evt && evt.currentTarget) || (window.event && window.event.currentTarget);
+  if (trigger && trigger.classList) trigger.classList.add('active');
 }
 
 function showToast(msg) {
