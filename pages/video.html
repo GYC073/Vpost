@@ -639,7 +639,7 @@ function drawSlide(canvas, imgSrc) {
     const overlayText = document.getElementById('overlayText')?.value || '';
     if (overlayText.trim()) {
       ctx.fillStyle = '#fff';
-      ctx.font = `bold ${Math.round(canvas.width * 0.065)}px Be Vietnam Pro, sans-serif`;
+      ctx.font = `bold ${Math.round(canvas.width * 0.065)}px 'DM Sans', sans-serif`;
       ctx.textAlign = 'center';
       ctx.shadowColor = 'rgba(0,0,0,0.5)';
       ctx.shadowBlur = 8;
@@ -653,7 +653,7 @@ function drawSlide(canvas, imgSrc) {
     const shop = CaptionEngine.getShopInfo();
     if (shop.shopName || shop.name) {
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.font = `${Math.round(canvas.width * 0.04)}px Be Vietnam Pro, sans-serif`;
+      ctx.font = `${Math.round(canvas.width * 0.04)}px 'DM Sans', sans-serif`;
       ctx.textAlign = 'right';
       ctx.fillText(shop.shopName || shop.name, canvas.width - 8, 18);
     }

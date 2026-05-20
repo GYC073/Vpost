@@ -35,6 +35,38 @@
   --s:    0 4px 16px rgba(0,0,0,0.07);
   --s-lg: 0 12px 40px rgba(0,0,0,0.10);
   --s-xl: 0 20px 60px rgba(0,0,0,0.14);
+
+  /* ===== Backward-compat aliases — cho phép page dùng tên biến cũ ===== */
+  --primary:        var(--blue);
+  --primary-dark:   var(--blue-dark);
+  --primary-light:  var(--blue-light);
+  --blue-d:         var(--blue-dark);
+  --blue-l:         var(--blue-light);
+  --text:           var(--ink);
+  --text-secondary: var(--ink-50);
+  --text-hint:      var(--ink-30);
+  --bg:             var(--ink-05);
+  --surface:        var(--white);
+  --border:         var(--ink-10);
+  --shadow:         var(--s);
+  --shadow-lg:      var(--s-lg);
+  --accent:         var(--green);
+  --accent-light:   var(--green-light);
+  --danger:         var(--red);
+  --danger-light:   var(--red-light);
+  --yellow:         var(--amber);
+  --yellow-light:   var(--amber-light);
+  --orange:         var(--amber);
+  --orange-light:   var(--amber-light);
+  --radius:         var(--r);
+  --radius-sm:      var(--r-sm);
+  --sidebar-width:  var(--sidebar-w);
+  --f-body:         var(--font-body);
+  --f-display:      var(--font-display);
+  --ink-08:         #F0F1F3;
+  --ink-20:         #D1D5DB;
+  --ink-70:         #3D4149;
+
 }
 
 html {
@@ -389,4 +421,4 @@ button, input, select, textarea { font-family: inherit; }
 
 /* ANIMATIONS */
 @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} 
