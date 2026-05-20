@@ -151,7 +151,7 @@ const VpostAuth = {
     const today = new Date();
     const addDays = (d) => { const x = new Date(today); x.setDate(x.getDate() + d); return x.toISOString().slice(0,10); };
     this.saveCustomers([
-      { id:1, name:'Tiệm Cà Phê Hương Xưa',  phone:'0901111222', plan:'basic',    status:'active',  enabled:true,  expire: addDays(30),  initial:'H' },
+      { id:1, name:'Shop demo A',  phone:'0901111222', plan:'basic',    status:'active',  enabled:true,  expire: addDays(30),  initial:'A' },
       { id:2, name:'Shop Thời Trang Hà My',   phone:'0912333444', plan:'standard', status:'active',  enabled:true,  expire: addDays(45),  initial:'H' },
       { id:3, name:'Bánh Ngọt Gia Linh',      phone:'0923555666', plan:'trial',    status:'trial',   enabled:true,  expire: addDays(2),   initial:'G' },
       { id:4, name:'Mỹ Phẩm Ngọc Trinh',      phone:'0934777888', plan:'pro',      status:'active',  enabled:true,  expire: addDays(60),  initial:'N' },

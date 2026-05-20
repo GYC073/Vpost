@@ -167,7 +167,7 @@
     <span class="logo-text">Vpost</span>
   </div>
   <nav class="sidebar-nav">
-    <a href="../index.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+    <a href="../app.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
     <a href="calendar.html" class="nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
     <a href="caption.html" class="nav-item active"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
     <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
@@ -352,7 +352,7 @@
 </main>
 
 <nav class="mobile-nav">
-  <a href="../index.html" class="mobile-nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+  <a href="../app.html" class="mobile-nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
   <a href="calendar.html" class="mobile-nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
   <a href="caption.html" class="mobile-nav-item active"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
   <a href="settings.html" class="mobile-nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
@@ -513,7 +513,7 @@ function useCaption() {
     localStorage.setItem('vpost_selected_caption', captionResults[idx]);
   }
   showToast('Đang chuyển đến trang đăng bài... 🚀');
-  setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+  setTimeout(() => { window.location.href = '../app.html'; }, 1000);
 }
 
 function handleCaptionFile(input) {

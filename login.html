@@ -255,7 +255,7 @@ body {
         <label class="form-label">Tên shop / Cơ sở kinh doanh</label>
         <div class="form-input-wrap">
           <i class="ti ti-store"></i>
-          <input class="form-input" type="text" id="regShop" placeholder="Ví dụ: Tiệm Cà Phê Hương Xưa">
+          <input class="form-input" type="text" id="regShop" placeholder="Ví dụ: Tiệm bánh ABC">
         </div>
       </div>
       <div class="form-group">
@@ -329,7 +329,7 @@ function handleLogin() {
     if (!customer) {
       // Không tìm thấy — vẫn cho đăng nhập demo
       VpostAuth.saveCurrentUser({ name: 'Shop Demo', shopName: 'Shop Demo', phone, plan: 'basic', loggedIn: true });
-      window.location.href = 'index.html'; return;
+      window.location.href = 'app.html'; return;
     }
 
     // Lưu session với thông tin từ DB admin
@@ -344,7 +344,7 @@ function handleLogin() {
     const today = new Date().toISOString().slice(0,10);
     if (customer.expire < today) { window.location.href = 'locked.html'; return; }
 
-    window.location.href = 'index.html';
+    window.location.href = 'app.html';
   }, 1200);
 }
 
@@ -376,7 +376,7 @@ VpostAuth.seedDemoData();
 const _user = VpostAuth.getCurrentUser();
 if (_user.loggedIn) {
   const access = VpostAuth.checkAccess();
-  if (access.allowed) window.location.href = 'index.html';
+  if (access.allowed) window.location.href = 'app.html';
   else window.location.href = 'locked.html';
 }
 </script>

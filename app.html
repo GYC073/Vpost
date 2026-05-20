@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vpost — Tự động đăng bài</title>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <span class="logo-text">Vpost</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="app.html" class="nav-item active">
+      <i class="ti ti-home"></i><span>Trang chủ</span>
+    </a>
+    <a href="pages/calendar.html" class="nav-item">
+      <i class="ti ti-calendar"></i><span>Lịch đăng</span>
+    </a>
+    <a href="pages/caption.html" class="nav-item">
+      <i class="ti ti-sparkles"></i><span>AI Caption</span>
+    </a>
+    <a href="pages/settings.html" class="nav-item">
+      <i class="ti ti-settings"></i><span>Cài đặt</span>
+    </a>
+  </nav>
+  <div class="sidebar-plan">
+    <div class="plan-badge">Gói Cơ Bản</div>
+    <div class="plan-expire">Hết hạn: 15/06/2025</div>
+    <div class="plan-days">Còn 30 ngày</div>
+  </div>
+  <button onclick="doLogout()" style="display:flex;align-items:center;gap:9px;margin:0 12px 16px;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:none;color:rgba(255,255,255,0.4);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;width:calc(100% - 24px);transition:all 0.15s" onmouseover="this.style.background='rgba(220,38,38,0.15)';this.style.color='#FCA5A5'" onmouseout="this.style.background='none';this.style.color='rgba(255,255,255,0.4)'">
+    <i class="ti ti-logout" style="font-size:17px"></i><span>Đăng xuất</span>
+  </button>
+</aside>
+
+<!-- Mobile topbar -->
+<header class="mobile-topbar">
+  <button class="menu-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+  <div class="mobile-logo">
+    <div class="logo-icon sm"><i class="ti ti-pencil-star"></i></div>
+    <span>Vpost</span>
+  </div>
+  <button class="notif-btn"><i class="ti ti-bell"></i></button>
+</header>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Main content -->
+<main class="main">
+
+  <!-- Shop hero banner -->
+  <div class="shop-hero">
+    <img class="shop-hero-cover" src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80" alt="Coffee shop cover">
+    <div class="shop-hero-overlay"></div>
+    <div class="shop-hero-content">
+      <div class="shop-avatar-wrap">
+        <img class="shop-avatar" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&q=80" alt="Shop avatar">
+        <div class="shop-avatar-fb"><i class="ti ti-brand-facebook"></i></div>
+      </div>
+      <div class="shop-hero-info">
+        <h1 class="shop-hero-name"><span id="heroShopName">Shop của bạn</span></h1>
+        <p class="shop-hero-sub">☀️ Chào buổi sáng! Bài đăng hôm nay đã sẵn sàng</p>
+      </div>
+      <button class="icon-btn glass"><i class="ti ti-bell"></i></button>
+    </div>
+  </div>
+
+
+  <!-- Chủ đề hôm nay -->
+  <div class="today-topic-bar" id="todayTopicBar">
+    <div class="topic-left">
+      <span class="topic-emoji" id="topicEmoji">📖</span>
+      <div>
+        <div class="topic-title" id="topicTitle">Đang tải chủ đề hôm nay...</div>
+        <div class="topic-sub">AI sẽ viết bài theo chủ đề này</div>
+      </div>
+    </div>
+    <button class="topic-gen-btn" id="topicGenBtn" onclick="generateTodayCaption()">
+      <i class="ti ti-sparkles"></i> Tạo bài AI
+    </button>
+  </div>
+
+  <!-- Alert tự động -->
+  <div class="auto-alert">
+    <i class="ti ti-clock"></i>
+    <span>Nếu chưa duyệt trước <strong>10:00 sáng</strong>, AI sẽ tự động đăng bài cho bạn.</span>
+  </div>
+
+  <!-- Post card -->
+  <div class="post-card">
+    <div class="post-card-header">
+      <div class="platform-info">
+        <div class="fb-icon"><i class="ti ti-brand-facebook"></i></div>
+        <div>
+          <div class="platform-name">Facebook Fanpage</div>
+          <div class="platform-page" id="heroPlatformPage">Fanpage của bạn</div>
+        </div>
+      </div>
+      <div class="post-status pending">
+        <span class="status-dot"></span>Chờ duyệt
+      </div>
+    </div>
+
+    <!-- Tone selector -->
+    <div class="tone-row">
+      <label class="tone-label"><i class="ti ti-adjustments"></i> Tone bài đăng</label>
+      <select class="tone-select" onchange="updateCaption(this.value)">
+        <option value="friendly">🤝 Thân thiện</option>
+        <option value="fun" selected>😄 Vui vẻ</option>
+        <option value="luxury">💎 Sang trọng</option>
+        <option value="sale">🔥 Chốt sale mạnh</option>
+        <option value="genz">✌️ Gen Z</option>
+      </select>
+    </div>
+
+    <!-- Caption box -->
+    <div class="caption-section">
+      <div class="caption-label-row">
+        <span class="caption-label"><i class="ti ti-sparkles"></i> AI tạo caption</span>
+        <button class="regenerate-btn" onclick="regenerateCaption()"><i class="ti ti-refresh"></i> Tạo lại</button>
+      </div>
+      <textarea class="caption-textarea" id="captionText">Bấm "Tạo bài AI" để tạo caption cho hôm nay ✨</textarea>
+    </div>
+
+    <!-- Upload ảnh/video -->
+    <div class="upload-section">
+      <div class="upload-label-row">
+        <span class="upload-label"><i class="ti ti-photo"></i> Ảnh / Video</span>
+        <span class="upload-optional">Tuỳ chọn</span>
+      </div>
+      <!-- Sample images quick pick -->
+      <div class="sample-images">
+        <div class="sample-label">Ảnh mẫu nhanh:</div>
+        <div class="sample-row">
+          <img class="sample-img" src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&q=70" alt="coffee" onclick="pickSample(this)">
+          <img class="sample-img" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&q=70" alt="coffee2" onclick="pickSample(this)">
+          <img class="sample-img" src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=200&q=70" alt="coffee3" onclick="pickSample(this)">
+          <img class="sample-img" src="https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=200&q=70" alt="coffee4" onclick="pickSample(this)">
+        </div>
+      </div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+        <div class="upload-preview" id="uploadPreview" style="display:none">
+          <img id="previewImg" src="" alt="preview">
+          <button class="remove-img" onclick="removeImage(event)"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="upload-placeholder" id="uploadPlaceholder">
+          <i class="ti ti-cloud-upload"></i>
+          <span>Kéo thả hoặc bấm để tải ảnh / video của bạn</span>
+          <small>JPG, PNG, MP4 — tối đa 50MB</small>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" onchange="handleFile(this)">
+      </div>
+    </div>
+
+    <!-- Mô tả cho AI -->
+    <div class="desc-section">
+      <div class="desc-label-row">
+        <span class="desc-label"><i class="ti ti-message-circle"></i> Gợi ý cho AI</span>
+        <span class="desc-optional">Tuỳ chọn</span>
+      </div>
+      <textarea class="desc-textarea" placeholder="Ví dụ: Đây là video khai trương của chúng tôi, hãy viết caption giới thiệu nhé. Hoặc: Ly bạc xỉu mới, làm từ sữa tươi, trân châu đường đen, giá 35k..."></textarea>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-row">
+      <button class="btn-approve" onclick="showToast('Bài đăng đã được gửi lên Facebook! 🎉')">
+        <i class="ti ti-send"></i> Duyệt & Đăng ngay
+      </button>
+      <button class="btn-schedule" onclick="showToast('Đã lên lịch đăng lúc 8:00 tối! ⏰')">
+        <i class="ti ti-calendar-plus"></i> Lên lịch
+      </button>
+      <button class="btn-skip" onclick="showToast('AI sẽ tự đăng lúc 10:00 sáng 🤖')">
+        <i class="ti ti-player-skip-forward"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon teal"><i class="ti ti-file-check"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" id="statPosts">0</div>
+        <div class="stat-label">Bài đã đăng</div>
+        <div class="stat-sub">Tháng này</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="ti ti-heart"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" id="statInteract">0</div>
+        <div class="stat-label">Tương tác</div>
+        <div class="stat-sub">Tháng này</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="ti ti-robot"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" id="statAuto">0</div>
+        <div class="stat-label">AI tự đăng</div>
+        <div class="stat-sub">Lần bỏ qua duyệt</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="ti ti-flame"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" id="statStreak">0</div>
+        <div class="stat-label">Ngày liên tiếp</div>
+        <div class="stat-sub">Chuỗi đăng bài</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav">
+  <a href="app.html" class="mobile-nav-item active">
+    <i class="ti ti-home"></i><span>Trang chủ</span>
+  </a>
+  <a href="pages/calendar.html" class="mobile-nav-item">
+    <i class="ti ti-calendar"></i><span>Lịch đăng</span>
+  </a>
+  <a href="pages/caption.html" class="mobile-nav-item">
+    <i class="ti ti-sparkles"></i><span>AI Caption</span>
+  </a>
+  <a href="pages/video.html" class="mobile-nav-item">
+    <i class="ti ti-video"></i><span>Video</span>
+  </a>
+  <a href="pages/settings.html" class="mobile-nav-item">
+    <i class="ti ti-settings"></i><span>Cài đặt</span>
+  </a>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="js/auth.js"></script>
+<script src="js/caption-engine.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+function doLogout() {
+  if (confirm('Bạn có chắc muốn đăng xuất không?')) {
+    localStorage.removeItem('vpost_user');
+    const isInner = window.location.href.includes('/pages/');
+    window.location.href = isInner ? '../login.html' : 'login.html';
+  }
+}
+</script>
+</body>
+</html>
