@@ -232,6 +232,9 @@
     <div class="plan-expire">Hết hạn: 15/06/2025</div>
     <div class="plan-days" id="videoQuotaInfo">Video hôm nay: 0/1</div>
   </div>
+  <button onclick="doLogout()" style="display:flex;align-items:center;gap:9px;margin:0 12px 16px;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:none;color:rgba(255,255,255,0.4);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;width:calc(100% - 24px);transition:all 0.15s" onmouseover="this.style.background='rgba(220,38,38,0.15)';this.style.color='#FCA5A5'" onmouseout="this.style.background='none';this.style.color='rgba(255,255,255,0.4)'">
+    <i class="ti ti-logout" style="font-size:17px"></i><span>Đăng xuất</span>
+  </button>
 </aside>
 
 <header class="mobile-topbar">
@@ -770,6 +773,16 @@ function resetVideo() {
 // ===== INIT =====
 renderSlots();
 renderQuota();
+</script>
+
+<script>
+function doLogout() {
+  if (confirm('Bạn có chắc muốn đăng xuất không?')) {
+    localStorage.removeItem('vpost_user');
+    const isInner = window.location.href.includes('/pages/');
+    window.location.href = isInner ? '../login.html' : 'login.html';
+  }
+}
 </script>
 </body>
 </html>

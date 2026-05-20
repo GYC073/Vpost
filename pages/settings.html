@@ -208,6 +208,9 @@
     <div class="plan-expire">Hết hạn: 15/06/2025</div>
     <div class="plan-days">Còn 30 ngày</div>
   </div>
+  <button onclick="doLogout()" style="display:flex;align-items:center;gap:9px;margin:0 12px 16px;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:none;color:rgba(255,255,255,0.4);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;width:calc(100% - 24px);transition:all 0.15s" onmouseover="this.style.background='rgba(220,38,38,0.15)';this.style.color='#FCA5A5'" onmouseout="this.style.background='none';this.style.color='rgba(255,255,255,0.4)'">
+    <i class="ti ti-logout" style="font-size:17px"></i><span>Đăng xuất</span>
+  </button>
 </aside>
 
 <header class="mobile-topbar">
@@ -230,13 +233,13 @@
   <!-- Shop profile card -->
   <div class="shop-profile-card">
     <div class="shop-profile-cover">
-      <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80" alt="cover">
+      <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900<img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80" alt="cover">q=80" alt="cover" id="settingsCover">
       <div class="shop-profile-cover-overlay"></div>
       <button class="change-cover-btn"><i class="ti ti-camera"></i> Đổi ảnh bìa</button>
     </div>
     <div class="shop-profile-body">
       <div class="shop-profile-avatar-wrap">
-        <img class="shop-profile-avatar" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&q=80" alt="avatar">
+        <img class="shop-profile-avatar" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120<img class="shop-profile-avatar" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&q=80" alt="avatar">q=80" alt="avatar" id="settingsAvatar">
         <button class="change-avatar-btn"><i class="ti ti-camera"></i></button>
       </div>
       <div class="shop-profile-info">
@@ -268,15 +271,18 @@
     <div class="settings-row">
       <div class="settings-row-left">
         <div class="settings-row-label">Ngành hàng</div>
-        <select class="settings-input" style="margin-top:6px">
-          <option>☕ Cà phê / Đồ uống</option>
-          <option>👗 Thời trang</option>
-          <option>💄 Mỹ phẩm / Làm đẹp</option>
-          <option>🍜 Ẩm thực / Nhà hàng</option>
-          <option>📱 Điện tử / Công nghệ</option>
-          <option>🏠 Nội thất / Gia dụng</option>
-          <option>💊 Sức khoẻ / Dược phẩm</option>
-          <option>🎁 Quà tặng / Khác</option>
+        <select class="settings-input" style="margin-top:6px" id="industrySelect" onchange="updateIndustry(this.value)">
+          <option value="coffee">☕ Cà phê / Đồ uống</option>
+          <option value="fashion">👗 Thời trang</option>
+          <option value="beauty">💄 Mỹ phẩm / Làm đẹp</option>
+          <option value="food">🍜 Ẩm thực / Nhà hàng</option>
+          <option value="tech">📱 Điện tử / Công nghệ</option>
+          <option value="home">🏠 Nội thất / Gia dụng</option>
+          <option value="health">💊 Sức khoẻ / Dược phẩm</option>
+          <option value="education">📚 Giáo dục / Đào tạo</option>
+          <option value="furniture">🪑 Buôn bán nội thất</option>
+          <option value="sport">⚽ Thể thao / Fitness</option>
+          <option value="other">🎁 Ngành khác</option>
         </select>
       </div>
     </div>
@@ -301,7 +307,7 @@
     <div class="settings-row">
       <div class="settings-row-left">
         <div class="settings-row-label">Facebook Fanpage</div>
-        <div class="settings-row-sub">Tiệm Cà Phê Hương Xưa · Đã kết nối</div>
+        <div class="settings-row-sub"><span id="fbPageName">Chưa kết nối</span></div>
       </div>
       <button class="fb-connect-btn connected" onclick="showToast('Fanpage đã được kết nối ✅')">
         <i class="ti ti-brand-facebook"></i> Đã kết nối
@@ -396,5 +402,72 @@
 <div class="toast" id="toast"></div>
 <script src="../js/auth.js"></script>
 <script src="../js/app.js"></script>
+
+<script>
+function doLogout() {
+  if (confirm('Bạn có chắc muốn đăng xuất không?')) {
+    localStorage.removeItem('vpost_user');
+    const isInner = window.location.href.includes('/pages/');
+    window.location.href = isInner ? '../login.html' : 'login.html';
+  }
+}
+</script>
 </body>
 </html>
+<script>
+// Load thông tin user thật vào settings
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+    if (!user.loggedIn) return;
+
+    // Tên shop
+    const nameInput = document.querySelector('input[placeholder="Tên shop của bạn"]');
+    if (nameInput && user.shopName) nameInput.value = user.shopName;
+
+    // Địa chỉ
+    const addrInput = document.querySelector('input[placeholder="Địa chỉ shop"]');
+    if (addrInput && user.shopAddr) addrInput.value = user.shopAddr;
+
+    // Mô tả
+    const descArea = document.querySelector('textarea.settings-input');
+    if (descArea && user.shopDesc) descArea.value = user.shopDesc;
+
+    // Ngành hàng
+    const industrySelect = document.getElementById('industrySelect');
+    if (industrySelect && user.industry) industrySelect.value = user.industry;
+
+    // Shop profile name
+    const profileName = document.querySelector('.shop-profile-name');
+    if (profileName && user.shopName) profileName.textContent = user.shopName;
+
+    // Shop profile industry
+    const profileIndustry = document.querySelector('.shop-profile-industry');
+    if (profileIndustry && user.industry) {
+      const labels = {
+        coffee:'☕ Cà phê / Đồ uống', fashion:'👗 Thời trang',
+        beauty:'💄 Mỹ phẩm / Làm đẹp', food:'🍜 Ẩm thực / Nhà hàng',
+        tech:'📱 Điện tử / Công nghệ', home:'🏠 Nội thất / Gia dụng',
+        health:'💊 Sức khoẻ / Dược phẩm', education:'📚 Giáo dục / Đào tạo',
+        furniture:'🪑 Buôn bán nội thất', sport:'⚽ Thể thao / Fitness',
+        other:'🎁 Ngành khác'
+      };
+      profileIndustry.textContent = labels[user.industry] || user.industry;
+    }
+
+    // Plan badge
+    const planBadge = document.querySelector('.plan-badge');
+    const planNames = { trial:'Dùng thử', basic:'Cơ Bản', standard:'Tiêu Chuẩn', pro:'Pro' };
+    if (planBadge && user.plan) planBadge.textContent = 'Gói ' + (planNames[user.plan] || user.plan);
+
+  } catch(e) {}
+});
+
+function updateIndustry(val) {
+  try {
+    const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+    user.industry = val;
+    localStorage.setItem('vpost_user', JSON.stringify(user));
+  } catch(e) {}
+}
+</script>

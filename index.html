@@ -39,6 +39,9 @@
     <div class="plan-expire">Hết hạn: 15/06/2025</div>
     <div class="plan-days">Còn 30 ngày</div>
   </div>
+  <button onclick="doLogout()" style="display:flex;align-items:center;gap:9px;margin:0 12px 16px;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:none;color:rgba(255,255,255,0.4);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;width:calc(100% - 24px);transition:all 0.15s" onmouseover="this.style.background='rgba(220,38,38,0.15)';this.style.color='#FCA5A5'" onmouseout="this.style.background='none';this.style.color='rgba(255,255,255,0.4)'">
+    <i class="ti ti-logout" style="font-size:17px"></i><span>Đăng xuất</span>
+  </button>
 </aside>
 
 <!-- Mobile topbar -->
@@ -67,7 +70,7 @@
         <div class="shop-avatar-fb"><i class="ti ti-brand-facebook"></i></div>
       </div>
       <div class="shop-hero-info">
-        <h1 class="shop-hero-name">Tiệm Cà Phê Hương Xưa</h1>
+        <h1 class="shop-hero-name"><span id="heroShopName">Shop của bạn</span></h1>
         <p class="shop-hero-sub">☀️ Chào buổi sáng! Bài đăng hôm nay đã sẵn sàng</p>
       </div>
       <button class="icon-btn glass"><i class="ti ti-bell"></i></button>
@@ -128,15 +131,7 @@
         <span class="caption-label"><i class="ti ti-sparkles"></i> AI tạo caption</span>
         <button class="regenerate-btn" onclick="regenerateCaption()"><i class="ti ti-refresh"></i> Tạo lại</button>
       </div>
-      <textarea class="caption-textarea" id="captionText">☕ Thứ Sáu vui vẻ cùng Hương Xưa nào! 
-
-Hôm nay mình có món mới cực đỉnh — Bạc Xỉu Trân Châu Đường Đen 🖤 Vị ngọt thanh, béo ngậy, mỗi ngụm là một trải nghiệm mới lạ!
-
-Ghé tiệm thưởng thức ngay bạn nhé 🥰
-📍 123 Đường Hoa, Q.1
-⏰ 7h - 22h mỗi ngày
-
-#CaPhêHươngXưa #BạcXỉu #CaPhêSàiGòn</textarea>
+      <textarea class="caption-textarea" id="captionText">Bấm "Tạo bài AI" để tạo caption cho hôm nay ✨</textarea>
     </div>
 
     <!-- Upload ảnh/video -->
@@ -197,7 +192,7 @@ Ghé tiệm thưởng thức ngay bạn nhé 🥰
     <div class="stat-card">
       <div class="stat-icon teal"><i class="ti ti-file-check"></i></div>
       <div class="stat-info">
-        <div class="stat-value">24</div>
+        <div class="stat-value" id="statPosts">0</div>
         <div class="stat-label">Bài đã đăng</div>
         <div class="stat-sub">Tháng này</div>
       </div>
@@ -205,7 +200,7 @@ Ghé tiệm thưởng thức ngay bạn nhé 🥰
     <div class="stat-card">
       <div class="stat-icon purple"><i class="ti ti-heart"></i></div>
       <div class="stat-info">
-        <div class="stat-value">1.2k</div>
+        <div class="stat-value" id="statInteract">0</div>
         <div class="stat-label">Tương tác</div>
         <div class="stat-sub">+18% tháng trước</div>
       </div>
@@ -213,7 +208,7 @@ Ghé tiệm thưởng thức ngay bạn nhé 🥰
     <div class="stat-card">
       <div class="stat-icon orange"><i class="ti ti-robot"></i></div>
       <div class="stat-info">
-        <div class="stat-value">8</div>
+        <div class="stat-value" id="statAuto">0</div>
         <div class="stat-label">AI tự đăng</div>
         <div class="stat-sub">Lần bỏ qua duyệt</div>
       </div>
@@ -221,7 +216,7 @@ Ghé tiệm thưởng thức ngay bạn nhé 🥰
     <div class="stat-card">
       <div class="stat-icon green"><i class="ti ti-flame"></i></div>
       <div class="stat-info">
-        <div class="stat-value">24</div>
+        <div class="stat-value" id="statStreak">0</div>
         <div class="stat-label">Ngày liên tiếp</div>
         <div class="stat-sub">Chuỗi đăng bài</div>
       </div>
@@ -256,5 +251,15 @@ Ghé tiệm thưởng thức ngay bạn nhé 🥰
 <script src="js/caption-engine.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/app.js"></script>
+
+<script>
+function doLogout() {
+  if (confirm('Bạn có chắc muốn đăng xuất không?')) {
+    localStorage.removeItem('vpost_user');
+    const isInner = window.location.href.includes('/pages/');
+    window.location.href = isInner ? '../login.html' : 'login.html';
+  }
+}
+</script>
 </body>
 </html>
