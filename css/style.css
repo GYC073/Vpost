@@ -37,14 +37,24 @@
   --s-xl: 0 20px 60px rgba(0,0,0,0.14);
 }
 
-html { -webkit-font-smoothing: antialiased; }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern", "ss01", "cv11";
+}
 body {
-  font-family: var(--font-body);
+  font-family: var(--font-body), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background: var(--ink-05); color: var(--ink);
   min-height: 100vh; overflow-x: hidden;
-  font-size: 14px; line-height: 1.6;
+  font-size: 14.5px; line-height: 1.55;
+  letter-spacing: -0.003em;
 }
-h1,h2,h3,.display { font-family: var(--font-display); letter-spacing: -0.02em; }
+h1,h2,h3,h4,.display { font-family: var(--font-display), system-ui, sans-serif; letter-spacing: -0.022em; line-height: 1.25; }
+/* Tabular numerals for stats, dates, counters — keeps digits aligned */
+.stat-value, .post-date-day, .post-date-mon, .cal-day, .plan-days, .plan-expire,
+.pricing-price, .pricing-period, .m-stat-val { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+button, input, select, textarea { font-family: inherit; }
 
 /* SIDEBAR */
 .sidebar {

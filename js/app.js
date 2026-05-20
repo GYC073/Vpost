@@ -261,7 +261,7 @@ const industryAssets = {
 // ===== LOAD THÔNG TIN SHOP THEO USER THẬT =====
 function applyShopAssets() {
   try {
-    const user = PostlyAuth ? PostlyAuth.getCurrentUser() : JSON.parse(localStorage.getItem('vpost_user') || '{}');
+    const user = (window.VpostAuth ? VpostAuth.getCurrentUser() : null) || JSON.parse(localStorage.getItem('vpost_user') || '{}');
     if (!user || !user.loggedIn) return;
 
     const industry = user.industry || 'other';
@@ -276,17 +276,15 @@ function applyShopAssets() {
     document.querySelectorAll('.shop-hero-name').forEach(el => el.textContent = shopName);
     document.querySelectorAll('.platform-page').forEach(el => el.textContent = shopName);
 
-    // Cập nhật ảnh cover và avatar theo ngành
-    const cover = document.querySelector('.shop-hero-cover');
-    if (cover) cover.src = assets.cover;
+    // Cập nhật ảnh cover và avatar theo ngành (cả app.html lẫn settings.html)
+    document.querySelectorAll('.shop-hero-cover, .shop-profile-cover img').forEach(el => { el.src = assets.cover; });
+    document.querySelectorAll('.shop-avatar, .shop-profile-avatar, #settingsAvatar').forEach(el => { el.src = assets.avatar; });
 
-    const avatar = document.querySelector('.shop-avatar');
-    if (avatar) avatar.src = assets.avatar;
-
-    // Cập nhật ảnh mẫu theo ngành
+    // Cập nhật ảnh mẫu theo ngành (loop để khi industry đổi ảnh cũng đổi)
     const sampleImgs = document.querySelectorAll('.sample-img');
     sampleImgs.forEach((img, i) => {
-      if (assets.samples[i]) img.src = assets.samples[i];
+      const idx = i % assets.samples.length;
+      if (assets.samples[idx]) img.src = assets.samples[idx];
     });
 
     // Reset stats về 0 cho user mới
@@ -320,3 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(applyShopAssets, 100);
   }
 });
+
+// Expose để settings page có thể trigger refresh ảnh khi user đổi ngành
+window.applyShopAssets = applyShopAssets;

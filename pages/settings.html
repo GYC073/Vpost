@@ -233,13 +233,13 @@
   <!-- Shop profile card -->
   <div class="shop-profile-card">
     <div class="shop-profile-cover">
-      <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900<img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80" alt="cover">q=80" alt="cover" id="settingsCover">
+      <img id="settingsCover" src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80" alt="cover">
       <div class="shop-profile-cover-overlay"></div>
       <button class="change-cover-btn"><i class="ti ti-camera"></i> Đổi ảnh bìa</button>
     </div>
     <div class="shop-profile-body">
       <div class="shop-profile-avatar-wrap">
-        <img class="shop-profile-avatar" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120<img class="shop-profile-avatar" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&q=80" alt="avatar">q=80" alt="avatar" id="settingsAvatar">
+        <img class="shop-profile-avatar" id="settingsAvatar" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&q=80" alt="avatar">
         <button class="change-avatar-btn"><i class="ti ti-camera"></i></button>
       </div>
       <div class="shop-profile-info">
@@ -468,6 +468,20 @@ function updateIndustry(val) {
     const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
     user.industry = val;
     localStorage.setItem('vpost_user', JSON.stringify(user));
+    // Cập nhật ảnh ngay trên trang settings
+    if (window.applyShopAssets) window.applyShopAssets();
+    // Cập nhật label ngành ngay dưới tên shop
+    const labels = {
+      coffee:'☕ Cà phê / Đồ uống', fashion:'👗 Thời trang',
+      beauty:'💄 Mỹ phẩm / Làm đẹp', food:'🍜 Ẩm thực / Nhà hàng',
+      tech:'📱 Điện tử / Công nghệ', home:'🏠 Nội thất / Gia dụng',
+      health:'💊 Sức khoẻ / Dược phẩm', education:'📚 Giáo dục / Đào tạo',
+      furniture:'🪑 Buôn bán nội thất', sport:'⚽ Thể thao / Fitness',
+      other:'🎁 Ngành khác'
+    };
+    const ind = document.querySelector('.shop-profile-industry');
+    if (ind) ind.textContent = labels[val] || val;
+    if (window.showToast) showToast('Đã cập nhật ngành hàng — ảnh sẽ đổi theo ✨');
   } catch(e) {}
 }
 </script>
