@@ -363,7 +363,6 @@
 <script src="../js/supabase-client.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/caption-engine.js"></script>
-<script src="../js/auth.js"></script>
 <script src="../js/app.js"></script>
 <script>
 let selectedTopic = 'product';
@@ -411,82 +410,87 @@ async function generateCaptions() {
   const results = document.getElementById('resultsSection');
   const btn = document.querySelector('.generate-btn');
 
+  const resetBtn = () => {
+    loading.classList.remove('show');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles"></i> Tạo Caption với AI';
+  };
+
   results.classList.remove('show');
   loading.classList.add('show');
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i> AI đang viết...';
 
   const tone = document.getElementById('toneSelect').value;
+  let userDesc = document.getElementById('userDesc').value.trim();
+  let topicForApi = selectedTopic;
+
+  // Nếu là hiring → build userDesc cực giàu từ form, đẩy hết info vào để Claude có context
+  if (selectedTopic === 'hiring') {
+    const position = document.getElementById('hiringPosition').value.trim();
+    if (!position) {
+      showToast('Vui lòng nhập vị trí cần tuyển!');
+      resetBtn();
+      return;
+    }
+    const count    = document.getElementById('hiringCount').value;
+    const salary   = document.getElementById('hiringsalary').value.trim();
+    const hours    = document.getElementById('hiringHours').value.trim();
+    const req      = document.getElementById('hiringReq').value.trim();
+    const contact  = document.getElementById('hiringContact').value.trim();
+
+    topicForApi = `Tuyển dụng: ${position}`;
+    userDesc = [
+      `Tuyển vị trí: ${position}`,
+      `Số lượng: ${count}`,
+      salary  ? `Mức lương: ${salary}` : '',
+      hours   ? `Giờ làm: ${hours}` : '',
+      req     ? `Yêu cầu: ${req}` : 'Yêu cầu: Không cần kinh nghiệm, được đào tạo',
+      contact ? `Cách liên hệ: ${contact}` : 'Liên hệ: Nhắn tin inbox',
+      'Viết bài tuyển dụng đăng FB, có CTA ứng tuyển rõ ràng, thêm 3-4 hashtag tuyển dụng.',
+    ].filter(Boolean).join('\n');
+  }
 
   try {
-    if (selectedTopic === 'hiring') {
-      // Build thông tin tuyển dụng từ form
-      const position = document.getElementById('hiringPosition').value.trim();
-      if (!position) { showToast('Vui lòng nhập vị trí cần tuyển!'); loading.classList.remove('show'); btn.disabled = false; btn.innerHTML = '<i class="ti ti-sparkles"></i> Tạo Caption với AI'; return; }
-      const count    = document.getElementById('hiringCount').value;
-      const salary   = document.getElementById('hiringsalary').value.trim();
-      const hours    = document.getElementById('hiringHours').value.trim();
-      const req      = document.getElementById('hiringReq').value.trim();
-      const contact  = document.getElementById('hiringContact').value.trim();
-      const shop     = CaptionEngine.getShopInfo();
-      const shopName = shop.shopName || shop.name || 'Shop';
-      const toneDesc = CaptionEngine.toneDescriptions[tone] || tone;
+    const result = await CaptionEngine.generate({
+      tone,
+      userDesc,
+      topic: topicForApi,
+      enrichedDesc: userDesc, // đảm bảo CaptionEngine không override
+    });
+    captionResults = result.captions;
 
-      const hiringPrompt = `Bạn là chuyên gia viết caption tuyển dụng cho shop nhỏ Việt Nam đăng lên Facebook.
+    // Hiển thị toast theo cấu trúc + quota còn lại
+    const structureLabels = {
+      opening_hook:'🎯 Mở đầu gây chú ý', storytelling:'📖 Kể chuyện',
+      list_format:'📋 Danh sách', question_first:'❓ Hỏi trước',
+      social_proof:'⭐ Phản hồi khách', before_after:'🔄 Trước & Sau',
+      behind_scenes:'🎬 Hậu trường',
+    };
+    const label = selectedTopic === 'hiring' ? '👥 Tuyển dụng' : (structureLabels[result.structure] || '✨ Đa dạng');
+    const quotaTxt = result.quota ? ` (còn ${result.quota.remaining}/${result.quota.limit} hôm nay)` : '';
+    showToast(`Đã tạo caption — ${label}${quotaTxt}`);
 
-Thông tin:
-- Tên shop: ${shopName}
-- Vị trí tuyển: ${position}
-- Số lượng: ${count}
-${salary  ? `- Mức lương: ${salary}` : ''}
-${hours   ? `- Giờ làm: ${hours}` : ''}
-${req     ? `- Yêu cầu: ${req}` : '- Yêu cầu: Không cần kinh nghiệm, được đào tạo'}
-${contact ? `- Liên hệ: ${contact}` : '- Liên hệ: Nhắn tin inbox hoặc comment bên dưới'}
-
-Tone giọng: ${toneDesc}
-
-Viết ĐÚNG 3 phiên bản bài đăng tuyển dụng KHÁC NHAU về cách mở đầu và diễn đạt nhưng CÙNG thông tin. Mỗi bài:
-- 60-120 chữ
-- Emoji phù hợp, thân thiện
-- Thông tin đầy đủ rõ ràng
-- Kêu gọi ứng tuyển ngay
-- 3-4 hashtag tuyển dụng tiếng Việt
-
-Trả lời ĐÚNG JSON, không thêm gì khác:
-{"captions":["bài 1","bài 2","bài 3"]}`;
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514', max_tokens: 1000,
-          messages: [{ role: 'user', content: hiringPrompt }]
-        })
-      });
-      const data = await response.json();
-      const text = data.content?.map(i => i.text || '').join('') || '';
-      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
-      captionResults = parsed.captions;
-      showToast('Đã tạo 3 bài tuyển dụng! 👥');
-
-    } else {
-      // Dùng CaptionEngine bình thường
-      const userDesc = document.getElementById('userDesc').value;
-      const result = await CaptionEngine.generate({ tone, userDesc, topic: selectedTopic });
-      captionResults = result.captions;
-      const structureLabels = {
-        opening_hook:'🎯 Mở đầu gây chú ý', storytelling:'📖 Kể chuyện',
-        list_format:'📋 Danh sách', question_first:'❓ Hỏi trước',
-        social_proof:'⭐ Phản hồi khách', before_after:'🔄 Trước & Sau',
-        behind_scenes:'🎬 Hậu trường',
-      };
-      showToast(`Đã tạo caption — ${structureLabels[result.structure] || ''} ✨`);
-    }
+    // Update quota badge nếu có
+    updateQuotaBadge(result.quota);
 
   } catch (err) {
+    console.error('[Vpost] Caption error:', err);
+    // Bắt lỗi quota / plan expired riêng
+    if (err.code === 'quota_exceeded') {
+      showToast(`⚠️ ${err.message}`);
+      resetBtn();
+      return;
+    }
+    if (err.code === 'plan_expired' || err.code === 'account_disabled') {
+      showToast(`⚠️ ${err.message}`);
+      setTimeout(() => { window.location.href = '../locked.html'; }, 1500);
+      return;
+    }
+    // Lỗi khác → fallback local cho khách vẫn có cái dùng tạm
     const shop = CaptionEngine.getShopInfo();
-    captionResults = CaptionEngine.getFallback(shop.shopName, '', selectedTopic);
-    showToast('Đã tạo caption! ✨');
+    captionResults = CaptionEngine.getFallback(shop.shopName, userDesc, selectedTopic);
+    showToast('⚠️ AI tạm thời lỗi, dùng caption mẫu. ' + (err.message || ''));
   }
 
   loading.classList.remove('show');
@@ -499,6 +503,21 @@ Trả lời ĐÚNG JSON, không thêm gì khác:
   results.scrollIntoView({ behavior: 'smooth', block: 'start' });
   btn.disabled = false;
   btn.innerHTML = '<i class="ti ti-sparkles"></i> Tạo Caption với AI';
+}
+
+function updateQuotaBadge(quota) {
+  if (!quota) return;
+  let badge = document.getElementById('quotaBadge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'quotaBadge';
+    badge.style.cssText = 'text-align:center;font-size:12px;color:var(--text-secondary);margin:-12px 0 16px;font-weight:500';
+    const genBtn = document.querySelector('.generate-btn');
+    genBtn.parentNode.insertBefore(badge, genBtn.nextSibling);
+  }
+  const pct = quota.limit > 0 ? Math.round((quota.used / quota.limit) * 100) : 0;
+  const color = quota.remaining === 0 ? '#DC2626' : quota.remaining <= 1 ? '#F59E0B' : '#059669';
+  badge.innerHTML = `<i class="ti ti-bolt" style="color:${color};vertical-align:-3px;margin-right:4px"></i>Hôm nay: <strong style="color:${color}">${quota.used}/${quota.limit}</strong> caption đã dùng`;
 }
 
 function copyCaption(e, idx) {
@@ -539,11 +558,17 @@ function removeCaptionImg(e) {
 </script>
 
 <script>
-function doLogout() {
-  if (confirm('Bạn có chắc muốn đăng xuất không?')) {
-    localStorage.removeItem('vpost_user');
+async function doLogout() {
+  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
+  if (window.VpostAuth?.logout) {
+    // Sẽ tự signOut Supabase + clear localStorage + redirect
     const isInner = window.location.href.includes('/pages/');
+    try { await window.vpostAuth?.signOut(); } catch {}
+    localStorage.removeItem('vpost_user');
     window.location.href = isInner ? '../login.html' : 'login.html';
+  } else {
+    localStorage.removeItem('vpost_user');
+    window.location.href = '../login.html';
   }
 }
 </script>

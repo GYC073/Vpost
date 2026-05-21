@@ -147,29 +147,45 @@ Trả lời ĐÚNG JSON sau, không thêm gì khác:
     };
   },
 
-  // Gọi API và trả caption
+  // Gọi Edge Function generate-caption (Claude Haiku 4.5)
+  // Backend tự quản quota, anti-repeat, save history vào DB.
   async generate(options = {}) {
-    const { prompt, topic, structure } = this.buildPrompt(options);
+    const tone = options.tone || this.getShopInfo().tone || 'fun';
+    const topic = options.topic || this.getTodaySchedule().topic;
+    const structure = options.structure || this.getNextStructure();
+    const userDesc = options.userDesc || '';
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+    if (!window.vpostGenerateCaption) {
+      throw new Error('Supabase chưa load, hãy F5 lại trang.');
+    }
+
+    // Build userDesc giàu hơn nếu là hiring (đẩy hết info vào để Claude có context)
+    const enrichedDesc = options.enrichedDesc || userDesc;
+
+    const result = await window.vpostGenerateCaption({
+      tone,
+      userDesc: enrichedDesc,
+      topic,
     });
 
-    const data = await response.json();
-    const text = data.content?.map(i => i.text || '').join('') || '';
-    const clean = text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    // Map error sang exception để caption.html bắt được
+    if (result.error) {
+      const e = new Error(result.message || result.error);
+      e.code = result.error;
+      e.quota = result.quota;
+      throw e;
+    }
 
-    // Lưu lịch sử
-    this.saveToHistory(parsed.captions, topic, structure);
+    // Lưu lịch sử local (để getNextStructure rotate giữa các structure)
+    this.saveToHistory(result.captions, topic, structure);
 
-    return { captions: parsed.captions, topic, structure };
+    return {
+      captions: result.captions,
+      topic,
+      structure,
+      quota: result.quota,   // { limit, used, remaining }
+      tokens: result.tokens, // { input, output, cost_usd }
+    };
   },
 
   // Fallback nếu API lỗi
