@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Điều khoản sử dụng — Vpost</title>
+<meta name="description" content="Điều khoản sử dụng dịch vụ Vpost — công cụ tự động đăng bài Facebook cho shop nhỏ Việt Nam.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #2563EB; --primary-dark: #1D4ED8; --primary-light: #EFF6FF;
+  --text: #0D0F14; --text-secondary: #4B5563; --text-hint: #9CA3AF;
+  --border: #E5E7EB; --bg: #F9FAFB; --surface: #ffffff;
+  --warning: #D97706; --warning-light: #FEF3C7;
+  --danger: #DC2626; --danger-light: #FEE2E2;
+  --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  --font-display: 'Sora', sans-serif;
+}
+body { font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--bg); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 20px; position: sticky; top: 0; z-index: 10; }
+.topbar-inner { max-width: 820px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.brand-icon { width: 32px; height: 32px; background: var(--primary); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.back-link { color: var(--primary); text-decoration: none; font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 4px; }
+.back-link:hover { text-decoration: underline; }
+
+main { max-width: 820px; margin: 0 auto; padding: 40px 20px 80px; }
+h1 { font-family: var(--font-display); font-size: 32px; font-weight: 800; margin-bottom: 8px; line-height: 1.2; }
+.subtitle { color: var(--text-secondary); font-size: 15px; margin-bottom: 32px; }
+.updated { display: inline-block; background: var(--primary-light); color: var(--primary-dark); padding: 4px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 600; margin-bottom: 24px; }
+
+.toc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 32px; box-shadow: var(--shadow); }
+.toc-title { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+.toc ol { margin-left: 20px; color: var(--text-secondary); font-size: 14px; }
+.toc a { color: var(--primary); text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+
+article { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 36px; box-shadow: var(--shadow); }
+h2 { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin-top: 36px; margin-bottom: 12px; color: var(--text); scroll-margin-top: 80px; }
+h2:first-child { margin-top: 0; }
+h3 { font-size: 16px; font-weight: 700; margin-top: 20px; margin-bottom: 8px; color: var(--text); }
+p { margin-bottom: 14px; color: var(--text-secondary); }
+strong { color: var(--text); font-weight: 600; }
+ul, ol.lst { margin: 8px 0 16px 22px; color: var(--text-secondary); }
+li { margin-bottom: 6px; }
+
+.note { background: var(--primary-light); border-left: 3px solid var(--primary); padding: 14px 18px; border-radius: 8px; margin: 16px 0; font-size: 14.5px; color: var(--text); }
+.warn { background: var(--warning-light); border-left: 3px solid var(--warning); padding: 14px 18px; border-radius: 8px; margin: 16px 0; font-size: 14.5px; color: #78350F; }
+.danger { background: var(--danger-light); border-left: 3px solid var(--danger); padding: 14px 18px; border-radius: 8px; margin: 16px 0; font-size: 14.5px; color: #7F1D1D; }
+
+.plan-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+.plan-table th, .plan-table td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; }
+.plan-table th { background: var(--bg); font-weight: 700; color: var(--text); }
+.plan-table td { color: var(--text-secondary); }
+
+.contact-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-top: 12px; }
+.contact-box p { margin-bottom: 4px; color: var(--text); }
+
+footer { text-align: center; margin-top: 40px; color: var(--text-hint); font-size: 13px; }
+footer a { color: var(--primary); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+@media (max-width: 640px) {
+  h1 { font-size: 26px; }
+  article { padding: 24px 20px; }
+  h2 { font-size: 19px; }
+  .plan-table { font-size: 12.5px; }
+  .plan-table th, .plan-table td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="/" class="brand">
+      <div class="brand-icon"><i class="ti ti-pencil-star"></i></div>
+      Vpost
+    </a>
+    <a href="/" class="back-link"><i class="ti ti-arrow-left"></i> Về trang chủ</a>
+  </div>
+</header>
+
+<main>
+  <span class="updated">Cập nhật lần cuối: 21/05/2026</span>
+  <h1>Điều khoản sử dụng</h1>
+  <p class="subtitle">Khi đăng ký và sử dụng Vpost, anh/chị đồng ý với các điều khoản dưới đây. Vui lòng đọc kỹ.</p>
+
+  <nav class="toc">
+    <div class="toc-title">Mục lục</div>
+    <ol>
+      <li><a href="#chap-nhan">Chấp nhận điều khoản</a></li>
+      <li><a href="#mo-ta">Mô tả dịch vụ</a></li>
+      <li><a href="#tai-khoan">Tài khoản người dùng</a></li>
+      <li><a href="#goi-dich-vu">Gói dịch vụ &amp; thanh toán</a></li>
+      <li><a href="#hoan-tien">Chính sách hoàn tiền</a></li>
+      <li><a href="#hanh-vi-cam">Hành vi bị cấm</a></li>
+      <li><a href="#so-huu">Sở hữu trí tuệ</a></li>
+      <li><a href="#ai-content">Nội dung do AI tạo</a></li>
+      <li><a href="#facebook">Kết nối Facebook</a></li>
+      <li><a href="#dinh-chi">Đình chỉ và chấm dứt</a></li>
+      <li><a href="#trach-nhiem">Giới hạn trách nhiệm</a></li>
+      <li><a href="#thay-doi">Thay đổi điều khoản</a></li>
+      <li><a href="#luat-ap-dung">Luật áp dụng &amp; giải quyết tranh chấp</a></li>
+      <li><a href="#lien-he">Liên hệ</a></li>
+    </ol>
+  </nav>
+
+  <article>
+
+  <h2 id="chap-nhan">1. Chấp nhận điều khoản</h2>
+  <p>Bằng việc tạo tài khoản hoặc sử dụng bất kỳ tính năng nào của Vpost, anh/chị xác nhận:</p>
+  <ul>
+    <li>Đã đủ <strong>16 tuổi</strong> trở lên (và đủ tuổi giao kết hợp đồng theo pháp luật Việt Nam).</li>
+    <li>Đã đọc và đồng ý với <a href="/terms.html">Điều khoản sử dụng</a> này và <a href="/privacy.html">Chính sách bảo mật</a>.</li>
+    <li>Mọi thông tin cung cấp khi đăng ký là chính xác và do anh/chị tự nguyện cung cấp.</li>
+    <li>Sử dụng Vpost cho mục đích kinh doanh hợp pháp tại Việt Nam.</li>
+  </ul>
+
+  <h2 id="mo-ta">2. Mô tả dịch vụ</h2>
+  <p>Vpost ("Dịch vụ") cung cấp các tính năng phục vụ chủ shop nhỏ tự động hóa nội dung Facebook:</p>
+  <ul>
+    <li>Tạo caption bài đăng bằng AI (mô hình Claude Haiku của Anthropic).</li>
+    <li>Tạo video slideshow từ ảnh sản phẩm.</li>
+    <li>Lên lịch và đăng bài tự động lên Facebook Page do anh/chị quản lý (sau khi kết nối hợp lệ qua Facebook OAuth).</li>
+    <li>Thống kê tương tác cơ bản (like, comment, share).</li>
+  </ul>
+  <p>Vpost không phải là sản phẩm chính thức của Meta/Facebook. Vpost là bên thứ ba kết nối với Facebook qua Graph API hợp pháp.</p>
+
+  <h2 id="tai-khoan">3. Tài khoản người dùng</h2>
+  <ul>
+    <li>Mỗi cá nhân/shop chỉ được tạo <strong>một tài khoản</strong>. Việc lập nhiều tài khoản để lách giới hạn miễn phí sẽ bị khóa.</li>
+    <li>Anh/chị chịu trách nhiệm bảo mật mật khẩu. Không chia sẻ tài khoản với người khác.</li>
+    <li>Mọi hoạt động phát sinh từ tài khoản của anh/chị (kể cả khi bị người khác sử dụng do bất cẩn) đều thuộc trách nhiệm của anh/chị.</li>
+    <li>Báo ngay cho Vpost nếu phát hiện tài khoản bị xâm nhập trái phép.</li>
+  </ul>
+
+  <h2 id="goi-dich-vu">4. Gói dịch vụ &amp; thanh toán</h2>
+  <p>Vpost cung cấp các gói sau:</p>
+  <table class="plan-table">
+    <thead>
+      <tr>
+        <th>Gói</th>
+        <th>Giá tham khảo</th>
+        <th>Caption AI/ngày</th>
+        <th>Bài đăng/tháng</th>
+        <th>Page kết nối</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Dùng thử</strong></td><td>Miễn phí 7 ngày</td><td>10</td><td>Không giới hạn trong 7 ngày</td><td>1 Page</td></tr>
+      <tr><td><strong>Cơ bản</strong></td><td>99.000đ / tháng</td><td>20</td><td>60</td><td>1 Page</td></tr>
+      <tr><td><strong>Chuyên nghiệp</strong></td><td>249.000đ / tháng</td><td>50</td><td>180</td><td>3 Page</td></tr>
+      <tr><td><strong>Doanh nghiệp</strong></td><td>Liên hệ</td><td>Không giới hạn</td><td>Không giới hạn</td><td>10+ Page</td></tr>
+    </tbody>
+  </table>
+  <p>Bảng giá có thể thay đổi theo thời điểm; giá hiệu lực là giá hiển thị tại trang Cài đặt → Gói cước khi anh/chị thanh toán. Mọi thay đổi giá sẽ được thông báo trước <strong>14 ngày</strong> qua email.</p>
+  <p><strong>Hình thức thanh toán</strong>: chuyển khoản ngân hàng qua VietQR hoặc Momo. Sau khi chuyển, anh/chị upload ảnh hóa đơn vào trang Cài đặt; Vpost xác nhận và kích hoạt gói trong <strong>tối đa 24 giờ làm việc</strong>.</p>
+  <p><strong>Gia hạn</strong>: gói KHÔNG tự động gia hạn. Vpost gửi email nhắc trước 7 ngày khi gói sắp hết hạn. Sau hạn, tài khoản tự chuyển về chế độ chỉ-đọc cho tới khi anh/chị gia hạn.</p>
+
+  <h2 id="hoan-tien">5. Chính sách hoàn tiền</h2>
+  <div class="note">
+    Anh/chị được hoàn 100% phí trong vòng <strong>7 ngày</strong> đầu sau khi thanh toán nếu chưa sử dụng quá <strong>30%</strong> hạn ngạch caption/đăng bài của gói.
+  </div>
+  <p>Sau 7 ngày hoặc đã dùng quá 30% hạn ngạch, Vpost không hỗ trợ hoàn tiền trừ trường hợp lỗi hệ thống nghiêm trọng do Vpost gây ra (downtime &gt; 48 giờ liên tục).</p>
+  <p>Để yêu cầu hoàn tiền, gửi email tới <a href="mailto:nguyenphandacthang@gmail.com">nguyenphandacthang@gmail.com</a> kèm mã giao dịch. Tiền hoàn về tài khoản gốc trong <strong>tối đa 5 ngày làm việc</strong>.</p>
+
+  <h2 id="hanh-vi-cam">6. Hành vi bị cấm</h2>
+  <p>Anh/chị KHÔNG được dùng Vpost để:</p>
+  <ul>
+    <li>Đăng nội dung <strong>vi phạm pháp luật Việt Nam</strong>: chống phá Nhà nước, kích động bạo lực, khiêu dâm, bài bạc trái phép, hàng cấm.</li>
+    <li>Spam, đăng bài quảng cáo lừa đảo, scam, đa cấp trái phép.</li>
+    <li>Quảng cáo thuốc chưa kiểm định, thực phẩm chức năng không rõ nguồn gốc, dịch vụ y tế không phép.</li>
+    <li>Đăng nội dung xâm phạm bản quyền của người khác (ảnh, video, nhạc copy không xin phép).</li>
+    <li>Đăng nội dung phân biệt chủng tộc, tôn giáo, giới tính, xúc phạm danh dự người khác.</li>
+    <li>Tự động hóa quá mức (đăng hàng trăm bài/ngày) gây nguy cơ Page bị Facebook khóa.</li>
+    <li>Reverse-engineer, scrape, hoặc tấn công hệ thống Vpost.</li>
+    <li>Bán/chuyển nhượng tài khoản Vpost cho người khác.</li>
+  </ul>
+  <div class="danger">
+    Vpost có quyền <strong>khóa tài khoản ngay lập tức</strong> mà không hoàn tiền nếu phát hiện vi phạm các điều trên. Trường hợp nghiêm trọng có thể bị báo cáo cho cơ quan chức năng.
+  </div>
+
+  <h2 id="so-huu">7. Sở hữu trí tuệ</h2>
+  <h3>7.1. Tài sản của Vpost</h3>
+  <p>Tên thương hiệu "Vpost", logo, mã nguồn, giao diện, tài liệu hướng dẫn là tài sản của <strong>Nguyễn Phan Đặc Thắng</strong>. Không được sao chép, phân phối lại hoặc làm sản phẩm tương tự khi chưa có sự đồng ý bằng văn bản.</p>
+  <h3>7.2. Tài sản của anh/chị</h3>
+  <p>Mọi nội dung anh/chị upload (ảnh, video, caption tự viết) <strong>vẫn thuộc quyền sở hữu của anh/chị</strong>. Vpost chỉ có quyền sử dụng các nội dung này trong phạm vi cần thiết để vận hành dịch vụ (lưu trữ, hiển thị lại cho anh/chị, đăng lên Page anh/chị chỉ định).</p>
+
+  <h2 id="ai-content">8. Nội dung do AI tạo</h2>
+  <ul>
+    <li>Caption do AI tạo là <strong>gợi ý</strong>. Anh/chị có trách nhiệm kiểm tra và chỉnh sửa trước khi đăng.</li>
+    <li>Vpost <strong>không chịu trách nhiệm</strong> nếu caption AI vô tình trùng lặp với câu chữ của người khác, hoặc chứa thông tin không chính xác về sản phẩm/giá cả (anh/chị phải sửa lại cho đúng trước khi đăng).</li>
+    <li>Vpost <strong>không chịu trách nhiệm</strong> về hậu quả pháp lý nếu anh/chị đăng caption AI có chứa nội dung gây hiểu lầm về sản phẩm/dịch vụ.</li>
+    <li>Mô hình AI có thể tạo ra nội dung không phù hợp trong một số trường hợp hiếm; anh/chị nên bấm "Tạo lại" thay vì đăng nguyên si.</li>
+  </ul>
+
+  <h2 id="facebook">9. Kết nối Facebook</h2>
+  <p>Khi anh/chị kết nối tài khoản Facebook để Vpost đăng bài tự động:</p>
+  <ul>
+    <li>Anh/chị xác nhận có <strong>quyền hợp pháp quản lý Page</strong> sẽ đăng bài.</li>
+    <li>Anh/chị đồng ý với <a href="https://www.facebook.com/legal/terms" target="_blank" rel="noopener">Điều khoản của Meta/Facebook</a> liên quan đến Page và Graph API.</li>
+    <li>Vpost không chịu trách nhiệm nếu Facebook khóa Page của anh/chị do vi phạm chính sách Meta (đăng spam, vi phạm bản quyền, nội dung cấm trên Facebook).</li>
+    <li>Anh/chị có thể ngắt kết nối Facebook bất kỳ lúc nào tại Cài đặt; Vpost sẽ xóa access token trong 24 giờ.</li>
+  </ul>
+
+  <h2 id="dinh-chi">10. Đình chỉ và chấm dứt</h2>
+  <h3>10.1. Anh/chị có thể chấm dứt</h3>
+  <p>Bất kỳ lúc nào, bằng cách <a href="/data-deletion.html">xóa tài khoản</a> hoặc gửi email yêu cầu. Sau khi xóa, anh/chị không thể khôi phục dữ liệu.</p>
+  <h3>10.2. Vpost có thể đình chỉ/chấm dứt</h3>
+  <p>Vpost có quyền tạm khóa hoặc xóa tài khoản của anh/chị nếu:</p>
+  <ul>
+    <li>Phát hiện vi phạm Mục 6 (Hành vi bị cấm).</li>
+    <li>Không thanh toán đúng hạn (chỉ tạm khóa, không xóa data trong 30 ngày).</li>
+    <li>Cơ quan có thẩm quyền yêu cầu hợp lệ.</li>
+    <li>Dịch vụ Vpost ngừng hoạt động vĩnh viễn (Vpost cam kết báo trước ít nhất <strong>60 ngày</strong> và cho phép export toàn bộ data).</li>
+  </ul>
+
+  <h2 id="trach-nhiem">11. Giới hạn trách nhiệm</h2>
+  <div class="warn">
+    Vpost cung cấp dịch vụ "nguyên trạng" (as-is). Trong phạm vi pháp luật cho phép, Vpost không chịu trách nhiệm với các thiệt hại gián tiếp, đặc biệt hoặc do hậu quả phát sinh từ việc sử dụng/không sử dụng được dịch vụ.
+  </div>
+  <p>Tổng trách nhiệm bồi thường của Vpost (nếu có) trong mọi trường hợp <strong>không vượt quá số tiền anh/chị đã thanh toán cho Vpost trong 3 tháng gần nhất</strong>.</p>
+  <p>Vpost không bảo đảm:</p>
+  <ul>
+    <li>Dịch vụ luôn sẵn sàng 100% (mục tiêu uptime: 99%, không cam kết hợp đồng).</li>
+    <li>Bài đăng tự động luôn thành công (phụ thuộc API Facebook, đôi khi bị từ chối).</li>
+    <li>Caption AI luôn phù hợp 100% với mọi ngữ cảnh.</li>
+    <li>Kết quả kinh doanh (lượt tương tác, doanh số) sau khi dùng Vpost.</li>
+  </ul>
+
+  <h2 id="thay-doi">12. Thay đổi điều khoản</h2>
+  <p>Vpost có quyền cập nhật Điều khoản này theo thời gian. Khi có thay đổi quan trọng:</p>
+  <ul>
+    <li>Cập nhật ngày "Cập nhật lần cuối" ở đầu trang.</li>
+    <li>Gửi email thông báo trước ít nhất <strong>14 ngày</strong>.</li>
+    <li>Nếu anh/chị tiếp tục dùng Vpost sau ngày hiệu lực, được coi là chấp nhận điều khoản mới.</li>
+    <li>Nếu không đồng ý, anh/chị có quyền xóa tài khoản và được hoàn lại phần phí gói chưa sử dụng (theo tỷ lệ).</li>
+  </ul>
+
+  <h2 id="luat-ap-dung">13. Luật áp dụng &amp; giải quyết tranh chấp</h2>
+  <p>Điều khoản này được điều chỉnh bởi <strong>pháp luật Việt Nam</strong>.</p>
+  <p>Mọi tranh chấp phát sinh sẽ được ưu tiên giải quyết qua thương lượng. Nếu không thành, tranh chấp sẽ được giải quyết tại <strong>Tòa án có thẩm quyền theo nơi cư trú của chủ tài khoản người dùng</strong> (Vpost ưu tiên cho người dùng, không bắt buộc đi xa).</p>
+
+  <h2 id="lien-he">14. Liên hệ</h2>
+  <div class="contact-box">
+    <p><strong>Nguyễn Phan Đặc Thắng</strong> — chủ sở hữu &amp; vận hành Vpost</p>
+    <p>📧 Email: <a href="mailto:nguyenphandacthang@gmail.com">nguyenphandacthang@gmail.com</a></p>
+    <p>📱 Zalo / SĐT: <strong><a href="tel:+84789434345">0789.434.345</a></strong></p>
+    <p>🌐 Website: <a href="https://vpost.vn">vpost.vn</a></p>
+  </div>
+  <p style="margin-top: 16px">Cảm ơn anh/chị đã chọn Vpost. Chúng tôi cam kết hỗ trợ tận tâm và minh bạch.</p>
+
+  </article>
+
+  <footer>
+    <p>© 2026 Vpost — Vận hành bởi Nguyễn Phan Đặc Thắng</p>
+    <p style="margin-top:6px"><a href="/terms.html">Điều khoản sử dụng</a> · <a href="/privacy.html">Chính sách bảo mật</a> · <a href="/data-deletion.html">Xóa dữ liệu</a></p>
+  </footer>
+</main>
+
+</body>
+</html>

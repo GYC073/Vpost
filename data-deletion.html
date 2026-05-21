@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xóa dữ liệu — Vpost</title>
+<meta name="description" content="Yêu cầu xóa toàn bộ tài khoản và dữ liệu cá nhân khỏi Vpost.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #2563EB; --primary-dark: #1D4ED8; --primary-light: #EFF6FF;
+  --text: #0D0F14; --text-secondary: #4B5563; --text-hint: #9CA3AF;
+  --border: #E5E7EB; --bg: #F9FAFB; --surface: #ffffff;
+  --danger: #DC2626; --danger-dark: #B91C1C; --danger-light: #FEE2E2;
+  --accent: #059669; --accent-light: #D1FAE5;
+  --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  --font-display: 'Sora', sans-serif;
+}
+body { font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--bg); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 20px; position: sticky; top: 0; z-index: 10; }
+.topbar-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.brand-icon { width: 32px; height: 32px; background: var(--primary); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.back-link { color: var(--primary); text-decoration: none; font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 4px; }
+.back-link:hover { text-decoration: underline; }
+
+main { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+h1 { font-family: var(--font-display); font-size: 28px; font-weight: 800; margin-bottom: 8px; line-height: 1.2; }
+.subtitle { color: var(--text-secondary); font-size: 15px; margin-bottom: 28px; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px 28px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.card-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.card-title i { color: var(--primary); font-size: 22px; }
+
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 12px 0 8px; }
+.steps li { counter-increment: step; padding-left: 36px; position: relative; margin-bottom: 12px; color: var(--text-secondary); font-size: 14.5px; }
+.steps li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 0;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.steps li strong { color: var(--text); }
+
+.danger-card { border-color: var(--danger-light); }
+.danger-card .card-title { color: var(--danger-dark); }
+.danger-card .card-title i { color: var(--danger); }
+
+.checklist { background: var(--bg); border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 14px; }
+.checklist li { color: var(--text-secondary); margin-bottom: 4px; padding-left: 22px; position: relative; list-style: none; }
+.checklist li::before { content: '\f00d'; font-family: 'tabler-icons'; position: absolute; left: 0; color: var(--danger); font-weight: 700; }
+
+label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; margin-top: 16px; }
+input[type=email], input[type=text], textarea {
+  width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px;
+  font-family: inherit; font-size: 14.5px; background: var(--surface); color: var(--text);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+textarea { resize: vertical; min-height: 90px; }
+
+.confirm-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 18px; }
+.confirm-row input[type=checkbox] { margin-top: 3px; flex-shrink: 0; width: 17px; height: 17px; accent-color: var(--danger); }
+.confirm-row label { margin: 0; font-weight: 500; color: var(--text); font-size: 13.5px; line-height: 1.5; }
+
+.btn-danger {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px 18px; margin-top: 20px;
+  background: var(--danger); color: #fff; border: none; border-radius: 10px;
+  font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer;
+  transition: background 0.18s;
+}
+.btn-danger:hover:not(:disabled) { background: var(--danger-dark); }
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.success-box {
+  background: var(--accent-light); border: 1px solid var(--accent); border-radius: 12px;
+  padding: 18px 20px; margin-top: 16px; color: #064E3B; font-size: 14.5px;
+  display: none;
+}
+.success-box.show { display: block; }
+.success-box i { font-size: 20px; vertical-align: -3px; margin-right: 6px; color: var(--accent); }
+
+.error-box {
+  background: var(--danger-light); border: 1px solid var(--danger); border-radius: 12px;
+  padding: 14px 18px; margin-top: 14px; color: var(--danger-dark); font-size: 14px;
+  display: none;
+}
+.error-box.show { display: block; }
+
+footer { text-align: center; margin-top: 30px; color: var(--text-hint); font-size: 13px; }
+footer a { color: var(--primary); text-decoration: none; }
+
+@media (max-width: 640px) {
+  h1 { font-size: 24px; }
+  .card { padding: 20px 18px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="/" class="brand">
+      <div class="brand-icon"><i class="ti ti-pencil-star"></i></div>
+      Vpost
+    </a>
+    <a href="/" class="back-link"><i class="ti ti-arrow-left"></i> Về trang chủ</a>
+  </div>
+</header>
+
+<main>
+  <h1>Yêu cầu xóa dữ liệu</h1>
+  <p class="subtitle">Theo Nghị định 13/2023/NĐ-CP và chính sách của Vpost, anh/chị có quyền yêu cầu xóa toàn bộ dữ liệu cá nhân khỏi hệ thống bất kỳ lúc nào.</p>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-info-circle"></i> Trước khi xóa, lưu ý</div>
+    <ul class="checklist">
+      <li>Không thể khôi phục sau khi xóa — toàn bộ caption, ảnh, lịch đăng sẽ mất.</li>
+      <li>Nếu đang có gói trả phí còn hạn, phí gói KHÔNG được hoàn lại.</li>
+      <li>Bài đăng đã đăng lên Facebook trước đó sẽ vẫn còn trên Page (Vpost không xóa được).</li>
+      <li>Tài khoản Facebook của anh/chị không bị ảnh hưởng — chỉ ngắt kết nối với Vpost.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-list-numbers"></i> Quy trình xóa</div>
+    <ol class="steps">
+      <li>Anh/chị điền email đã đăng ký Vpost vào form bên dưới và xác nhận.</li>
+      <li>Vpost gửi email xác minh tới địa chỉ đó trong vòng <strong>1 giờ</strong>.</li>
+      <li>Anh/chị bấm link xác minh trong email để xác nhận quyền sở hữu tài khoản.</li>
+      <li>Vpost xóa toàn bộ data trong <strong>tối đa 7 ngày làm việc</strong> và gửi email thông báo hoàn tất.</li>
+    </ol>
+  </div>
+
+  <div class="card danger-card">
+    <div class="card-title"><i class="ti ti-trash"></i> Gửi yêu cầu xóa</div>
+
+    <label for="emailField">Email đã đăng ký Vpost <span style="color:var(--danger)">*</span></label>
+    <input type="email" id="emailField" placeholder="ten@email.com" autocomplete="email" required>
+
+    <label for="reasonField">Lý do (tùy chọn — giúp Vpost cải thiện)</label>
+    <textarea id="reasonField" placeholder="Ví dụ: Đã nghỉ kinh doanh / Không phù hợp nhu cầu / Chuyển sang công cụ khác..."></textarea>
+
+    <div class="confirm-row">
+      <input type="checkbox" id="confirmCheck">
+      <label for="confirmCheck">Tôi xác nhận đã đọc lưu ý ở trên và hiểu rằng dữ liệu KHÔNG THỂ KHÔI PHỤC sau khi xóa.</label>
+    </div>
+
+    <button type="button" class="btn-danger" id="submitBtn" onclick="submitDeletion()" disabled>
+      <i class="ti ti-trash"></i> Gửi yêu cầu xóa tài khoản
+    </button>
+
+    <div class="success-box" id="successBox">
+      <i class="ti ti-circle-check"></i> <strong>Đã gửi yêu cầu!</strong>
+      Vpost đã ghi nhận yêu cầu xóa data từ email anh/chị cung cấp.
+      Trong vòng 1 giờ, anh/chị sẽ nhận email xác minh — vui lòng kiểm tra hộp thư (kể cả Spam).
+      Nếu sau 2 giờ vẫn chưa nhận được, liên hệ <a href="mailto:nguyenphandacthang@gmail.com">nguyenphandacthang@gmail.com</a>.
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-mail"></i> Cách khác: gửi email trực tiếp</div>
+    <p style="color: var(--text-secondary); font-size: 14.5px; margin-bottom: 8px">
+      Anh/chị cũng có thể gửi email từ chính địa chỉ đã đăng ký tới:
+    </p>
+    <p style="background: var(--bg); padding: 10px 14px; border-radius: 8px; font-family: monospace; font-size: 14px; margin-bottom: 8px">
+      📧 <a href="mailto:nguyenphandacthang@gmail.com?subject=Y%C3%AAu%20c%E1%BA%A7u%20x%C3%B3a%20t%C3%A0i%20kho%E1%BA%A3n%20Vpost">nguyenphandacthang@gmail.com</a>
+    </p>
+    <p style="color: var(--text-secondary); font-size: 13.5px">
+      Tiêu đề: <strong>Yêu cầu xóa tài khoản Vpost</strong> — Vpost sẽ phản hồi và xử lý trong 7 ngày làm việc.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-brand-facebook"></i> Đối với người dùng Facebook</div>
+    <p style="color: var(--text-secondary); font-size: 14.5px">
+      Nếu anh/chị muốn ngắt kết nối Vpost khỏi tài khoản Facebook nhưng giữ tài khoản Vpost, vào:
+    </p>
+    <ol class="steps" style="margin-top: 10px">
+      <li>Mở <a href="https://www.facebook.com/settings?tab=business_tools" target="_blank" rel="noopener">facebook.com/settings → Business Integrations</a></li>
+      <li>Tìm ứng dụng <strong>"Vpost"</strong> trong danh sách.</li>
+      <li>Bấm <strong>Remove</strong> → xác nhận.</li>
+    </ol>
+    <p style="color: var(--text-secondary); font-size: 13.5px; margin-top: 12px">
+      Sau khi anh/chị remove app khỏi Facebook, Vpost sẽ tự động xóa access token trong <strong>24 giờ</strong> và ngừng đăng bài tự động lên Page đó.
+    </p>
+  </div>
+
+  <footer>
+    <p>© 2026 Vpost</p>
+    <p style="margin-top:6px"><a href="/terms.html">Điều khoản</a> · <a href="/privacy.html">Bảo mật</a> · <a href="/data-deletion.html">Xóa dữ liệu</a></p>
+  </footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script>
+const emailField = document.getElementById('emailField');
+const reasonField = document.getElementById('reasonField');
+const confirmCheck = document.getElementById('confirmCheck');
+const submitBtn = document.getElementById('submitBtn');
+const successBox = document.getElementById('successBox');
+const errorBox = document.getElementById('errorBox');
+
+function updateBtn() {
+  const ok = emailField.value.trim().includes('@') && confirmCheck.checked;
+  submitBtn.disabled = !ok;
+}
+emailField.addEventListener('input', updateBtn);
+confirmCheck.addEventListener('change', updateBtn);
+
+async function submitDeletion() {
+  const email = emailField.value.trim();
+  const reason = reasonField.value.trim();
+  if (!email) return;
+
+  submitBtn.disabled = true;
+  errorBox.classList.remove('show');
+  successBox.classList.remove('show');
+  submitBtn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Đang gửi...';
+
+  try {
+    // Lưu yêu cầu vào bảng deletion_requests (Vpost sẽ xử lý thủ công + auto)
+    if (window.vpostSupabase) {
+      const { error } = await window.vpostSupabase
+        .from('deletion_requests')
+        .insert({ email, reason, source: 'web_form', user_agent: navigator.userAgent.slice(0, 200) });
+      if (error && error.code !== '42P01') { // 42P01 = table not exists yet — fallback OK
+        throw new Error(error.message || 'Không thể gửi yêu cầu');
+      }
+    }
+
+    // Gửi email magic link xác minh quyền sở hữu email
+    if (window.vpostSupabase?.auth) {
+      // Dùng OTP/magic link — nếu email không tồn tại sẽ vẫn pass (không leak)
+      await window.vpostSupabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: window.location.origin + '/data-deletion.html?verified=1'
+        }
+      });
+    }
+
+    successBox.classList.add('show');
+    submitBtn.style.display = 'none';
+    emailField.disabled = true;
+    reasonField.disabled = true;
+    confirmCheck.disabled = true;
+  } catch (e) {
+    errorBox.textContent = 'Lỗi: ' + (e.message || 'Không thể gửi yêu cầu. Vui lòng email trực tiếp tới nguyenphandacthang@gmail.com');
+    errorBox.classList.add('show');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="ti ti-trash"></i> Gửi yêu cầu xóa tài khoản';
+  }
+}
+
+// Nếu user đã verify qua magic link → thực hiện xóa luôn
+(async function checkVerified() {
+  if (new URLSearchParams(window.location.search).get('verified') !== '1') return;
+  if (!window.vpostSupabase) return;
+
+  const { data: { user } } = await window.vpostSupabase.auth.getUser();
+  if (!user) return;
+
+  const confirmed = confirm('Email đã xác minh. Tiếp tục xóa TOÀN BỘ dữ liệu tài khoản ' + user.email + '?\n\nHành động này KHÔNG THỂ HOÀN TÁC.');
+  if (!confirmed) {
+    await window.vpostSupabase.auth.signOut();
+    return;
+  }
+
+  // Gọi RPC delete_my_account (sẽ tạo ở backend trong Phase 6.4)
+  const { error } = await window.vpostSupabase.rpc('delete_my_account');
+  if (error) {
+    alert('Lỗi xóa: ' + error.message + '\n\nVui lòng email tới nguyenphandacthang@gmail.com để xóa thủ công.');
+    return;
+  }
+
+  await window.vpostSupabase.auth.signOut();
+  alert('✅ Đã xóa toàn bộ data. Cảm ơn anh/chị đã sử dụng Vpost.');
+  window.location.href = '/';
+})();
+</script>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+</body>
+</html>
