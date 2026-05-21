@@ -145,29 +145,67 @@ footer a:hover { text-decoration: underline; }
     <thead>
       <tr>
         <th>Gói</th>
-        <th>Giá tham khảo</th>
+        <th>Giá / tháng</th>
+        <th>Bài đăng/ngày</th>
+        <th>Video slideshow/ngày</th>
         <th>Caption AI/ngày</th>
-        <th>Bài đăng/tháng</th>
-        <th>Page kết nối</th>
       </tr>
     </thead>
     <tbody>
-      <tr><td><strong>Dùng thử</strong></td><td>Miễn phí 7 ngày</td><td>10</td><td>Không giới hạn trong 7 ngày</td><td>1 Page</td></tr>
-      <tr><td><strong>Cơ bản</strong></td><td>99.000đ / tháng</td><td>20</td><td>60</td><td>1 Page</td></tr>
-      <tr><td><strong>Chuyên nghiệp</strong></td><td>249.000đ / tháng</td><td>50</td><td>180</td><td>3 Page</td></tr>
-      <tr><td><strong>Doanh nghiệp</strong></td><td>Liên hệ</td><td>Không giới hạn</td><td>Không giới hạn</td><td>10+ Page</td></tr>
+      <tr><td><strong>Dùng thử</strong></td><td>Miễn phí 3 ngày</td><td>1</td><td>1</td><td>10</td></tr>
+      <tr><td>🥉 <strong>Cơ bản</strong></td><td>200.000đ</td><td>1</td><td>1</td><td>15</td></tr>
+      <tr><td>🥈 <strong>Tiêu chuẩn</strong></td><td>400.000đ</td><td>2</td><td>2</td><td>30</td></tr>
+      <tr><td>🥇 <strong>Pro</strong></td><td>700.000đ</td><td>2</td><td>3</td><td>Không giới hạn</td></tr>
     </tbody>
   </table>
-  <p>Bảng giá có thể thay đổi theo thời điểm; giá hiệu lực là giá hiển thị tại trang Cài đặt → Gói cước khi anh/chị thanh toán. Mọi thay đổi giá sẽ được thông báo trước <strong>14 ngày</strong> qua email.</p>
-  <p><strong>Hình thức thanh toán</strong>: chuyển khoản ngân hàng qua VietQR hoặc Momo. Sau khi chuyển, anh/chị upload ảnh hóa đơn vào trang Cài đặt; Vpost xác nhận và kích hoạt gói trong <strong>tối đa 24 giờ làm việc</strong>.</p>
-  <p><strong>Gia hạn</strong>: gói KHÔNG tự động gia hạn. Vpost gửi email nhắc trước 7 ngày khi gói sắp hết hạn. Sau hạn, tài khoản tự chuyển về chế độ chỉ-đọc cho tới khi anh/chị gia hạn.</p>
+  <p style="font-size: 13px; color: var(--text-hint); margin-top: -8px">* Giai đoạn đầu, Vpost chỉ bán gói tháng để liên tục cập nhật theo phản hồi của shop. Gói năm dự kiến ra mắt sau khi sản phẩm ổn định.</p>
+  <p>Bảng giá có thể thay đổi theo thời điểm; giá hiệu lực là giá hiển thị tại trang Cài đặt → Gói cước khi anh/chị thanh toán. Mọi thay đổi giá sẽ được thông báo trước <strong>14 ngày</strong> qua email và không áp dụng cho gói đã thanh toán còn hạn.</p>
+
+  <h3>4.1. Hạn ngạch reset hàng ngày</h3>
+  <p>Quota <strong>bài đăng</strong>, <strong>video</strong>, và <strong>caption AI</strong> được reset vào 0h00 (giờ Việt Nam) mỗi ngày. Quota không dùng hết sẽ KHÔNG được cộng dồn sang ngày hôm sau.</p>
+
+  <h3>4.2. Giờ cao điểm video</h3>
+  <div class="note">
+    Tính năng tạo video slideshow nặng hơn caption khoảng 10–20 lần. Vào giờ cao điểm (8h–10h sáng), nếu nhiều shop cùng tạo video, Vpost có thể đưa yêu cầu của anh/chị vào hàng đợi xử lý (chờ tối đa 5 phút). Khuyến nghị tạo video từ tối hôm trước để đăng vào sáng mai.
+  </div>
+
+  <h3>4.3. Thanh toán</h3>
+  <p><strong>Hình thức</strong>: chuyển khoản ngân hàng qua VietQR hoặc Momo (không thu phí qua app — toàn bộ giao dịch nằm ngoài app cho an toàn).</p>
+  <p><strong>Quy trình</strong>:</p>
+  <ol class="lst">
+    <li>Vào trang <strong>Cài đặt → Gói cước</strong>, chọn gói.</li>
+    <li>Quét VietQR hoặc copy số TK Momo để chuyển khoản đúng số tiền và nội dung Vpost cung cấp.</li>
+    <li>Upload ảnh hóa đơn chuyển khoản vào trang Cài đặt.</li>
+    <li>Vpost (admin) xác nhận thủ công và kích hoạt gói trong <strong>tối đa 24 giờ làm việc</strong>.</li>
+  </ol>
+
+  <h3>4.4. Gia hạn</h3>
+  <p>Gói KHÔNG tự động gia hạn (Vpost không lưu thẻ thanh toán). Vpost gửi email nhắc trước <strong>7 ngày</strong> khi gói sắp hết hạn. Sau hạn, tài khoản tự chuyển về chế độ <strong>chỉ-đọc</strong> trong 30 ngày (xem được data cũ, không tạo bài mới); sau 30 ngày nếu vẫn không gia hạn, tài khoản chuyển sang trạng thái <strong>tạm khóa</strong> nhưng data được giữ thêm 60 ngày trước khi xóa.</p>
 
   <h2 id="hoan-tien">5. Chính sách hoàn tiền</h2>
   <div class="note">
-    Anh/chị được hoàn 100% phí trong vòng <strong>7 ngày</strong> đầu sau khi thanh toán nếu chưa sử dụng quá <strong>30%</strong> hạn ngạch caption/đăng bài của gói.
+    Vpost cung cấp <strong>3 ngày dùng thử miễn phí đầy đủ tính năng</strong> trước khi anh/chị quyết định mua. Khuyến nghị dùng hết 3 ngày trước khi thanh toán để đánh giá phù hợp.
   </div>
-  <p>Sau 7 ngày hoặc đã dùng quá 30% hạn ngạch, Vpost không hỗ trợ hoàn tiền trừ trường hợp lỗi hệ thống nghiêm trọng do Vpost gây ra (downtime &gt; 48 giờ liên tục).</p>
-  <p>Để yêu cầu hoàn tiền, gửi email tới <a href="mailto:nguyenphandacthang@gmail.com">nguyenphandacthang@gmail.com</a> kèm mã giao dịch. Tiền hoàn về tài khoản gốc trong <strong>tối đa 5 ngày làm việc</strong>.</p>
+
+  <h3>5.1. Trường hợp được hoàn</h3>
+  <p>Anh/chị được hoàn <strong>100% phí</strong> trong vòng <strong>3 ngày</strong> đầu sau khi gói được kích hoạt, nếu chưa sử dụng quá <strong>20%</strong> hạn ngạch bài đăng hoặc video của gói.</p>
+
+  <h3>5.2. Trường hợp không hoàn</h3>
+  <ul>
+    <li>Đã quá thời hạn 3 ngày sau khi kích hoạt gói.</li>
+    <li>Đã sử dụng vượt 20% hạn ngạch bài đăng hoặc video.</li>
+    <li>Tài khoản bị khóa do vi phạm Mục 6 (Hành vi bị cấm).</li>
+  </ul>
+
+  <h3>5.3. Trường hợp hoàn toàn bộ ngoài chính sách</h3>
+  <p>Vpost hoàn 100% phí cho phần thời gian chưa sử dụng nếu:</p>
+  <ul>
+    <li>Vpost ngừng cung cấp dịch vụ vĩnh viễn.</li>
+    <li>Hệ thống Vpost downtime liên tục &gt; 48 giờ trong tháng đang tính phí.</li>
+    <li>Tính năng cốt lõi (đăng bài tự động, tạo caption AI) bị mất hoàn toàn quá 7 ngày liên tục.</li>
+  </ul>
+
+  <p>Để yêu cầu hoàn tiền, gửi email tới <a href="mailto:nguyenphandacthang@gmail.com">nguyenphandacthang@gmail.com</a> kèm mã giao dịch + ảnh sao kê chuyển khoản gốc. Tiền hoàn về tài khoản nguồn trong <strong>tối đa 5 ngày làm việc</strong>.</p>
 
   <h2 id="hanh-vi-cam">6. Hành vi bị cấm</h2>
   <p>Anh/chị KHÔNG được dùng Vpost để:</p>
