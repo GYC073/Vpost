@@ -228,120 +228,6 @@
 <script src="../js/auth.js"></script>
 <script src="../js/app.js"></script>
 <script>
-/* ===== POST TEMPLATES THEO NGÀNH ===== */
-const industryPostTemplates = {
-  coffee: [
-    'Bạc xỉu trân châu đường đen mới ra mắt!',
-    'Thứ Ba năng lượng cùng cà phê đậm đà ☕',
-    'Mẹo pha cà phê ngon tại nhà 💡',
-    'Sáng nay trời lạnh — gọi ngay một ly latte ấm 🌧️',
-    'Combo cà phê + bánh ngọt chỉ 39k cuối tuần này',
-    'Hôm nay là ngày của Cold Brew 🧊',
-    'Đậu xanh dừa non — món mới về thử ngay',
-    'Cuối tuần ghé tiệm uống ly mới nha ☕'
-  ],
-  fashion: [
-    'BST hè 2026 đã về kệ — tone pastel mát mẻ',
-    'Outfit đi chơi cuối tuần dưới 500k',
-    'Sale 30% váy maxi tới hết tuần này 👗',
-    'Tip mix đồ công sở thanh lịch',
-    'Đầm dạ tiệc mới — săn ngay kẻo hết size',
-    'Phối đồ thu mát tay cùng cardigan kẻ caro',
-    'Áo sơ mi linen — về thêm 3 màu basic',
-    'Quần jeans ống suông trendy 2026'
-  ],
-  beauty: [
-    'Son lì lên màu chuẩn — dòng mới về 💄',
-    'Routine skincare buổi tối cho da dầu',
-    'Top 5 mặt nạ giấy bán chạy nhất tuần',
-    'Mascara fix-cứng nước mắt — về thêm hàng',
-    'Tip makeup tự nhiên đi học, đi làm',
-    'Combo dưỡng da trắng sáng giá 299k',
-    'Kem chống nắng SPF50 — phải có mỗi ngày ☀️',
-    'Tẩy trang bán chạy — review từ khách thật'
-  ],
-  food: [
-    'Hôm nay shop có bún bò Huế đặc biệt 🍜',
-    'Combo cơm trưa 49k — sale cuối tuần',
-    'Bánh mì chảo nóng hổi sáng mai bán lại',
-    'Set lẩu Thái cho 4 người — đặt trước nhé',
-    'Trà sữa khoai môn về mới — thử đi rồi mê',
-    'Khai trương chi nhánh mới — giảm 20% tuần đầu',
-    'Phần ăn tự chọn 89k — buffet mini cuối tuần',
-    'Bánh ngọt mới ra lò mỗi sáng 🥐'
-  ],
-  tech: [
-    'iPhone 15 Pro Max chính hãng — giá tốt nhất tuần',
-    'Pin sạc dự phòng 20.000mAh chỉ 299k',
-    'Tai nghe TWS chống ồn — review chi tiết',
-    'Trade-in điện thoại cũ lên đời mới',
-    'Bảo hành 12 tháng cho mọi sản phẩm',
-    'Combo sạc + cáp + ốp giá ưu đãi 199k',
-    'Đồng hồ thông minh mới về — giá rẻ bất ngờ',
-    'Laptop văn phòng giá sinh viên — còn ít suất'
-  ],
-  home: [
-    'Bộ chăn ga gối Hàn Quốc — về 5 màu mới',
-    'Set nồi inox 5 món chỉ 599k',
-    'Mẹo decor phòng nhỏ trở nên rộng hơn',
-    'Đèn ngủ đầu giường minimalist — bán chạy',
-    'Sale máy lọc nước RO 30% — bảo hành 2 năm',
-    'Combo dụng cụ nhà bếp mới về',
-    'Khăn tắm cotton mềm mịn — về thêm size lớn',
-    'Rèm cửa cản nắng — màu trendy 2026'
-  ],
-  health: [
-    'Vitamin C nhập khẩu — chính hãng có CO/CQ',
-    'Tip uống đủ nước mỗi ngày để khỏe đẹp',
-    'Combo collagen + vitamin E giá ưu đãi',
-    'Khẩu trang y tế 4 lớp — giảm 15% tuần này',
-    'Tinh dầu thư giãn — phù hợp phòng ngủ',
-    'Bổ sung canxi cho người trên 30 tuổi',
-    'Sữa hạt dinh dưỡng — hộp 12 hộp giá tốt',
-    'Máy đo huyết áp tại nhà — bán chạy tháng này'
-  ],
-  education: [
-    'Khai giảng lớp tiếng Anh giao tiếp tháng này',
-    'Tip học tiếng Anh hiệu quả cho người bận',
-    'Khoá học online luyện thi IELTS 6.5+',
-    'Sách giáo trình mới — tặng kèm vở luyện viết',
-    'Học thử miễn phí 1 buổi cho học viên mới',
-    'Combo flashcards luyện từ vựng — giá tốt',
-    'Lớp toán tư duy cho học sinh lớp 1-5',
-    'Tài liệu ôn thi THPT — tải miễn phí'
-  ],
-  furniture: [
-    'Bàn làm việc gỗ tự nhiên — bán chạy tháng này',
-    'Sofa nỉ 3 chỗ phong cách Bắc Âu',
-    'Tủ giày thông minh tiết kiệm diện tích',
-    'Giường ngủ pallet — về thêm size 1m6',
-    'Kệ sách treo tường minimalist',
-    'Combo bàn ghế ăn 4 người chỉ 4.9 triệu',
-    'Tủ quần áo cánh trượt — giảm 1 triệu',
-    'Ghế bành thư giãn về thêm 2 màu mới'
-  ],
-  sport: [
-    'Áo thun thể thao chất poly thoáng mát',
-    'Tip chạy bộ buổi sáng cho người mới',
-    'Giày chạy bộ size 40-44 vừa về',
-    'Tạ tay bọc cao su giá tốt — đủ mức 1-10kg',
-    'Bình nước thể thao 1L giữ nhiệt 8h',
-    'Combo tập gym tại nhà cho người mới',
-    'Vợt cầu lông tập luyện — giảm 25%',
-    'Quần legging cạp cao co giãn 4 chiều'
-  ],
-  other: [
-    'Hôm nay shop có khuyến mãi đặc biệt 🎁',
-    'Tip nhỏ cho khách hàng thân thiết',
-    'Sản phẩm mới về — số lượng có hạn',
-    'Cảm ơn các bạn đã đồng hành cùng shop',
-    'Combo ưu đãi cuối tuần — đặt sớm kẻo hết',
-    'Khai trương chi nhánh mới — tới ủng hộ nhé',
-    'Mini game tặng voucher 100k — tham gia ngay',
-    'Feedback từ khách hàng — cảm ơn mọi người'
-  ]
-};
-
 const dayNames = ['CN','T2','T3','T4','T5','T6','T7'];
 const monthNames = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
 const monthShort = ['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'];
@@ -350,66 +236,82 @@ const monthShort = ['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10'
 const today = new Date();
 let currentDate = new Date(today.getFullYear(), today.getMonth(), 1);
 let selectedDate = null; // { year, month, day }
-let monthPosts = {}; // keyed by 'YYYY-MM-DD' → { title, status, time, interactions }
-
-/* ===== GENERATE MONTH POSTS ===== */
-function getUserIndustry() {
-  try {
-    const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
-    return industryPostTemplates[user.industry] ? user.industry : 'other';
-  } catch { return 'other'; }
-}
+let monthPosts = {}; // keyed by 'YYYY-MM-DD' → array of posts on that day
+let isLoadingMonth = false;
 
 function dateKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
 
-function generateMonthPosts(year, month) {
+// Map DB status → calendar status
+const STATUS_MAP = {
+  posted: 'posted',
+  scheduled: 'scheduled',
+  pending: 'pending',
+  auto_posted: 'auto',
+  auto: 'auto'
+};
+
+// Chọn ngày hiển thị cho 1 bài: posted_at > scheduled_at > created_at
+function pickPostDate(p) {
+  const s = p.posted_at || p.scheduled_at || p.created_at;
+  return s ? new Date(s) : null;
+}
+
+function fmtHHMM(d) {
+  if (!d) return '';
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function shortTitle(caption, max = 70) {
+  if (!caption) return '(Không có caption)';
+  const oneLine = caption.replace(/\s+/g, ' ').trim();
+  return oneLine.length > max ? oneLine.slice(0, max - 1) + '…' : oneLine;
+}
+
+/* ===== LOAD MONTH POSTS TỪ SUPABASE ===== */
+async function loadMonthPosts(year, month) {
   monthPosts = {};
-  const industry = getUserIndustry();
-  const templates = industryPostTemplates[industry] || industryPostTemplates['other'];
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
-  const todayDay = today.getDate();
+  if (!window.vpostPosts?.list) return;
 
-  // Deterministic pseudo-random từ (year, month, day) để mỗi lần xem cùng tháng cho cùng kết quả
-  const seed = (y, m, d) => Math.abs(Math.sin(y * 10000 + m * 100 + d) * 9973);
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const key = dateKey(year, month, d);
-    let status, time, interactions;
-
-    if (isCurrentMonth && d === todayDay) {
-      // Hôm nay → đang chờ duyệt
-      status = 'pending'; time = '10:00';
-    } else if (isCurrentMonth && d > todayDay) {
-      // Tương lai
-      if (d === todayDay + 1) { status = 'scheduled'; time = '20:00'; }
-      else if (Math.floor(seed(year, month, d)) % 3 === 0) { status = 'scheduled'; time = '08:00'; }
-      else continue; // ngày không có bài
-    } else {
-      // Quá khứ hoặc tháng cũ
-      const r = Math.floor(seed(year, month, d)) % 10;
-      if (r < 7) { status = 'posted'; time = ['08:00','10:00','12:00','15:00','20:00'][r % 5]; }
-      else if (r < 9) { status = 'auto'; time = '10:00'; }
-      else continue; // ngày bỏ trống
-      interactions = 30 + (Math.floor(seed(year, month, d) * 7) % 280);
-    }
-
-    const titleIdx = Math.floor(seed(year, month, d + 1)) % templates.length;
-    monthPosts[key] = {
-      title: templates[titleIdx],
-      status, time, interactions,
-      day: d, month, year
-    };
+  // Lấy khoảng thời gian rộng để cover scheduled_at và posted_at và created_at
+  // Đơn giản: fetch 200 bài mới nhất, lọc trong JS theo tháng đang xem
+  const { data, error } = await window.vpostPosts.list({ limit: 200 });
+  if (error) {
+    console.warn('[Vpost] calendar load posts error:', error);
+    return;
   }
+
+  (data || []).forEach(p => {
+    const d = pickPostDate(p);
+    if (!d) return;
+    if (d.getFullYear() !== year || d.getMonth() !== month) return;
+    const key = dateKey(year, month, d.getDate());
+    const item = {
+      id: p.id,
+      title: shortTitle(p.caption),
+      caption: p.caption,
+      image_url: p.image_url,
+      status: STATUS_MAP[p.status] || 'scheduled',
+      time: fmtHHMM(d),
+      interactions: p.interactions || null,
+      day: d.getDate(), month, year,
+      _raw: p
+    };
+    if (!monthPosts[key]) monthPosts[key] = [];
+    monthPosts[key].push(item);
+  });
 }
 
 /* ===== RENDER CALENDAR ===== */
-function renderCalendar() {
+async function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   document.getElementById('calMonth').textContent = `${monthNames[month]}, ${year}`;
 
-  generateMonthPosts(year, month);
+  if (!isLoadingMonth) {
+    isLoadingMonth = true;
+    try { await loadMonthPosts(year, month); }
+    finally { isLoadingMonth = false; }
+  }
 
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
@@ -440,11 +342,21 @@ function renderCalendar() {
     const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
     if (isToday) el.classList.add('today');
 
-    const post = monthPosts[dateKey(year, month, d)];
-    if (post) {
+    const dayPosts = monthPosts[dateKey(year, month, d)];
+    if (dayPosts && dayPosts.length) {
+      // Ưu tiên hiển thị status quan trọng nhất: pending > scheduled > auto > posted
+      const priority = { pending:0, scheduled:1, auto:2, posted:3 };
+      const top = [...dayPosts].sort((a,b)=> (priority[a.status]??9) - (priority[b.status]??9))[0];
       const dotEl = document.createElement('div');
-      dotEl.className = `cal-dot ${post.status}`;
+      dotEl.className = `cal-dot ${top.status}`;
       el.appendChild(dotEl);
+      if (dayPosts.length > 1) {
+        const cntEl = document.createElement('div');
+        cntEl.style.cssText = 'position:absolute;bottom:2px;right:4px;font-size:9px;font-weight:700;color:var(--text-secondary)';
+        cntEl.textContent = dayPosts.length;
+        el.style.position = 'relative';
+        el.appendChild(cntEl);
+      }
     }
 
     if (selectedDate && selectedDate.year === year && selectedDate.month === month && selectedDate.day === d) {
@@ -482,8 +394,9 @@ const statusIcons  = { posted:'ti-brand-facebook', auto:'ti-robot', pending:'ti-
 
 function postItemHTML(post) {
   let meta;
-  if (post.status === 'posted') meta = `Đăng lúc ${post.time} · ${post.interactions} tương tác`;
-  else if (post.status === 'auto') meta = `AI tự đăng lúc ${post.time} · ${post.interactions} tương tác`;
+  const interTxt = post.interactions ? ` · ${post.interactions} tương tác` : '';
+  if (post.status === 'posted') meta = `Đăng lúc ${post.time}${interTxt}`;
+  else if (post.status === 'auto') meta = `AI tự đăng lúc ${post.time}${interTxt}`;
   else if (post.status === 'pending') meta = `Tự đăng lúc ${post.time} nếu bỏ qua`;
   else meta = `Lên lịch đăng lúc ${post.time}`;
 
@@ -507,14 +420,13 @@ function renderPostList() {
   const pillSlot = document.getElementById('filterPillSlot');
   if (!list) return;
 
-  let posts;
   if (selectedDate) {
     const key = dateKey(selectedDate.year, selectedDate.month, selectedDate.day);
-    const post = monthPosts[key];
+    const dayPosts = monthPosts[key] || [];
     titleEl.textContent = `Bài đăng ngày ${selectedDate.day}/${selectedDate.month + 1}`;
     pillSlot.innerHTML = `<span class="filter-pill"><i class="ti ti-filter"></i>Đã chọn ngày<button onclick="clearSelection()" title="Bỏ lọc"><i class="ti ti-x"></i></button></span>`;
-    if (post) {
-      list.innerHTML = postItemHTML(post);
+    if (dayPosts.length) {
+      list.innerHTML = dayPosts.map(postItemHTML).join('');
     } else {
       list.innerHTML = `
         <div class="empty-state">
@@ -526,17 +438,17 @@ function renderPostList() {
     return;
   }
 
-  // Không filter → hiển thị 8 bài gần nhất quanh hôm nay
+  // Không filter → flatten tất cả posts trong tháng, sort theo priority + ngày
   titleEl.textContent = 'Danh sách bài đăng';
   pillSlot.innerHTML = '';
-  posts = Object.values(monthPosts);
-  // Sort: pending/scheduled trước, rồi posted theo ngày giảm dần
+  let posts = [];
+  Object.values(monthPosts).forEach(arr => posts.push(...arr));
   const priority = { pending:0, scheduled:1, auto:2, posted:3 };
   posts.sort((a, b) => {
     if (priority[a.status] !== priority[b.status]) return priority[a.status] - priority[b.status];
     return b.day - a.day;
   });
-  posts = posts.slice(0, 8);
+  posts = posts.slice(0, 12);
 
   if (posts.length === 0) {
     list.innerHTML = `<div class="empty-state"><i class="ti ti-calendar-off"></i><div class="empty-state-title">Chưa có bài nào tháng này</div><div class="empty-state-sub">Vào trang chủ tạo bài đầu tiên nhé!</div></div>`;
@@ -545,22 +457,30 @@ function renderPostList() {
   list.innerHTML = posts.map(postItemHTML).join('');
 }
 
-function changeMonth(dir) {
+async function changeMonth(dir) {
   currentDate.setMonth(currentDate.getMonth() + dir);
   selectedDate = null; // đổi tháng thì xoá filter
-  renderCalendar();
+  monthPosts = {};
+  await renderCalendar();
 }
 
-renderCalendar();
+// Init: chờ Supabase sẵn sàng rồi render
+(async function initCalendar() {
+  // Đợi một tick để supabase-client.js init xong
+  await new Promise(r => setTimeout(r, 100));
+  await renderCalendar();
+})();
 </script>
 
 <script>
-function doLogout() {
-  if (confirm('Bạn có chắc muốn đăng xuất không?')) {
-    localStorage.removeItem('vpost_user');
-    const isInner = window.location.href.includes('/pages/');
-    window.location.href = isInner ? '../login.html' : 'login.html';
-  }
+async function doLogout() {
+  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
+  try {
+    if (window.vpostAuth?.signOut) await window.vpostAuth.signOut();
+  } catch (e) { console.warn('[Vpost] signOut error:', e); }
+  localStorage.removeItem('vpost_user');
+  const isInner = window.location.href.includes('/pages/');
+  window.location.href = isInner ? '../login.html' : 'login.html';
 }
 </script>
 </body>

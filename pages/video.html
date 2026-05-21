@@ -583,21 +583,22 @@ async function aiGenerateOverlayText() {
   btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i>';
   btn.disabled = true;
   try {
-    const shop = CaptionEngine.getShopInfo();
-    const name = shop.shopName || shop.name || 'Shop';
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 200,
-        messages: [{ role: 'user', content: `Viết 2 dòng text ngắn gọn để hiển thị trên video slideshow cho shop "${name}" (ngành: ${shop.industry || 'kinh doanh'}). Phải ngắn, súc tích, có emoji, tối đa 10 chữ/dòng. Chỉ trả về 2 dòng text, không giải thích.` }]
-      })
+    if (!window.vpostGenerateCaption) throw new Error('Supabase chưa load');
+    const result = await window.vpostGenerateCaption({
+      tone: 'fun',
+      userDesc: 'Viết 2 dòng text NGẮN cho overlay video slideshow (tối đa 10 chữ/dòng, có emoji, súc tích). Chỉ trả 2 dòng, không giải thích.',
+      topic: 'text-overlay-video',
     });
-    const data = await response.json();
-    const text = data.content?.map(i => i.text || '').join('').trim();
+    if (result.error) throw new Error(result.message || result.error);
+    // Lấy caption đầu tiên, cắt còn 2 dòng đầu để fit overlay
+    const text = (result.captions[0] || '').split('\n').slice(0, 2).join('\n');
     document.getElementById('overlayText').value = text;
     showToast('AI đã viết text cho video! ✨');
-  } catch { document.getElementById('overlayText').value = `✨ Ghé thăm ${CaptionEngine.getShopInfo().shopName || 'shop'} ngay!\n🎁 Ưu đãi hấp dẫn chờ bạn!`; }
+    renderPreview();
+  } catch (e) {
+    document.getElementById('overlayText').value = `✨ Ghé thăm ${CaptionEngine.getShopInfo().shopName || 'shop'} ngay!\n🎁 Ưu đãi hấp dẫn chờ bạn!`;
+    showToast('Dùng text mặc định (AI lỗi: ' + e.message + ')');
+  }
   btn.innerHTML = '<i class="ti ti-sparkles"></i>AI viết';
   btn.disabled = false;
 }
@@ -703,59 +704,258 @@ function goToStep(step) {
   if (step === 2) renderPreview();
 }
 
-// ===== GENERATE VIDEO =====
+// ===== GENERATE VIDEO (REAL — Canvas + MediaRecorder) =====
+let lastVideoBlob = null;
+let lastVideoMime = 'video/webm';
+let lastVideoExt  = 'webm';
+
+// Preload tất cả ảnh thành Image objects, đợi onload
+function preloadImages(srcs) {
+  return Promise.all(srcs.map(src => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Không load được ảnh: ' + src.slice(0, 60)));
+    img.src = src;
+  })));
+}
+
+// Vẽ 1 frame slideshow lên canvas (đã có image objects sẵn)
+function drawFrame(ctx, canvas, imgA, imgB, blend, overlayText, shopName) {
+  // Background đen
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Vẽ ảnh A (cover-fit)
+  const drawCover = (img, alpha) => {
+    if (!img || alpha <= 0) return;
+    ctx.globalAlpha = alpha;
+    const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+    const sw = img.width * scale, sh = img.height * scale;
+    const sx = (canvas.width - sw) / 2, sy = (canvas.height - sh) / 2;
+    ctx.drawImage(img, sx, sy, sw, sh);
+    ctx.globalAlpha = 1;
+  };
+  drawCover(imgA, 1 - blend);
+  drawCover(imgB, blend);
+
+  // Gradient overlay đáy
+  const grad = ctx.createLinearGradient(0, canvas.height * 0.5, 0, canvas.height);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Text overlay
+  if (overlayText && overlayText.trim()) {
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.round(canvas.width * 0.065)}px 'DM Sans', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 10;
+    const lines = overlayText.trim().split('\n');
+    const lineH = canvas.width * 0.085;
+    const startY = canvas.height - lineH * (lines.length + 0.5);
+    lines.forEach((line, i) => ctx.fillText(line, canvas.width / 2, startY + i * lineH));
+    ctx.shadowBlur = 0;
+  }
+
+  // Watermark shop
+  if (shopName) {
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.font = `${Math.round(canvas.width * 0.038)}px 'DM Sans', sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillText(shopName, canvas.width - 12, 24);
+  }
+}
+
+// Tạo canvas riêng để render video (kích thước thật, lớn hơn preview)
+function buildRenderCanvas() {
+  const base = 720; // độ phân giải video
+  const ratios = { '9:16':[base*9/16, base], '1:1':[base, base], '16:9':[base, base*9/16], '4:5':[base*4/5, base] };
+  const [w, h] = ratios[selectedRatio] || [base, base];
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(w / 2) * 2;   // làm tròn về số chẵn (encoder cần)
+  canvas.height = Math.round(h / 2) * 2;
+  return canvas;
+}
+
+// Pick mime type tốt nhất trình duyệt hỗ trợ
+function pickMime() {
+  const candidates = [
+    'video/mp4;codecs=h264',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+  ];
+  for (const m of candidates) {
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(m)) return m;
+  }
+  return '';
+}
+
 async function startGenerate() {
   const { remaining } = getQuota();
   if (remaining <= 0) {
     showToast('Hết lượt tạo video hôm nay! Nâng cấp gói để tạo thêm 🚀');
     return;
   }
-  goToStep(3);
-  document.getElementById('resultSection').classList.remove('show');
-
-  const steps = [
-    { label: 'Đang xử lý ảnh...', pct: 20 },
-    { label: 'Đang áp dụng hiệu ứng chuyển cảnh...', pct: 45 },
-    { label: 'Đang thêm text và watermark...', pct: 65 },
-    { label: 'Đang ghép nhạc nền...', pct: 80 },
-    { label: 'Đang xuất file MP4...', pct: 95 },
-    { label: 'Hoàn tất!', pct: 100 },
-  ];
-
-  for (const s of steps) {
-    document.getElementById('progressLabel').textContent = s.label;
-    document.getElementById('progressBar').style.width = s.pct + '%';
-    await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+  const imgs = uploadedImages.filter(Boolean);
+  if (imgs.length < 2) {
+    showToast('Cần ít nhất 2 ảnh để tạo video!');
+    return;
   }
 
-  useQuota();
-  renderQuota();
-  showResult();
+  goToStep(3);
+  document.getElementById('resultSection').classList.remove('show');
+  const progressBar = document.getElementById('progressBar');
+  const progressLabel = document.getElementById('progressLabel');
+  const progressTitle = document.getElementById('progressTitle');
+  progressTitle.textContent = 'Đang tạo video...';
+  progressBar.style.width = '5%';
+  progressLabel.textContent = 'Đang tải ảnh...';
+
+  try {
+    // 1. Preload ảnh
+    const loaded = await preloadImages(imgs);
+    progressBar.style.width = '15%';
+    progressLabel.textContent = 'Chuẩn bị canvas...';
+
+    // 2. Build canvas + capture stream
+    const canvas = buildRenderCanvas();
+    const ctx = canvas.getContext('2d');
+    const FPS = 30;
+    const stream = canvas.captureStream(FPS);
+
+    const mime = pickMime();
+    if (!mime) {
+      showToast('Trình duyệt không hỗ trợ tạo video. Hãy dùng Chrome/Edge mới nhất.');
+      goToStep(2);
+      return;
+    }
+    lastVideoMime = mime;
+    lastVideoExt  = mime.includes('mp4') ? 'mp4' : 'webm';
+
+    const chunks = [];
+    const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
+    recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+    const donePromise = new Promise(resolve => {
+      recorder.onstop = () => {
+        lastVideoBlob = new Blob(chunks, { type: mime });
+        resolve();
+      };
+    });
+
+    recorder.start(100); // emit chunk mỗi 100ms
+
+    // 3. Render từng slide với fade transition
+    const overlayText = document.getElementById('overlayText')?.value || '';
+    const shop = CaptionEngine.getShopInfo();
+    const shopName = shop.shopName || shop.name || '';
+    const slideDurMs = selectedSpeed * 1000;
+    const transDurMs = 350; // fade 0.35s
+    const totalDur = loaded.length * slideDurMs;
+    const startTime = performance.now();
+
+    progressBar.style.width = '20%';
+    progressLabel.textContent = 'Đang render video...';
+
+    await new Promise((resolve) => {
+      function tick() {
+        const elapsed = performance.now() - startTime;
+        const t = Math.min(elapsed, totalDur);
+        const slideIdx = Math.min(Math.floor(t / slideDurMs), loaded.length - 1);
+        const inSlideT = t - slideIdx * slideDurMs;
+        // Fade vào ảnh tiếp theo trong [slideDurMs - transDurMs, slideDurMs]
+        let imgA = loaded[slideIdx], imgB = null, blend = 0;
+        const nextIdx = slideIdx + 1;
+        if (nextIdx < loaded.length && inSlideT > slideDurMs - transDurMs) {
+          imgB = loaded[nextIdx];
+          blend = (inSlideT - (slideDurMs - transDurMs)) / transDurMs;
+        }
+        drawFrame(ctx, canvas, imgA, imgB, blend, overlayText, shopName);
+        // Progress 20-95%
+        const pct = 20 + Math.round((t / totalDur) * 75);
+        progressBar.style.width = pct + '%';
+
+        if (t < totalDur) {
+          requestAnimationFrame(tick);
+        } else {
+          resolve();
+        }
+      }
+      requestAnimationFrame(tick);
+    });
+
+    // 4. Stop recorder, đợi blob ready
+    progressBar.style.width = '97%';
+    progressLabel.textContent = 'Đang đóng gói file...';
+    recorder.stop();
+    await donePromise;
+    progressBar.style.width = '100%';
+    progressLabel.textContent = 'Hoàn tất!';
+
+    useQuota();
+    renderQuota();
+    showResult();
+
+  } catch (e) {
+    console.error('[Vpost] generate video error:', e);
+    showToast('Lỗi tạo video: ' + e.message);
+    goToStep(2);
+  }
 }
 
 function showResult() {
   document.getElementById('step3Section').style.display = 'none';
   document.getElementById('resultSection').classList.add('show');
 
-  // Vẽ frame cuối lên result canvas
-  const canvas = document.getElementById('resultCanvas');
-  const { w, h } = getCanvasSize();
-  canvas.width = w; canvas.height = h;
-  const imgs = uploadedImages.filter(Boolean);
-  if (imgs.length) drawSlide(canvas, imgs[0]);
+  // Hiển thị video thật trong khung result
+  const wrap = document.querySelector('.result-video-wrap');
+  const oldCanvas = document.getElementById('resultCanvas');
+  if (oldCanvas) oldCanvas.style.display = 'none';
 
-  showToast('Video đã tạo xong! 🎉');
+  let resultVideo = document.getElementById('resultVideo');
+  if (!resultVideo) {
+    resultVideo = document.createElement('video');
+    resultVideo.id = 'resultVideo';
+    resultVideo.controls = true;
+    resultVideo.autoplay = true;
+    resultVideo.muted = true;
+    resultVideo.loop = true;
+    resultVideo.playsInline = true;
+    resultVideo.style.cssText = 'border-radius:var(--radius-sm);max-width:240px;box-shadow:var(--shadow-lg);background:#000';
+    wrap.appendChild(resultVideo);
+  }
+
+  if (lastVideoBlob) {
+    if (resultVideo.src) URL.revokeObjectURL(resultVideo.src);
+    resultVideo.src = URL.createObjectURL(lastVideoBlob);
+    resultVideo.style.display = 'block';
+  }
+
+  const sizeMB = lastVideoBlob ? (lastVideoBlob.size / 1024 / 1024).toFixed(1) : '?';
+  showToast(`Video đã tạo xong! ${sizeMB}MB · ${lastVideoExt.toUpperCase()} 🎉`);
 }
 
 function downloadVideo() {
-  // Trong thực tế sẽ dùng MediaRecorder để xuất MP4 thật
-  // Demo: tải canvas frame cuối dưới dạng PNG
-  const canvas = document.getElementById('resultCanvas');
+  if (!lastVideoBlob) {
+    showToast('Chưa có video để tải. Hãy bấm "Tạo video ngay" trước.');
+    return;
+  }
+  const url = URL.createObjectURL(lastVideoBlob);
   const link = document.createElement('a');
-  link.download = `vpost-video-${Date.now()}.png`;
-  link.href = canvas.toDataURL('image/png');
+  link.download = `vpost-video-${Date.now()}.${lastVideoExt}`;
+  link.href = url;
+  document.body.appendChild(link);
   link.click();
-  showToast('Đã tải về! (Demo xuất ảnh — MP4 thật sẽ có khi deploy) 📥');
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  const noteFb = lastVideoExt === 'webm'
+    ? ' Để đăng FB, dùng cloudconvert.com đổi sang MP4 (miễn phí).'
+    : '';
+  showToast('Đã tải về!' + noteFb + ' 📥');
 }
 
 function resetVideo() {
@@ -777,12 +977,14 @@ renderQuota();
 </script>
 
 <script>
-function doLogout() {
-  if (confirm('Bạn có chắc muốn đăng xuất không?')) {
-    localStorage.removeItem('vpost_user');
-    const isInner = window.location.href.includes('/pages/');
-    window.location.href = isInner ? '../login.html' : 'login.html';
-  }
+async function doLogout() {
+  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
+  try {
+    if (window.vpostAuth?.signOut) await window.vpostAuth.signOut();
+  } catch (e) { console.warn('[Vpost] signOut error:', e); }
+  localStorage.removeItem('vpost_user');
+  const isInner = window.location.href.includes('/pages/');
+  window.location.href = isInner ? '../login.html' : 'login.html';
 }
 </script>
 </body>
