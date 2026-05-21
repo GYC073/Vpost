@@ -172,9 +172,11 @@
   // HELPER: Posts shortcuts
   // ============================================================
   window.vpostPosts = {
-    list: async ({ status, limit = 50 } = {}) => {
-      let q = client.from("posts").select("*").order("scheduled_at", { ascending: false }).limit(limit);
+    list: async ({ status, limit = 50, from, to } = {}) => {
+      let q = client.from("posts").select("*").order("created_at", { ascending: false }).limit(limit);
       if (status) q = q.eq("status", status);
+      if (from) q = q.gte("scheduled_at", from);
+      if (to)   q = q.lte("scheduled_at", to);
       const { data, error } = await q;
       return { data: data || [], error };
     },
@@ -188,6 +190,29 @@
     },
     remove: async (id) => {
       return await client.from("posts").delete().eq("id", id);
+    },
+    // Đếm số bài theo điều kiện
+    count: async ({ status, from } = {}) => {
+      let q = client.from("posts").select("*", { count: "exact", head: true });
+      if (status) q = q.eq("status", status);
+      if (from)   q = q.gte("created_at", from);
+      const { count } = await q;
+      return count || 0;
+    },
+    // Upload image (file) lên Storage bucket post-images, trả về public URL
+    uploadImage: async (file) => {
+      const user = await window.vpostAuth.getUser();
+      if (!user) return { error: "not_logged_in" };
+      if (!file) return { error: "no_file" };
+      const ext = (file.name?.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await client.storage.from('post-images').upload(path, file, {
+        cacheControl: '31536000',
+        upsert: false,
+      });
+      if (upErr) return { error: upErr.message };
+      const { data } = client.storage.from('post-images').getPublicUrl(path);
+      return { url: data.publicUrl, path };
     },
   };
 

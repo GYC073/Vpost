@@ -175,13 +175,13 @@
 
     <!-- Action buttons -->
     <div class="action-row">
-      <button class="btn-approve" onclick="showToast('Bài đăng đã được gửi lên Facebook! 🎉')">
+      <button class="btn-approve" onclick="submitPost('posted')">
         <i class="ti ti-send"></i> Duyệt & Đăng ngay
       </button>
-      <button class="btn-schedule" onclick="showToast('Đã lên lịch đăng lúc 8:00 tối! ⏰')">
+      <button class="btn-schedule" onclick="submitPost('scheduled')">
         <i class="ti ti-calendar-plus"></i> Lên lịch
       </button>
-      <button class="btn-skip" onclick="showToast('AI sẽ tự đăng lúc 10:00 sáng 🤖')">
+      <button class="btn-skip" onclick="submitPost('auto_posted')" title="AI tự đăng">
         <i class="ti ti-player-skip-forward"></i>
       </button>
     </div>

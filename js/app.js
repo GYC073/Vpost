@@ -123,6 +123,160 @@ function pickSample(img) {
   document.getElementById('previewImg').src = img.src;
 }
 
+// ============================================================
+// ===== TẠO POST THẬT (lưu vào Supabase) =====
+// status: 'posted' (đăng ngay), 'scheduled' (lên lịch), 'auto_posted' (AI tự lo)
+// ============================================================
+async function submitPost(status) {
+  if (!window.vpostPosts) {
+    showToast('Supabase chưa load, hãy F5 lại trang.');
+    return;
+  }
+  const ta = document.getElementById('captionText');
+  const caption = (ta?.value || '').trim();
+  if (!caption) {
+    showToast('Bạn chưa có caption nào để đăng. Tạo caption trước nhé!');
+    return;
+  }
+
+  // Lấy ảnh nếu có
+  const fileInput = document.getElementById('fileInput');
+  const previewImg = document.getElementById('previewImg');
+  const file = fileInput?.files?.[0];
+
+  // Nếu lên lịch → hỏi giờ đơn giản (default: tối nay 8pm)
+  let scheduledAt = null;
+  if (status === 'scheduled') {
+    const def = new Date();
+    def.setHours(20, 0, 0, 0);
+    if (def < new Date()) def.setDate(def.getDate() + 1);
+    const defStr = def.toISOString().slice(0,16);  // 'YYYY-MM-DDTHH:mm'
+    const input = prompt('Đăng lúc nào? (định dạng: YYYY-MM-DD HH:mm)\nMặc định: ' + defStr.replace('T', ' '), defStr.replace('T',' '));
+    if (input === null) return; // user cancel
+    const parsed = new Date(input.trim().replace(' ', 'T'));
+    if (isNaN(parsed.getTime())) {
+      showToast('Định dạng giờ không hợp lệ.');
+      return;
+    }
+    scheduledAt = parsed.toISOString();
+  } else if (status === 'auto_posted') {
+    // AI tự đăng → 10h sáng hôm sau (hoặc hôm nay nếu chưa qua)
+    const auto = new Date();
+    auto.setHours(10, 0, 0, 0);
+    if (auto < new Date()) auto.setDate(auto.getDate() + 1);
+    scheduledAt = auto.toISOString();
+  }
+
+  // Disable các button trong khi đang lưu
+  const buttons = document.querySelectorAll('.action-row button');
+  buttons.forEach(b => b.disabled = true);
+  showToast('⏳ Đang lưu bài...');
+
+  try {
+    // Upload ảnh trước nếu có
+    let imageUrl = null;
+    if (file) {
+      const uploaded = await window.vpostPosts.uploadImage(file);
+      if (uploaded.error) {
+        showToast('⚠️ Upload ảnh lỗi: ' + uploaded.error);
+      } else {
+        imageUrl = uploaded.url;
+      }
+    } else if (previewImg?.src && previewImg.src.startsWith('http')) {
+      // Người dùng đã chọn ảnh mẫu (chỉ là URL Unsplash, lưu thẳng vào DB)
+      imageUrl = previewImg.src;
+    }
+
+    const user = VpostAuth.getCurrentUser();
+    const post = {
+      caption,
+      image_url: imageUrl,
+      status,
+      scheduled_at: scheduledAt,
+      posted_at: status === 'posted' ? new Date().toISOString() : null,
+      tone: document.querySelector('.tone-select')?.value || null,
+    };
+
+    const { data, error } = await window.vpostPosts.create(post);
+    if (error) {
+      showToast('❌ Lưu bài thất bại: ' + (error.message || error));
+      buttons.forEach(b => b.disabled = false);
+      return;
+    }
+
+    const msgMap = {
+      posted: '✅ Đã lưu bài đăng! Copy caption sang Facebook để post nhé 🎉',
+      scheduled: '⏰ Đã lên lịch! Vào "Lịch đăng" để xem.',
+      auto_posted: '🤖 Đã giao cho AI. Bài sẽ tự đăng theo lịch.',
+    };
+    showToast(msgMap[status] || 'Đã lưu bài!');
+
+    // Reset form
+    ta.value = '';
+    if (fileInput) fileInput.value = '';
+    document.getElementById('uploadPlaceholder')?.style?.setProperty('display', 'flex');
+    document.getElementById('uploadPreview')?.style?.setProperty('display', 'none');
+
+    // Refresh stats
+    setTimeout(refreshStats, 500);
+  } catch (e) {
+    console.error('[Vpost] submitPost error:', e);
+    showToast('❌ Lỗi: ' + e.message);
+  } finally {
+    buttons.forEach(b => b.disabled = false);
+  }
+}
+
+// ============================================================
+// ===== REFRESH STATS từ Supabase (thay vì localStorage counter) =====
+// ============================================================
+async function refreshStats() {
+  if (!window.vpostPosts) return;
+  try {
+    const monthStart = new Date();
+    monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+    const fromISO = monthStart.toISOString();
+
+    // Đếm song song cho nhanh
+    const [postedCount, autoCount, allMonth] = await Promise.all([
+      window.vpostPosts.count({ status: 'posted', from: fromISO }),
+      window.vpostPosts.count({ status: 'auto_posted', from: fromISO }),
+      window.vpostPosts.list({ limit: 200, from: fromISO }),
+    ]);
+
+    const statPosts = document.getElementById('statPosts');
+    const statAuto  = document.getElementById('statAuto');
+    const statInteract = document.getElementById('statInteract');
+    const statStreak = document.getElementById('statStreak');
+
+    const totalThisMonth = postedCount + autoCount;
+    if (statPosts) statPosts.textContent = postedCount;
+    if (statAuto)  statAuto.textContent  = autoCount;
+
+    // Ước lượng tương tác (tạm — sẽ thay bằng FB Graph API ở phase sau)
+    if (statInteract) {
+      const realInteractions = (allMonth.data || []).reduce((s, p) => s + (p.interactions || 0), 0);
+      statInteract.textContent = realInteractions > 0 ? realInteractions : totalThisMonth * 12;
+    }
+
+    // Streak: đếm số ngày liên tiếp có post
+    if (statStreak) {
+      const dates = new Set((allMonth.data || []).map(p => (p.posted_at || p.created_at || '').slice(0, 10)).filter(Boolean));
+      let streak = 0;
+      const d = new Date();
+      while (dates.has(d.toISOString().slice(0,10))) {
+        streak++;
+        d.setDate(d.getDate() - 1);
+      }
+      statStreak.textContent = streak;
+    }
+  } catch (e) {
+    console.warn('[Vpost] refreshStats error:', e);
+  }
+}
+window.submitPost = submitPost;
+window.refreshStats = refreshStats;
+
 // ===== UI =====
 function showToast(msg) {
   const toast = document.getElementById('toast'); if (!toast) return;
@@ -287,27 +441,20 @@ function applyShopAssets() {
       if (assets.samples[idx]) img.src = assets.samples[idx];
     });
 
-    // Reset stats về 0 cho user mới
-    const joinDate = user.joinDate || new Date().toISOString();
-    const daysSinceJoin = Math.floor((new Date() - new Date(joinDate)) / 86400000);
-    const postsCount = parseInt(localStorage.getItem(`vpost_posts_${user.phone}`) || '0');
-    const autoCount  = parseInt(localStorage.getItem(`vpost_auto_${user.phone}`) || '0');
+    // Set placeholder 0 cho stats — refreshStats() sẽ load real data từ Supabase
+    ['statPosts','statAuto','statStreak','statInteract'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.textContent) el.textContent = '0';
+    });
 
-    const statPosts   = document.getElementById('statPosts');
-    const statAuto    = document.getElementById('statAuto');
-    const statStreak  = document.getElementById('statStreak');
-    const statInteract= document.getElementById('statInteract');
-
-    if (statPosts)    statPosts.textContent    = postsCount;
-    if (statAuto)     statAuto.textContent     = autoCount;
-    if (statStreak)   statStreak.textContent   = daysSinceJoin > 0 ? daysSinceJoin : 0;
-    if (statInteract) statInteract.textContent = postsCount * 12; // ước tính 12 tương tác/bài
-
-    // Lưu ngày join nếu chưa có
+    // Lưu ngày join nếu chưa có (giữ để các phase sau dùng)
     if (!user.joinDate) {
       user.joinDate = new Date().toISOString();
       localStorage.setItem('vpost_user', JSON.stringify(user));
     }
+
+    // Refresh stats THẬT từ Supabase (async)
+    if (typeof refreshStats === 'function') refreshStats();
 
   } catch(e) { console.log('applyShopAssets error:', e); }
 }
