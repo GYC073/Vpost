@@ -144,6 +144,46 @@ const VpostAuth = {
     return true;
   },
 
+  // ===== SUPABASE BRIDGE =====
+  // Đọc profile từ Supabase → mirror vào localStorage để code cũ (dùng getCurrentUser) vẫn chạy
+  async syncFromSupabase() {
+    if (!window.vpostSupabase || !window.vpostProfile) return null;
+    const profile = await window.vpostProfile.get();
+    if (!profile) return null;
+    const user = {
+      id:        profile.id,
+      name:      profile.shop_name || 'Shop',
+      shopName:  profile.shop_name || 'Shop',
+      phone:     profile.phone || '',
+      plan:      profile.plan || 'trial',
+      planExpiresAt: profile.plan_expires_at,
+      industry:  profile.industry,
+      role:      profile.role,
+      enabled:   profile.enabled,
+      avatarUrl: profile.avatar_url,
+      coverUrl:  profile.cover_url,
+      loggedIn:  true,
+      _supabase: true,
+    };
+    this.saveCurrentUser(user);
+    return user;
+  },
+
+  // Logout cả Supabase + localStorage
+  async logout() {
+    try {
+      if (window.vpostAuth) await window.vpostAuth.signOut();
+    } catch (e) { console.warn('Supabase signOut failed:', e); }
+    localStorage.removeItem('vpost_user');
+    window.location.href = 'login.html';
+  },
+
+  // Lấy session Supabase (null nếu chưa login)
+  async getSupabaseSession() {
+    if (!window.vpostAuth) return null;
+    return await window.vpostAuth.getSession();
+  },
+
   // ===== SEED DATA MẪU CHO ADMIN (lần đầu) =====
   seedDemoData() {
     const existing = this.getCustomers();

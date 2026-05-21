@@ -231,7 +231,7 @@ body {
         <label class="form-label">Số điện thoại / Email</label>
         <div class="form-input-wrap">
           <i class="ti ti-user"></i>
-          <input class="form-input" type="text" id="loginPhone" placeholder="Nhập số điện thoại hoặc email">
+          <input class="form-input" type="text" id="loginPhone" placeholder="vd: 0901234567 hoặc you@gmail.com">
         </div>
       </div>
       <div class="form-group">
@@ -308,13 +308,14 @@ function togglePassword(inputId, btn) {
   btn.querySelector('i').className = isText ? 'ti ti-eye' : 'ti ti-eye-off';
 }
 
-function handleLogin() {
-  const phone = document.getElementById('loginPhone').value.trim().replace(/\s/g,'');
+// ===== Hỗ trợ cả email và phone (Supabase Auth) =====
+async function handleLogin() {
+  const identifier = document.getElementById('loginPhone').value.trim();
   const pass = document.getElementById('loginPass').value.trim();
   const err = document.getElementById('loginError');
   const btn = document.querySelector('#formLogin .submit-btn');
 
-  if (!phone || !pass) {
+  if (!identifier || !pass) {
     err.textContent = 'Vui lòng điền đầy đủ thông tin!';
     err.classList.add('show'); return;
   }
@@ -322,37 +323,34 @@ function handleLogin() {
   btn.classList.add('btn-loading');
   btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Đang đăng nhập...';
 
-  setTimeout(() => {
-    // Tìm trong DB khách hàng
-    VpostAuth.seedDemoData();
-    const customers = VpostAuth.getCustomers();
-    const customer = customers.find(c => c.phone.replace(/\s/g,'') === phone);
-
-    if (!customer) {
-      // Không tìm thấy — vẫn cho đăng nhập demo
-      VpostAuth.saveCurrentUser({ name: 'Shop Demo', shopName: 'Shop Demo', phone, plan: 'basic', loggedIn: true });
-      window.location.href = 'app.html'; return;
+  try {
+    if (!window.vpostAuth) throw new Error('Supabase chưa load, hãy F5 lại trang.');
+    const { data, error } = await window.vpostAuth.signIn(identifier, pass);
+    if (error) {
+      err.textContent = mapAuthError(error.message) || 'Đăng nhập thất bại: ' + error.message;
+      err.classList.add('show');
+      resetBtn(btn, 'login');
+      return;
     }
-
-    // Lưu session với thông tin từ DB admin
-    VpostAuth.saveCurrentUser({
-      name: customer.name, shopName: customer.name,
-      phone: customer.phone, plan: customer.plan,
-      loggedIn: true,
-    });
-
-    // Kiểm tra trạng thái tài khoản
-    if (!customer.enabled) { window.location.href = 'locked.html'; return; }
+    // Sync profile từ Supabase về localStorage
+    const user = await VpostAuth.syncFromSupabase();
+    if (!user) { window.location.href = 'app.html'; return; }
+    if (!user.enabled) { window.location.href = 'locked.html'; return; }
     const today = new Date().toISOString().slice(0,10);
-    if (customer.expire < today) { window.location.href = 'locked.html'; return; }
-
+    if (user.planExpiresAt && user.planExpiresAt < today) {
+      window.location.href = 'locked.html'; return;
+    }
     window.location.href = 'app.html';
-  }, 1200);
+  } catch (e) {
+    err.textContent = 'Lỗi mạng hoặc cấu hình: ' + e.message;
+    err.classList.add('show');
+    resetBtn(btn, 'login');
+  }
 }
 
-function handleRegister() {
+async function handleRegister() {
   const shop = document.getElementById('regShop').value.trim();
-  const phone = document.getElementById('regPhone').value.trim().replace(/\s/g,'');
+  const phone = document.getElementById('regPhone').value.trim();
   const pass = document.getElementById('regPass').value.trim();
   const err = document.getElementById('regError');
   const btn = document.querySelector('#formRegister .submit-btn');
@@ -365,22 +363,74 @@ function handleRegister() {
   btn.classList.add('btn-loading');
   btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Đang tạo tài khoản...';
 
-  setTimeout(() => {
-    VpostAuth.seedDemoData();
-    VpostAuth.registerCustomer(shop, phone, 'trial');
-    VpostAuth.saveCurrentUser({ name: shop, shopName: shop, phone, plan: 'trial', loggedIn: true, isNew: true });
+  try {
+    if (!window.vpostAuth) throw new Error('Supabase chưa load, hãy F5 lại trang.');
+    const { data, error } = await window.vpostAuth.signUp(phone, pass, { shop_name: shop });
+    if (error) {
+      err.textContent = mapAuthError(error.message) || 'Đăng ký thất bại: ' + error.message;
+      err.classList.add('show');
+      resetBtn(btn, 'register');
+      return;
+    }
+    // Đăng nhập luôn (vì Supabase sign-up phone không tự login nếu phải confirm OTP)
+    let userObj = null;
+    if (data?.session) {
+      // Đã có session ngay → cập nhật shop_name vào profile
+      if (window.vpostProfile) {
+        await window.vpostProfile.update({ shop_name: shop });
+      }
+      userObj = await VpostAuth.syncFromSupabase();
+    } else {
+      // Có thể đang chờ OTP — vẫn lưu tạm vào localStorage để onboarding chạy
+      VpostAuth.saveCurrentUser({ name: shop, shopName: shop, phone, plan: 'trial', loggedIn: true, isNew: true });
+      userObj = VpostAuth.getCurrentUser();
+    }
     window.location.href = 'onboarding.html';
-  }, 1500);
+  } catch (e) {
+    err.textContent = 'Lỗi: ' + e.message;
+    err.classList.add('show');
+    resetBtn(btn, 'register');
+  }
 }
 
-// Tự động đăng nhập nếu đã có session
-VpostAuth.seedDemoData();
-const _user = VpostAuth.getCurrentUser();
-if (_user.loggedIn) {
-  const access = VpostAuth.checkAccess();
-  if (access.allowed) window.location.href = 'app.html';
-  else window.location.href = 'locked.html';
+function resetBtn(btn, type) {
+  btn.classList.remove('btn-loading');
+  btn.innerHTML = type === 'login'
+    ? '<i class="ti ti-login"></i> Đăng nhập'
+    : '<i class="ti ti-user-plus"></i> Đăng ký dùng thử miễn phí';
 }
+
+function mapAuthError(msg) {
+  if (!msg) return null;
+  const m = msg.toLowerCase();
+  if (m.includes('invalid login')) return 'Sai email/SĐT hoặc mật khẩu.';
+  if (m.includes('user already')) return 'Tài khoản này đã tồn tại. Hãy đăng nhập thay vì đăng ký.';
+  if (m.includes('email rate')) return 'Đăng ký nhiều quá, hãy đợi 1 phút rồi thử lại.';
+  if (m.includes('password should be')) return 'Mật khẩu quá yếu (tối thiểu 6 ký tự).';
+  if (m.includes('phone'))    return 'Số điện thoại không hợp lệ.';
+  return null;
+}
+
+// ===== Tự động đăng nhập nếu Supabase còn session =====
+(async function autoLogin() {
+  // Đợi Supabase load xong (thường < 100ms)
+  let tries = 0;
+  while (!window.vpostAuth && tries < 30) { await new Promise(r => setTimeout(r, 100)); tries++; }
+  if (!window.vpostAuth) return;
+
+  const session = await window.vpostAuth.getSession();
+  if (!session) return;
+
+  // Có session → fetch profile và redirect
+  const user = await VpostAuth.syncFromSupabase();
+  if (!user) return;
+  if (!user.enabled) { window.location.href = 'locked.html'; return; }
+  const today = new Date().toISOString().slice(0,10);
+  if (user.planExpiresAt && user.planExpiresAt < today) {
+    window.location.href = 'locked.html'; return;
+  }
+  window.location.href = 'app.html';
+})();
 </script>
 </body>
 </html>

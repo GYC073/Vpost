@@ -94,24 +94,50 @@
   };
 
   // ============================================================
-  // HELPER: Auth shortcut
+  // HELPER: Auth shortcut — tự nhận diện email vs phone
   // ============================================================
+  function isEmail(s) { return /@/.test(s); }
+  function toE164(phone) {
+    // 0901234567 → +84901234567
+    const cleaned = phone.replace(/[^\d+]/g, "");
+    if (cleaned.startsWith("+")) return cleaned;
+    if (cleaned.startsWith("84")) return "+" + cleaned;
+    if (cleaned.startsWith("0"))  return "+84" + cleaned.slice(1);
+    return "+84" + cleaned;
+  }
+
   window.vpostAuth = {
-    // Đăng ký bằng SĐT + mật khẩu (Supabase yêu cầu phone format E.164: +84901234567)
-    signUp: async (phone, password) => {
-      const formatted = phone.startsWith("+") ? phone : "+84" + phone.replace(/^0/, "");
-      return await client.auth.signUp({ phone: formatted, password });
+    // Đăng ký bằng email HOẶC phone (+84...). Có thể truyền metadata (vd: shopName)
+    signUp: async (identifier, password, metadata = {}) => {
+      identifier = identifier.trim();
+      const opts = { password, options: { data: metadata } };
+      if (isEmail(identifier)) {
+        opts.email = identifier;
+      } else {
+        opts.phone = toE164(identifier);
+      }
+      return await client.auth.signUp(opts);
     },
-    signIn: async (phone, password) => {
-      const formatted = phone.startsWith("+") ? phone : "+84" + phone.replace(/^0/, "");
-      return await client.auth.signInWithPassword({ phone: formatted, password });
+    signIn: async (identifier, password) => {
+      identifier = identifier.trim();
+      if (isEmail(identifier)) {
+        return await client.auth.signInWithPassword({ email: identifier, password });
+      }
+      return await client.auth.signInWithPassword({ phone: toE164(identifier), password });
     },
     signOut: async () => await client.auth.signOut(),
     getUser: async () => {
       const { data } = await client.auth.getUser();
       return data.user;
     },
+    getSession: async () => {
+      const { data } = await client.auth.getSession();
+      return data.session;
+    },
     onChange: (cb) => client.auth.onAuthStateChange(cb),
+    // Helper format - export để dùng nơi khác
+    _isEmail: isEmail,
+    _toE164: toE164,
   };
 
   // ============================================================
