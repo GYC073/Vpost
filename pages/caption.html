@@ -139,6 +139,73 @@
   }
   .use-btn:hover { background: var(--primary-dark); }
 
+  /* Publish actions panel (Phase 4.6) */
+  .publish-panel { margin-top: 16px; }
+  .publish-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .publish-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12.5px; font-weight: 600;
+    font-family: inherit;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .publish-btn i { font-size: 20px; }
+  .publish-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .publish-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .publish-btn.primary {
+    background: #1877F2; color: #fff; border-color: #1877F2;
+  }
+  .publish-btn.primary:hover { background: #1465d0; color: #fff; }
+  .publish-btn.primary:disabled { background: #1877F2; opacity: 0.5; color: #fff; }
+  .publish-btn.warn { color: var(--orange); }
+
+  .fb-banner {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: #FFF7ED;
+    border: 1px solid #FED7AA;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #9A3412;
+  }
+  .fb-banner i { font-size: 18px; color: #EA580C; flex-shrink: 0; }
+  .fb-banner a { color: #1877F2; font-weight: 600; text-decoration: none; }
+  .fb-banner a:hover { text-decoration: underline; }
+
+  .schedule-row {
+    display: none;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .schedule-row.show { display: flex; }
+  .schedule-row label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+  .schedule-row input[type="datetime-local"] {
+    flex: 1; min-width: 180px;
+    padding: 8px 10px; font-size: 13px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text);
+    font-family: inherit;
+  }
+  .schedule-row button {
+    padding: 8px 14px; font-size: 13px; font-weight: 600;
+    background: var(--primary); color: #fff;
+    border: none; border-radius: 8px;
+    cursor: pointer; font-family: inherit;
+  }
+  .schedule-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+
   .loading-bar {
     display: none;
     flex-direction: column; align-items: center; gap: 12px;
@@ -345,9 +412,36 @@
       <div class="result-text" id="result3"></div>
     </div>
 
-    <button class="use-btn" onclick="useCaption()">
-      <i class="ti ti-send"></i> Dùng caption này & Đăng bài
-    </button>
+    <!-- FB banner (hiện nếu chưa kết nối) -->
+    <div class="fb-banner" id="fbConnectBanner" style="display:none">
+      <i class="ti ti-info-circle"></i>
+      <div>
+        Bạn chưa kết nối Fanpage Facebook.
+        <a href="settings.html">Kết nối ngay →</a>
+        để có thể đăng/lên lịch tự động.
+      </div>
+    </div>
+
+    <!-- Publish actions (Phase 4.6) -->
+    <div class="publish-panel">
+      <div class="publish-grid">
+        <button class="publish-btn" id="btnSaveDraft" onclick="vpostSaveDraft()" title="Lưu để dùng sau">
+          <i class="ti ti-device-floppy"></i><span>Lưu nháp</span>
+        </button>
+        <button class="publish-btn primary" id="btnPostNow" onclick="vpostPostNow()" title="Đăng ngay lên Fanpage active">
+          <i class="ti ti-brand-facebook"></i><span>Đăng ngay</span>
+        </button>
+        <button class="publish-btn" id="btnSchedule" onclick="vpostToggleSchedule()" title="Đăng theo lịch hẹn">
+          <i class="ti ti-calendar-time"></i><span>Lên lịch</span>
+        </button>
+      </div>
+
+      <div class="schedule-row" id="scheduleRow">
+        <label>Đăng lúc:</label>
+        <input type="datetime-local" id="scheduleAt">
+        <button id="btnConfirmSchedule" onclick="vpostConfirmSchedule()">Lưu lịch</button>
+      </div>
+    </div>
   </div>
 
 </main>
@@ -366,6 +460,9 @@
 <script src="../js/auth.js"></script>
 <script src="../js/caption-engine.js"></script>
 <script src="../js/app.js"></script>
+<!-- Phase 4 — FB integration -->
+<script>window.VPOST_FB_APP_ID = window.VPOST_FB_APP_ID || "";</script>
+<script src="../js/fb-client.js"></script>
 <script>
 let selectedTopic = 'product';
 let captionResults = [];
@@ -484,95 +581,4 @@ async function generateCaptions() {
       resetBtn();
       return;
     }
-    if (err.code === 'plan_expired' || err.code === 'account_disabled') {
-      showToast(`⚠️ ${err.message}`);
-      setTimeout(() => { window.location.href = '../locked.html'; }, 1500);
-      return;
-    }
-    // Lỗi khác → fallback local cho khách vẫn có cái dùng tạm
-    const shop = CaptionEngine.getShopInfo();
-    captionResults = CaptionEngine.getFallback(shop.shopName, userDesc, selectedTopic);
-    showToast('⚠️ AI tạm thời lỗi, dùng caption mẫu. ' + (err.message || ''));
-  }
-
-  loading.classList.remove('show');
-  document.getElementById('result1').textContent = captionResults[0] || '';
-  document.getElementById('result2').textContent = captionResults[1] || '';
-  document.getElementById('result3').textContent = captionResults[2] || '';
-  document.querySelectorAll('.result-card').forEach(c => c.classList.remove('selected'));
-  document.querySelector('.result-card').classList.add('selected');
-  results.classList.add('show');
-  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  btn.disabled = false;
-  btn.innerHTML = '<i class="ti ti-sparkles"></i> Tạo Caption với AI';
-}
-
-function updateQuotaBadge(quota) {
-  if (!quota) return;
-  let badge = document.getElementById('quotaBadge');
-  if (!badge) {
-    badge = document.createElement('div');
-    badge.id = 'quotaBadge';
-    badge.style.cssText = 'text-align:center;font-size:12px;color:var(--text-secondary);margin:-12px 0 16px;font-weight:500';
-    const genBtn = document.querySelector('.generate-btn');
-    genBtn.parentNode.insertBefore(badge, genBtn.nextSibling);
-  }
-  const pct = quota.limit > 0 ? Math.round((quota.used / quota.limit) * 100) : 0;
-  const color = quota.remaining === 0 ? '#DC2626' : quota.remaining <= 1 ? '#F59E0B' : '#059669';
-  badge.innerHTML = `<i class="ti ti-bolt" style="color:${color};vertical-align:-3px;margin-right:4px"></i>Hôm nay: <strong style="color:${color}">${quota.used}/${quota.limit}</strong> caption đã dùng`;
-}
-
-function copyCaption(e, idx) {
-  e.stopPropagation();
-  if (captionResults[idx]) {
-    navigator.clipboard.writeText(captionResults[idx]).then(() => showToast('Đã sao chép caption! 📋'));
-  }
-}
-
-function useCaption() {
-  const selected = document.querySelector('.result-card.selected');
-  const idx = [...document.querySelectorAll('.result-card')].indexOf(selected);
-  if (captionResults[idx]) {
-    localStorage.setItem('vpost_selected_caption', captionResults[idx]);
-  }
-  showToast('Đang chuyển đến trang đăng bài... 🚀');
-  setTimeout(() => { window.location.href = '../app.html'; }, 1000);
-}
-
-function handleCaptionFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('capPlaceholder').style.display = 'none';
-    document.getElementById('capPreview').style.display = 'block';
-    document.getElementById('capImg').src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeCaptionImg(e) {
-  e.stopPropagation();
-  document.getElementById('capPlaceholder').style.display = 'flex';
-  document.getElementById('capPreview').style.display = 'none';
-  document.getElementById('captionFile').value = '';
-}
-</script>
-
-<script>
-async function doLogout() {
-  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
-  if (window.VpostAuth?.logout) {
-    // Sẽ tự signOut Supabase + clear localStorage + redirect
-    const isInner = window.location.href.includes('/pages/');
-    try { await window.vpostAuth?.signOut(); } catch {}
-    localStorage.removeItem('vpost_user');
-    window.location.href = isInner ? '../login.html' : 'login.html';
-  } else {
-    localStorage.removeItem('vpost_user');
-    window.location.href = '../login.html';
-  }
-}
-</script>
-</body>
-</html>
+    if (err.code === 'plan_expired' || err.code === 'accoun

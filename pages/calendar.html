@@ -75,6 +75,8 @@
   .cal-dot.auto { background: var(--amber); }
   .cal-dot.pending { background: var(--blue); }
   .cal-dot.scheduled { background: var(--purple); }
+  .cal-dot.draft { background: #9CA3AF; }
+  .cal-dot.failed { background: #DC2626; }
   .cal-day.today .cal-dot { background: rgba(255,255,255,0.85); }
   .cal-day.selected:not(.today) .cal-dot.posted { background: var(--green); }
 
@@ -141,6 +143,19 @@
   .status-auto { background: var(--orange-light); color: #9A3412; }
   .status-pending { background: var(--primary-light); color: var(--primary-dark); }
   .status-scheduled { background: var(--purple-light); color: var(--purple); }
+  .status-draft { background: #F3F4F6; color: #4B5563; }
+  .status-failed { background: #FEE2E2; color: #991B1B; }
+
+  .post-list-right { display: flex; align-items: center; gap: 8px; }
+  .fb-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 6px;
+    background: rgba(24,119,242,0.10); color: #1877F2;
+    font-size: 11px; font-weight: 700;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .fb-badge:hover { background: rgba(24,119,242,0.20); }
+  .fb-badge i { font-size: 13px; }
 
   .list-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -249,7 +264,9 @@ const STATUS_MAP = {
   scheduled: 'scheduled',
   pending: 'pending',
   auto_posted: 'auto',
-  auto: 'auto'
+  auto: 'auto',
+  draft: 'draft',
+  failed: 'failed'
 };
 
 // Chọn ngày hiển thị cho 1 bài: posted_at > scheduled_at > created_at
@@ -296,6 +313,9 @@ async function loadMonthPosts(year, month) {
       time: fmtHHMM(d),
       interactions: p.interactions || null,
       day: d.getDate(), month, year,
+      fb_post_id: p.fb_post_id || null,
+      fb_page_id: p.fb_page_id || null,
+      fb_error: p.fb_error || null,
       _raw: p
     };
     if (!monthPosts[key]) monthPosts[key] = [];
@@ -347,7 +367,7 @@ async function renderCalendar() {
     const dayPosts = monthPosts[dateKey(year, month, d)];
     if (dayPosts && dayPosts.length) {
       // Ưu tiên hiển thị status quan trọng nhất: pending > scheduled > auto > posted
-      const priority = { pending:0, scheduled:1, auto:2, posted:3 };
+      const priority = { failed:0, pending:1, scheduled:2, auto:3, posted:4, draft:5 };
       const top = [...dayPosts].sort((a,b)=> (priority[a.status]??9) - (priority[b.status]??9))[0];
       const dotEl = document.createElement('div');
       dotEl.className = `cal-dot ${top.status}`;
@@ -391,8 +411,8 @@ function clearSelection() {
 }
 
 /* ===== RENDER POST LIST ===== */
-const statusLabels = { posted:'Đã đăng', auto:'AI tự đăng', pending:'Chờ duyệt', scheduled:'Đã lên lịch' };
-const statusIcons  = { posted:'ti-brand-facebook', auto:'ti-robot', pending:'ti-clock', scheduled:'ti-calendar' };
+const statusLabels = { posted:'Đã đăng', auto:'AI tự đăng', pending:'Chờ duyệt', scheduled:'Đã lên lịch', draft:'Nháp', failed:'Lỗi đăng' };
+const statusIcons  = { posted:'ti-brand-facebook', auto:'ti-robot', pending:'ti-clock', scheduled:'ti-calendar', draft:'ti-device-floppy', failed:'ti-alert-triangle' };
 
 function postItemHTML(post) {
   let meta;
@@ -400,7 +420,14 @@ function postItemHTML(post) {
   if (post.status === 'posted') meta = `Đăng lúc ${post.time}${interTxt}`;
   else if (post.status === 'auto') meta = `AI tự đăng lúc ${post.time}${interTxt}`;
   else if (post.status === 'pending') meta = `Tự đăng lúc ${post.time} nếu bỏ qua`;
+  else if (post.status === 'draft') meta = 'Bản nháp — chưa lên lịch';
+  else if (post.status === 'failed') meta = `Lỗi: ${post.fb_error || 'không rõ'}`;
   else meta = `Lên lịch đăng lúc ${post.time}`;
+
+  // FB badge: hiển thị nếu đã đăng thành công (có fb_post_id)
+  const fbBadge = post.fb_post_id
+    ? `<span class="fb-badge" title="Đã đăng lên Facebook" onclick="vpostOpenFB('${post.fb_post_id}');event.stopPropagation()"><i class="ti ti-brand-facebook"></i>FB</span>`
+    : '';
 
   return `
     <div class="post-list-item">
@@ -412,8 +439,18 @@ function postItemHTML(post) {
         <div class="post-list-title">${post.title}</div>
         <div class="post-list-meta"><i class="ti ${statusIcons[post.status]}"></i>${meta}</div>
       </div>
-      <span class="post-list-status status-${post.status}">${statusLabels[post.status]}</span>
+      <div class="post-list-right">
+        ${fbBadge}
+        <span class="post-list-status status-${post.status}">${statusLabels[post.status]}</span>
+      </div>
     </div>`;
+}
+
+// Mở post FB ở tab mới — fb_post_id format thường là "{page_id}_{post_id}"
+function vpostOpenFB(fbPostId) {
+  if (!fbPostId) return;
+  const url = 'https://www.facebook.com/' + fbPostId.replace('_', '/posts/');
+  window.open(url, '_blank', 'noopener');
 }
 
 function renderPostList() {
@@ -440,50 +477,4 @@ function renderPostList() {
     return;
   }
 
-  // Không filter → flatten tất cả posts trong tháng, sort theo priority + ngày
-  titleEl.textContent = 'Danh sách bài đăng';
-  pillSlot.innerHTML = '';
-  let posts = [];
-  Object.values(monthPosts).forEach(arr => posts.push(...arr));
-  const priority = { pending:0, scheduled:1, auto:2, posted:3 };
-  posts.sort((a, b) => {
-    if (priority[a.status] !== priority[b.status]) return priority[a.status] - priority[b.status];
-    return b.day - a.day;
-  });
-  posts = posts.slice(0, 12);
-
-  if (posts.length === 0) {
-    list.innerHTML = `<div class="empty-state"><i class="ti ti-calendar-off"></i><div class="empty-state-title">Chưa có bài nào tháng này</div><div class="empty-state-sub">Vào trang chủ tạo bài đầu tiên nhé!</div></div>`;
-    return;
-  }
-  list.innerHTML = posts.map(postItemHTML).join('');
-}
-
-async function changeMonth(dir) {
-  currentDate.setMonth(currentDate.getMonth() + dir);
-  selectedDate = null; // đổi tháng thì xoá filter
-  monthPosts = {};
-  await renderCalendar();
-}
-
-// Init: chờ Supabase sẵn sàng rồi render
-(async function initCalendar() {
-  // Đợi một tick để supabase-client.js init xong
-  await new Promise(r => setTimeout(r, 100));
-  await renderCalendar();
-})();
-</script>
-
-<script>
-async function doLogout() {
-  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
-  try {
-    if (window.vpostAuth?.signOut) await window.vpostAuth.signOut();
-  } catch (e) { console.warn('[Vpost] signOut error:', e); }
-  localStorage.removeItem('vpost_user');
-  const isInner = window.location.href.includes('/pages/');
-  window.location.href = isInner ? '../login.html' : 'login.html';
-}
-</script>
-</body>
-</html>
+  // Khôn

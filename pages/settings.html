@@ -307,13 +307,30 @@
   <!-- Kết nối mạng xã hội -->
   <div class="settings-section">
     <div class="settings-section-title"><i class="ti ti-share"></i>Kết nối mạng xã hội</div>
-    <div class="settings-row">
+    <div class="settings-row" id="fbConnectRow">
       <div class="settings-row-left">
         <div class="settings-row-label">Facebook Fanpage</div>
-        <div class="settings-row-sub"><span id="fbPageName">Chưa kết nối</span></div>
+        <div class="settings-row-sub"><span id="fbPageName">Đang kiểm tra…</span></div>
       </div>
-      <button class="fb-connect-btn connected" onclick="showToast('Fanpage đã được kết nối ✅')">
-        <i class="ti ti-brand-facebook"></i> Đã kết nối
+      <button class="fb-connect-btn" id="fbConnectBtn" onclick="vpostFB && vpostFB.startConnect()">
+        <i class="ti ti-brand-facebook"></i> Kết nối Facebook
+      </button>
+    </div>
+    <div class="settings-row" id="fbPagePickerRow" style="display:none">
+      <div class="settings-row-left" style="width:100%">
+        <div class="settings-row-label" style="margin-bottom:8px">Chọn Fanpage Vpost sẽ tự đăng</div>
+        <select id="fbPageSelect" class="settings-select" style="width:100%" onchange="vpostSettings_setActivePage(this.value)">
+          <option value="">— Chọn Fanpage —</option>
+        </select>
+      </div>
+    </div>
+    <div class="settings-row" id="fbDisconnectRow" style="display:none">
+      <div class="settings-row-left">
+        <div class="settings-row-label" style="color:var(--text-secondary)">Ngắt kết nối Facebook</div>
+        <div class="settings-row-sub">Vpost sẽ không đăng bài thay bạn nữa</div>
+      </div>
+      <button class="fb-connect-btn" style="background:#dc2626" onclick="vpostSettings_disconnect()">
+        <i class="ti ti-unlink"></i> Ngắt kết nối
       </button>
     </div>
     <div class="settings-row">
@@ -405,7 +422,12 @@
 
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ⚠️ Sau khi tạo FB App, điền App ID vào đây (App Secret chỉ để ở Supabase Secrets)
+  window.VPOST_FB_APP_ID = ""; // ví dụ: "1234567890123456"
+</script>
 <script src="../js/supabase-client.js"></script>
+<script src="../js/fb-client.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/app.js"></script>
 
@@ -490,4 +512,77 @@ function updateIndustry(val) {
     if (window.showToast) showToast('Đã cập nhật ngành hàng — ảnh sẽ đổi theo ✨');
   } catch(e) {}
 }
+
+// ============================================================
+// Facebook OAuth — render status + actions
+// ============================================================
+async function vpostSettings_renderFB() {
+  const nameEl = document.getElementById('fbPageName');
+  const btn = document.getElementById('fbConnectBtn');
+  const picker = document.getElementById('fbPagePickerRow');
+  const disconnect = document.getElementById('fbDisconnectRow');
+  const select = document.getElementById('fbPageSelect');
+  if (!nameEl || !window.vpostFB) return;
+
+  try {
+    const status = await window.vpostFB.getStatus();
+    if (!status.connected) {
+      nameEl.textContent = 'Chưa kết nối';
+      btn.innerHTML = '<i class="ti ti-brand-facebook"></i> Kết nối Facebook';
+      btn.classList.remove('connected');
+      btn.disabled = false;
+      picker.style.display = 'none';
+      disconnect.style.display = 'none';
+      return;
+    }
+    // Đã kết nối
+    btn.innerHTML = '<i class="ti ti-check"></i> Đã kết nối';
+    btn.classList.add('connected');
+    btn.disabled = true;
+    disconnect.style.display = '';
+
+    if (status.allPages && status.allPages.length > 0) {
+      picker.style.display = '';
+      select.innerHTML = '<option value="">— Chọn Fanpage —</option>' +
+        status.allPages.map(function(p) {
+          const sel = p.is_active ? ' selected' : '';
+          return '<option value="' + p.id + '"' + sel + '>' + p.page_name + '</option>';
+        }).join('');
+      const active = status.activePage;
+      nameEl.textContent = active ? active.page_name : 'Đã kết nối — chưa chọn Fanpage';
+    } else {
+      nameEl.textContent = 'Đã kết nối — không có Fanpage nào';
+      picker.style.display = 'none';
+    }
+  } catch (e) {
+    nameEl.textContent = 'Lỗi: ' + (e.message || e);
+  }
+}
+
+async function vpostSettings_setActivePage(rowId) {
+  if (!rowId || !window.vpostFB) return;
+  try {
+    await window.vpostFB.setActivePage(rowId);
+    if (window.showToast) showToast('Đã chọn Fanpage tự đăng ✅');
+    vpostSettings_renderFB();
+  } catch (e) {
+    alert('Lỗi: ' + (e.message || e));
+  }
+}
+
+async function vpostSettings_disconnect() {
+  if (!confirm('Ngắt kết nối Facebook? Vpost sẽ không đăng bài thay bạn nữa.')) return;
+  try {
+    await window.vpostFB.disconnect();
+    if (window.showToast) showToast('Đã ngắt kết nối Facebook');
+    vpostSettings_renderFB();
+  } catch (e) {
+    alert('Lỗi: ' + (e.message || e));
+  }
+}
+
+// Auto-render khi page load (đợi DOMContentLoaded từ block trên xong)
+window.addEventListener('load', function() {
+  setTimeout(vpostSettings_renderFB, 300);
+});
 </script>

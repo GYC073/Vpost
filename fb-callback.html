@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đang kết nối Facebook… — Vpost</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    padding: 20px;
+  }
+  .fb-callback-card {
+    max-width: 460px; width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .fb-callback-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #1877F2;
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    margin-bottom: 16px;
+  }
+  .fb-callback-icon.success { background: #16a34a; }
+  .fb-callback-icon.error { background: #dc2626; }
+  .fb-callback-title {
+    font-size: 18px; font-weight: 700; color: var(--text);
+    margin-bottom: 8px;
+  }
+  .fb-callback-msg {
+    font-size: 14px; color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .fb-spinner {
+    display: inline-block;
+    width: 30px; height: 30px;
+    border: 3px solid var(--border);
+    border-top-color: #1877F2;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fb-callback-btn {
+    background: var(--primary); color: #fff;
+    border: none; border-radius: 12px;
+    padding: 11px 22px; font-size: 14px; font-weight: 600;
+    font-family: inherit; cursor: pointer;
+    text-decoration: none; display: inline-block;
+  }
+  .fb-pages-list {
+    margin-top: 16px;
+    text-align: left;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .fb-page-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .fb-page-item:hover {
+    border-color: #1877F2;
+    background: rgba(24, 119, 242, 0.04);
+  }
+  .fb-page-item.selected {
+    border-color: #1877F2;
+    background: rgba(24, 119, 242, 0.08);
+  }
+  .fb-page-pic {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .fb-page-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .fb-page-cat { font-size: 12px; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+<div class="fb-callback-card">
+  <div id="iconWrap"><div class="fb-callback-icon"><i class="ti ti-brand-facebook"></i></div></div>
+  <div id="titleEl" class="fb-callback-title">Đang kết nối Facebook…</div>
+  <div id="msgEl" class="fb-callback-msg"><span class="fb-spinner"></span></div>
+  <div id="pagesWrap" class="fb-pages-list" style="display:none"></div>
+  <div id="actionsWrap"></div>
+</div>
+
+<!-- Cấu hình FB App ID trước khi load fb-client.js -->
+<script>
+  // ⚠️ Thay bằng FB App ID thật của bạn (sau khi tạo app trên developers.facebook.com)
+  window.VPOST_FB_APP_ID = ""; // ví dụ "1234567890123456"
+</script>
+<script src="https://esm.sh/@supabase/supabase-js@2.45.4"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/fb-client.js"></script>
+<script>
+  const iconWrap = document.getElementById('iconWrap');
+  const titleEl = document.getElementById('titleEl');
+  const msgEl = document.getElementById('msgEl');
+  const pagesWrap = document.getElementById('pagesWrap');
+  const actionsWrap = document.getElementById('actionsWrap');
+
+  function setStatus(state, title, msg) {
+    titleEl.textContent = title;
+    msgEl.innerHTML = msg;
+    iconWrap.innerHTML = '<div class="fb-callback-icon ' + state + '">' +
+      (state === 'success' ? '<i class="ti ti-check"></i>' :
+       state === 'error'   ? '<i class="ti ti-x"></i>' :
+                             '<i class="ti ti-brand-facebook"></i>') +
+      '</div>';
+  }
+
+  function renderPages(pages) {
+    pagesWrap.style.display = 'block';
+    pagesWrap.innerHTML = pages.length === 0
+      ? '<div style="text-align:center;font-size:13px;color:var(--text-secondary);padding:20px">' +
+        'Không tìm thấy Fanpage nào bạn quản lý. Hãy thử lại và đảm bảo bạn là admin/editor của ít nhất 1 Fanpage.</div>'
+      : pages.map(function(p) {
+          return '<div class="fb-page-item" data-page-id="' + p.fb_page_id + '">' +
+                 (p.picture_url
+                   ? '<img class="fb-page-pic" src="' + p.picture_url + '" alt="">'
+                   : '<div class="fb-page-pic" style="display:flex;align-items:center;justify-content:center;color:#1877F2"><i class="ti ti-brand-facebook"></i></div>') +
+                 '<div><div class="fb-page-name">' + escapeHtml(p.page_name) + '</div>' +
+                 '<div class="fb-page-cat">' + escapeHtml(p.page_category || '') + '</div></div>' +
+                 '</div>';
+        }).join('');
+
+    Array.from(pagesWrap.querySelectorAll('.fb-page-item')).forEach(function(el) {
+      el.addEventListener('click', async function() {
+        try {
+          Array.from(pagesWrap.querySelectorAll('.fb-page-item')).forEach(function(x){ x.classList.remove('selected'); });
+          el.classList.add('selected');
+          const pageId = el.getAttribute('data-page-id');
+
+          // Tìm row trong fb_pages để set is_active = true
+          const supa = window.vpostSupabase;
+          const { data: { session } } = await supa.auth.getSession();
+          const { data: rows } = await supa
+            .from('fb_pages')
+            .select('id, fb_page_id')
+            .eq('user_id', session.user.id)
+            .eq('fb_page_id', pageId);
+          if (rows && rows[0]) {
+            await window.vpostFB.setActivePage(rows[0].id);
+            setStatus('success', 'Đã kết nối Fanpage!', 'Đang chuyển về trang cài đặt…');
+            setTimeout(function(){ window.location.href = 'pages/settings.html'; }, 1200);
+          }
+        } catch(e) {
+          alert('Lỗi: ' + (e.message || e));
+        }
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, function(c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+
+  (async function() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const result = await window.vpostFB.handleCallback(params);
+      if (!result.ok) {
+        setStatus('error', 'Kết nối thất bại', escapeHtml(result.error));
+        actionsWrap.innerHTML = '<a class="fb-callback-btn" href="pages/settings.html">Quay lại cài đặt</a>';
+        return;
+      }
+      setStatus('success', 'Đăng nhập Facebook thành công!',
+        'Chọn 1 <strong>Fanpage</strong> bạn muốn Vpost tự đăng bài:');
+      renderPages(result.pages || []);
+    } catch (e) {
+      setStatus('error', 'Có lỗi xảy ra', escapeHtml(e.message || e));
+      actionsWrap.innerHTML = '<a class="fb-callback-btn" href="pages/settings.html">Quay lại cài đặt</a>';
+    }
+  })();
+</script>
+</body>
+</html>
