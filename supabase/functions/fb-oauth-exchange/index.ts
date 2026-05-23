@@ -119,6 +119,14 @@ Deno.serve(async (req) => {
     // ===== 7) Save to DB (service_role bypasses RLS) =====
     const admin = createClient(supabaseUrl, serviceKey);
 
+    // granted_scopes: FB có thể trả string "a,b,c" hoặc array — chuẩn hoá thành TEXT[]
+    const rawScopes = shortData.granted_scopes ?? longData.granted_scopes ?? null;
+    const grantedScopes: string[] | null = rawScopes == null
+      ? null
+      : Array.isArray(rawScopes)
+        ? rawScopes
+        : String(rawScopes).split(",").map((s: string) => s.trim()).filter(Boolean);
+
     const { error: connErr } = await admin.from("fb_connections").upsert(
       {
         user_id: userId,
@@ -126,14 +134,15 @@ Deno.serve(async (req) => {
         fb_user_name: meData.name,
         access_token: longToken,
         token_expires_at: expiresAt.toISOString(),
-        granted_scopes: shortData.granted_scopes ?? null,
+        granted_scopes: grantedScopes,
         last_refreshed_at: new Date().toISOString(),
         is_active: true,
       },
       { onConflict: "user_id" },
     );
     if (connErr) {
-      return json({ error: "save connection failed", db: connErr.message }, 500);
+      console.error("[fb-oauth-exchange] DB upsert error:", connErr.message, connErr.details, connErr.hint);
+      return json({ error: "save connection failed", db: connErr.message, hint: connErr.hint }, 500);
     }
 
     // Upsert pages (preserve is_active flag if exists)

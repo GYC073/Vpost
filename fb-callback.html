@@ -177,9 +177,21 @@
   (async function() {
     try {
       const params = new URLSearchParams(window.location.search);
+
+      // Debug log — giúp chẩn đoán lỗi
+      console.log('[FB Callback] params:', Object.fromEntries(params.entries()));
+      console.log('[FB Callback] state in sessionStorage:', sessionStorage.getItem('vpost_fb_oauth_state'));
+
       const result = await window.vpostFB.handleCallback(params);
+      console.log('[FB Callback] handleCallback result:', result);
+
       if (!result.ok) {
-        setStatus('error', 'Kết nối thất bại', escapeHtml(result.error));
+        // Hiện lỗi chi tiết để dễ debug
+        let detail = escapeHtml(result.error || 'Unknown error');
+        if (result.details) {
+          detail += '<br><small style="opacity:0.7;font-size:11px">' + escapeHtml(JSON.stringify(result.details)) + '</small>';
+        }
+        setStatus('error', 'Kết nối thất bại', detail);
         actionsWrap.innerHTML = '<a class="fb-callback-btn" href="pages/settings.html">Quay lại cài đặt</a>';
         return;
       }
@@ -187,6 +199,7 @@
         'Chọn 1 <strong>Fanpage</strong> bạn muốn Vpost tự đăng bài:');
       renderPages(result.pages || []);
     } catch (e) {
+      console.error('[FB Callback] exception:', e);
       setStatus('error', 'Có lỗi xảy ra', escapeHtml(e.message || e));
       actionsWrap.innerHTML = '<a class="fb-callback-btn" href="pages/settings.html">Quay lại cài đặt</a>';
     }
