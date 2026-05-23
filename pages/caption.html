@@ -581,4 +581,216 @@ async function generateCaptions() {
       resetBtn();
       return;
     }
-    if (err.code === 'plan_expired' || err.code === 'accoun
+    if (err.code === 'plan_expired' || err.code === 'account_disabled') {
+      showToast(`⚠️ ${err.message}`);
+      setTimeout(() => { window.location.href = '../locked.html'; }, 1500);
+      return;
+    }
+    // Lỗi khác → fallback local cho khách vẫn có cái dùng tạm
+    const shop = CaptionEngine.getShopInfo ? CaptionEngine.getShopInfo() : {};
+    captionResults = CaptionEngine.getFallback
+      ? CaptionEngine.getFallback(shop.shopName, userDesc, selectedTopic)
+      : ['Hãy thử lại sau nhé! 😊', '', ''];
+    showToast('⚠️ AI tạm thời lỗi, dùng caption mẫu. ' + (err.message || ''));
+  }
+
+  loading.classList.remove('show');
+  document.getElementById('result1').textContent = captionResults[0] || '';
+  document.getElementById('result2').textContent = captionResults[1] || '';
+  document.getElementById('result3').textContent = captionResults[2] || '';
+  document.querySelectorAll('.result-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.result-card').classList.add('selected');
+  results.classList.add('show');
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  resetBtn();
+}
+
+function updateQuotaBadge(quota) {
+  if (!quota) return;
+  let badge = document.getElementById('quotaBadge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'quotaBadge';
+    badge.style.cssText = 'text-align:center;font-size:12px;color:var(--text-secondary);margin:-12px 0 16px;font-weight:500';
+    const genBtn = document.querySelector('.generate-btn');
+    genBtn.parentNode.insertBefore(badge, genBtn.nextSibling);
+  }
+  const color = quota.remaining === 0 ? '#DC2626' : quota.remaining <= 1 ? '#F59E0B' : '#059669';
+  badge.innerHTML = `<i class="ti ti-bolt" style="color:${color};vertical-align:-3px;margin-right:4px"></i>Hôm nay: <strong style="color:${color}">${quota.used}/${quota.limit}</strong> caption đã dùng`;
+}
+
+function copyCaption(e, idx) {
+  e.stopPropagation();
+  if (captionResults[idx]) {
+    navigator.clipboard.writeText(captionResults[idx]).then(() => showToast('Đã sao chép caption! 📋'));
+  }
+}
+
+// ── Lấy caption đang được chọn ──────────────────────────────────
+function getSelectedCaptionText() {
+  const selected = document.querySelector('.result-card.selected');
+  if (!selected) return captionResults[0] || '';
+  const idx = [...document.querySelectorAll('.result-card')].indexOf(selected);
+  return captionResults[idx] || captionResults[0] || '';
+}
+
+// ── Upload ảnh nếu có, trả về URL hoặc null ─────────────────────
+async function maybeUploadImage() {
+  const file = document.getElementById('captionFile')?.files?.[0];
+  if (!file) return null;
+  if (!window.vpostPosts) return null;
+  const res = await window.vpostPosts.uploadImage(file);
+  if (res.error) { showToast('⚠️ Upload ảnh lỗi: ' + res.error); return null; }
+  return res.url;
+}
+
+// ── Phase 4.6: 3 nút hành động ──────────────────────────────────
+async function vpostSaveDraft() {
+  const caption = getSelectedCaptionText();
+  if (!caption) { showToast('Chưa có caption để lưu!'); return; }
+  const btn = document.getElementById('btnSaveDraft');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i>';
+  try {
+    const imageUrl = await maybeUploadImage();
+    const { data, error } = await window.vpostPosts.create({
+      caption,
+      image_url: imageUrl || null,
+      status: 'draft',
+    });
+    if (error) throw new Error(error.message || error);
+    showToast('✅ Đã lưu nháp!');
+  } catch (err) {
+    showToast('❌ Lưu nháp thất bại: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-device-floppy"></i><span>Lưu nháp</span>';
+  }
+}
+
+async function vpostPostNow() {
+  const caption = getSelectedCaptionText();
+  if (!caption) { showToast('Chưa có caption để đăng!'); return; }
+
+  // Kiểm tra FB đã kết nối chưa
+  const status = await window.vpostFB?.getStatus?.();
+  if (!status?.connected || !status?.activePage) {
+    showToast('⚠️ Chưa kết nối Fanpage Facebook. Vào Cài đặt để kết nối nhé!');
+    document.getElementById('fbConnectBanner')?.style?.setProperty('display', 'flex');
+    return;
+  }
+
+  const btn = document.getElementById('btnPostNow');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i> Đang đăng...';
+  try {
+    const imageUrl = await maybeUploadImage();
+    // Tạo post với status draft trước
+    const { data: post, error: createErr } = await window.vpostPosts.create({
+      caption,
+      image_url: imageUrl || null,
+      status: 'draft',
+    });
+    if (createErr) throw new Error(createErr.message || createErr);
+    // Gọi Edge Function fb-post
+    await window.vpostFB.postToFB(post.id);
+    showToast('🎉 Đã đăng lên Facebook!');
+  } catch (err) {
+    showToast('❌ Đăng thất bại: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-brand-facebook"></i><span>Đăng ngay</span>';
+  }
+}
+
+function vpostToggleSchedule() {
+  const row = document.getElementById('scheduleRow');
+  const isShow = row.classList.toggle('show');
+  if (isShow) {
+    // Default: 1 ngày sau, 8:00 sáng
+    const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0);
+    document.getElementById('scheduleAt').value = d.toISOString().slice(0, 16);
+  }
+}
+
+async function vpostConfirmSchedule() {
+  const caption = getSelectedCaptionText();
+  if (!caption) { showToast('Chưa có caption để lên lịch!'); return; }
+  const scheduledAt = document.getElementById('scheduleAt').value;
+  if (!scheduledAt) { showToast('Vui lòng chọn thời gian đăng!'); return; }
+  if (new Date(scheduledAt) <= new Date()) { showToast('Thời gian phải ở tương lai!'); return; }
+
+  const btn = document.getElementById('btnConfirmSchedule');
+  btn.disabled = true;
+  btn.textContent = '⏳ Đang lưu...';
+  try {
+    const imageUrl = await maybeUploadImage();
+    const { error } = await window.vpostPosts.create({
+      caption,
+      image_url: imageUrl || null,
+      status: 'scheduled',
+      scheduled_at: new Date(scheduledAt).toISOString(),
+    });
+    if (error) throw new Error(error.message || error);
+    showToast('📅 Đã lên lịch đăng!');
+    document.getElementById('scheduleRow').classList.remove('show');
+  } catch (err) {
+    showToast('❌ Lên lịch thất bại: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Lưu lịch';
+  }
+}
+
+// ── Xem trạng thái FB khi load trang ────────────────────────────
+async function initFbStatus() {
+  if (!window.vpostFB) return;
+  try {
+    const status = await window.vpostFB.getStatus();
+    const banner = document.getElementById('fbConnectBanner');
+    const btnPost = document.getElementById('btnPostNow');
+    if (!status.connected || !status.activePage) {
+      if (banner) banner.style.display = 'flex';
+      if (btnPost) btnPost.title = 'Cần kết nối Fanpage trước';
+    } else {
+      if (banner) banner.style.display = 'none';
+      if (btnPost) btnPost.title = `Đăng ngay lên: ${status.activePage.page_name}`;
+    }
+  } catch (e) { /* im lặng */ }
+}
+
+function handleCaptionFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('capPlaceholder').style.display = 'none';
+    document.getElementById('capPreview').style.display = 'block';
+    document.getElementById('capImg').src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeCaptionImg(e) {
+  e.stopPropagation();
+  document.getElementById('capPlaceholder').style.display = 'flex';
+  document.getElementById('capPreview').style.display = 'none';
+  document.getElementById('captionFile').value = '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initFbStatus();
+});
+</script>
+
+<script>
+async function doLogout() {
+  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
+  const isInner = window.location.href.includes('/pages/');
+  try { await window.vpostAuth?.signOut(); } catch {}
+  localStorage.removeItem('vpost_user');
+  window.location.href = isInner ? '../login.html' : 'login.html';
+}
+</script>
+</body>
+</html>
