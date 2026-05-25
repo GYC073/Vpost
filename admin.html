@@ -928,6 +928,108 @@ async function loadAdminStats() {
   document.getElementById('sSumPendingVal').textContent = count ?? 0;
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// PAYMENTS
+// ══════════════════════════════════════════════════════════════
+function showToast(msg, dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('vi-VN');
+}
+
+function fmtMoney(n) {
+  return n ? n.toLocaleString('vi-VN') + ' ₫' : '—';
+}
+
+async function loadPayments() {
+  const supa   = window.vpostSupabase;
+  const status = document.getElementById('payStatusFilter')?.value || 'pending';
+
+  document.getElementById('paymentsLoading').style.display = 'block';
+  document.getElementById('paymentsEmpty').style.display   = 'none';
+  document.getElementById('paymentsTable').style.display   = 'none';
+
+  let query = supa.from('payments')
+    .select('id, user_id, plan, amount_vnd, transfer_note, admin_note, status, created_at, profiles(shop_name, phone)')
+    .order('created_at', { ascending: false });
+  if (status) query = query.eq('status', status);
+
+  const { data, error } = await query;
+  document.getElementById('paymentsLoading').style.display = 'none';
+
+  if (error) { showToast('Lỗi: ' + error.message); return; }
+  if (!data || data.length === 0) {
+    document.getElementById('paymentsEmpty').style.display = 'block'; return;
+  }
+
+  const planLabel   = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
+  const statusLabel = { pending:'Chờ duyệt', approved:'Đã duyệt', rejected:'Từ chối' };
+  const statusCls   = { pending:'pending',   approved:'active',    rejected:'locked' };
+
+  const tbody = document.getElementById('paymentsTbody');
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td>
+        <div style="font-weight:600;font-size:13px">${p.profiles?.shop_name || '—'}</div>
+        <div style="font-size:12px;color:var(--text-secondary)">${p.profiles?.phone || ''}</div>
+      </td>
+      <td><span class="plan-badge ${p.plan}">${planLabel[p.plan]||p.plan}</span></td>
+      <td style="font-weight:600">${fmtMoney(p.amount_vnd)}</td>
+      <td style="font-size:12px;color:var(--text-secondary);max-width:160px">${p.transfer_note||'—'}</td>
+      <td style="font-size:12px;color:var(--text-secondary)">${p.admin_note||'—'}</td>
+      <td style="font-size:12px">${fmtDate(p.created_at)}</td>
+      <td>
+        ${p.status === 'pending' ? `
+          <div style="display:flex;gap:6px">
+            <button class="action-btn" style="background:var(--green-light);color:var(--green);border-color:var(--green)" onclick="confirmPayment('${p.id}','${p.user_id}','${p.plan}')" title="Duyệt"><i class="ti ti-check"></i></button>
+            <button class="action-btn" style="background:var(--danger-light);color:var(--danger);border-color:var(--danger)" onclick="rejectPayment('${p.id}')" title="Từ chối"><i class="ti ti-x"></i></button>
+          </div>`
+          : `<span class="status-badge ${statusCls[p.status]||''}"><span class="dot"></span>${statusLabel[p.status]||p.status}</span>`
+        }
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('paymentsTable').style.display = 'block';
+
+  const badge = document.getElementById('pendingBadge');
+  if (badge && status === 'pending') {
+    badge.textContent = data.length;
+    badge.style.display = data.length ? '' : 'none';
+  }
+}
+
+async function confirmPayment(payId, userId, plan) {
+  if (!confirm('Xác nhận đã nhận được tiền và kích hoạt gói?')) return;
+  const supa   = window.vpostSupabase;
+  const expire = new Date(); expire.setDate(expire.getDate() + 30);
+
+  const [r1, r2] = await Promise.all([
+    supa.from('payments').update({ status: 'approved' }).eq('id', payId),
+    supa.from('profiles').update({ plan, plan_expires_at: expire.toISOString() }).eq('id', userId),
+  ]);
+
+  if (r1.error || r2.error) { showToast('Lỗi: ' + (r1.error||r2.error).message); return; }
+  showToast('✅ Đã duyệt! Gói đã được kích hoạt.');
+  loadPayments();
+}
+
+async function rejectPayment(payId) {
+  const note = prompt('Lý do từ chối (tuỳ chọn):');
+  if (note === null) return;
+  const supa = window.vpostSupabase;
+  const { error } = await supa.from('payments')
+    .update({ status: 'rejected', admin_note: note || null }).eq('id', payId);
+  if (error) { showToast('Lỗi: ' + error.message); return; }
+  showToast('🚫 Đã từ chối yêu cầu.');
+  loadPayments();
+}
+
 // ── Init ────────────────────────────────────────────────────
 loadCustomers();
 </script>
