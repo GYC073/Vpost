@@ -29,17 +29,21 @@ const TONE_MAP: Record<string, string> = {
 };
 
 const INDUSTRY_LABEL: Record<string, string> = {
-  coffee: "cà phê / đồ uống",
-  fashion: "thời trang",
-  beauty: "mỹ phẩm / làm đẹp",
-  food: "ẩm thực / nhà hàng",
-  tech: "điện tử / công nghệ",
-  home: "nội thất / gia dụng",
-  health: "sức khoẻ / dược phẩm",
-  education: "giáo dục / đào tạo",
-  furniture: "buôn bán nội thất",
-  sport: "thể thao / fitness",
-  other: "kinh doanh",
+  coffee:     "cà phê / đồ uống",
+  fashion:    "thời trang",
+  beauty:     "mỹ phẩm / làm đẹp",
+  food:       "ẩm thực / nhà hàng",
+  tech:       "điện tử / công nghệ",
+  home:       "nội thất / gia dụng",
+  health:     "sức khoẻ / dược phẩm",
+  education:  "giáo dục / đào tạo",
+  furniture:  "buôn bán nội thất",
+  sport:      "thể thao / fitness",
+  realestate: "bất động sản (mua bán/cho thuê nhà đất, căn hộ, đất nền, dự án)",
+  shoes:      "kinh doanh giày dép (form giày, size, chất liệu, phong cách, outfit phối đồ)",
+  authentic:  "hàng authentic / hàng hiệu chính hãng (đảm bảo auth, tem chống giả, bill, check auth, hàng xịn)",
+  perfume:    "kinh doanh nước hoa (mùi hương, nốt đầu/giữa/cuối, lưu hương, phong cách, dịp dùng)",
+  other:      "kinh doanh",
 };
 
 const CORS = {
