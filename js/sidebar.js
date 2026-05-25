@@ -83,6 +83,28 @@
       shopName: profile.shop_name,
     };
 
+    // ── Thông báo hệ thống từ admin ───────────────────────
+    try {
+      const { data: msgEnabled } = await supa.from('app_settings').select('value').eq('key','system_message_enabled').single();
+      if (msgEnabled?.value === 'true') {
+        const [{ data: msgText }, { data: msgType }] = await Promise.all([
+          supa.from('app_settings').select('value').eq('key','system_message').single(),
+          supa.from('app_settings').select('value').eq('key','system_message_type').single(),
+        ]);
+        const text = msgText?.value?.trim();
+        const type = msgType?.value || 'info';
+        if (text) {
+          const typeIcon = { info: 'ti-info-circle', warning: 'ti-alert-triangle', danger: 'ti-alert-octagon' };
+          const sysBanner = document.getElementById('systemMessageBanner');
+          if (sysBanner) {
+            sysBanner.className = 'system-msg-banner ' + type;
+            sysBanner.innerHTML = `<i class="ti ${typeIcon[type] || 'ti-info-circle'}"></i><span>${text}</span>`;
+            sysBanner.style.display = 'flex';
+          }
+        }
+      }
+    } catch (_) {}
+
   } catch (e) {
     console.warn('[Vpost] sidebar.js error:', e);
   }

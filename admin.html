@@ -158,6 +158,57 @@ tr:hover td { background: var(--bg); }
 .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1d2e; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 999; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* SETTINGS */
+.settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+.settings-card-header { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.settings-card-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.settings-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.settings-card-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.settings-card-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+.settings-form-row { display: flex; flex-direction: column; gap: 7px; }
+.settings-label { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.settings-label i { font-size: 15px; color: var(--text-secondary); }
+.settings-input { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--text); outline: none; transition: border-color 0.2s; }
+.settings-input:focus { border-color: var(--primary); }
+.settings-textarea { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; transition: border-color 0.2s; resize: vertical; min-height: 80px; }
+.settings-textarea:focus { border-color: var(--primary); }
+.settings-preview { margin-top: 4px; }
+.preview-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+.system-banner { padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.system-banner.info    { background: #e8f4fd; border: 1px solid #90cdf4; color: #1a4fa8; }
+.system-banner.warning { background: #fffbeb; border: 1px solid #f6d860; color: #92400e; }
+.system-banner.danger  { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+
+/* Toggle (settings) */
+.toggle-wrap { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-track { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 22px; transition: all 0.3s; }
+.toggle-track::before { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; left: 3px; bottom: 3px; background: #fff; transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.toggle-input:checked ~ .toggle-track { background: var(--green); }
+.toggle-input:checked ~ .toggle-track::before { transform: translateX(20px); }
+
+/* Radio chip */
+.radio-chip { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+.radio-chip input { display: none; }
+.radio-chip:has(input:checked) { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+/* Quota table */
+.quota-table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.quota-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.quota-table th { background: var(--bg); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.quota-table td { padding: 12px 14px; border-top: 1px solid var(--border); }
+.plan-chip { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
+.plan-chip.trial    { background: var(--bg); color: var(--text-secondary); }
+.plan-chip.basic    { background: var(--accent-light); color: #2c7a7b; }
+.plan-chip.standard { background: var(--purple-light); color: var(--purple); }
+.plan-chip.pro      { background: var(--yellow-light); color: #92400e; }
+
+/* Stat mini cards */
+.stat-mini { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.stat-mini-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 4px; }
+.stat-mini-val { font-size: 22px; font-weight: 800; color: var(--text); }
+.stat-mini-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+
 @media (max-width: 900px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
@@ -364,6 +415,138 @@ tr:hover td { background: var(--bg); }
       </div>
     </div>
   </div>
+
+  <!-- SECTION: SETTINGS -->
+  <div id="sectionSettings" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Cài đặt hệ thống</div>
+        <div class="topbar-sub">Quản lý thông báo, giới hạn và thông tin hỗ trợ</div>
+      </div>
+      <button class="btn-add" onclick="saveSettings()" id="btnSaveSettings">
+        <i class="ti ti-device-floppy"></i> Lưu cài đặt
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div id="settingsLoading" style="text-align:center;padding:40px;color:var(--text-secondary)">
+      <i class="ti ti-loader-2" style="font-size:32px;display:block;margin-bottom:8px;animation:spin 1s linear infinite"></i>
+      Đang tải...
+    </div>
+
+    <div id="settingsBody" style="display:none">
+
+      <!-- Thống kê nhanh -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px">
+        <div class="stat-mini" id="sSumTotal">
+          <div class="stat-mini-icon" style="background:var(--primary-light);color:var(--primary)"><i class="ti ti-users"></i></div>
+          <div class="stat-mini-val" id="sSumTotalVal">—</div>
+          <div class="stat-mini-label">Tổng khách hàng</div>
+        </div>
+        <div class="stat-mini" id="sSumTrial">
+          <div class="stat-mini-icon" style="background:var(--accent-light);color:var(--accent)"><i class="ti ti-clock"></i></div>
+          <div class="stat-mini-val" id="sSumTrialVal">—</div>
+          <div class="stat-mini-label">Đang dùng thử</div>
+        </div>
+        <div class="stat-mini" id="sSumPaid">
+          <div class="stat-mini-icon" style="background:var(--green-light);color:var(--green)"><i class="ti ti-circle-check"></i></div>
+          <div class="stat-mini-val" id="sSumPaidVal">—</div>
+          <div class="stat-mini-label">Đang trả phí</div>
+        </div>
+        <div class="stat-mini" id="sSumRevenue">
+          <div class="stat-mini-icon" style="background:var(--yellow-light);color:var(--yellow)"><i class="ti ti-cash"></i></div>
+          <div class="stat-mini-val" id="sSumRevenueVal">—</div>
+          <div class="stat-mini-label">Doanh thu tháng này</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-icon" style="background:var(--danger-light);color:var(--danger)"><i class="ti ti-hourglass"></i></div>
+          <div class="stat-mini-val" id="sSumPendingVal">—</div>
+          <div class="stat-mini-label">Chờ xác nhận TT</div>
+        </div>
+      </div>
+
+      <!-- Card: Thông báo hệ thống -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-icon" style="background:var(--yellow-light);color:var(--yellow)"><i class="ti ti-speakerphone"></i></div>
+          <div>
+            <div class="settings-card-title">Thông báo hệ thống</div>
+            <div class="settings-card-sub">Hiện banner thông báo cho tất cả người dùng</div>
+          </div>
+          <label class="toggle-wrap" style="margin-left:auto">
+            <input type="checkbox" id="settingMsgEnabled" class="toggle-input">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="settings-card-body">
+          <div class="settings-form-row">
+            <label class="settings-label">Loại thông báo</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <label class="radio-chip"><input type="radio" name="msgType" value="info" checked> <i class="ti ti-info-circle"></i> Thông tin</label>
+              <label class="radio-chip"><input type="radio" name="msgType" value="warning"> <i class="ti ti-alert-triangle"></i> Cảnh báo</label>
+              <label class="radio-chip"><input type="radio" name="msgType" value="danger"> <i class="ti ti-alert-octagon"></i> Khẩn cấp</label>
+            </div>
+          </div>
+          <div class="settings-form-row">
+            <label class="settings-label">Nội dung thông báo</label>
+            <textarea class="settings-textarea" id="settingMsgText" placeholder="Ví dụ: Hệ thống sẽ bảo trì lúc 2:00 sáng ngày 01/07. Vui lòng lưu bài đăng trước khi bảo trì."></textarea>
+          </div>
+          <div class="settings-preview" id="settingMsgPreview" style="display:none">
+            <div class="preview-label"><i class="ti ti-eye"></i> Xem trước</div>
+            <div id="settingMsgPreviewBox" class="system-banner info"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Giới hạn AI theo gói -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-icon" style="background:var(--purple-light);color:var(--purple)"><i class="ti ti-robot"></i></div>
+          <div>
+            <div class="settings-card-title">Giới hạn AI theo gói</div>
+            <div class="settings-card-sub">Cấu hình hiện tại (chỉnh trong code caption.html / video.html)</div>
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="quota-table-wrap">
+            <table class="quota-table">
+              <thead>
+                <tr><th>Gói</th><th>Caption AI / ngày</th><th>Video / tháng</th><th>Giá / tháng</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="plan-chip trial">Dùng thử</span></td><td>3 bài</td><td>1 video</td><td>Miễn phí</td></tr>
+                <tr><td><span class="plan-chip basic">Cơ bản</span></td><td>5 bài</td><td>1 video</td><td>100.000 ₫</td></tr>
+                <tr><td><span class="plan-chip standard">Tiêu chuẩn</span></td><td>15 bài</td><td>2 video</td><td>200.000 ₫</td></tr>
+                <tr><td><span class="plan-chip pro">Pro</span></td><td>Không giới hạn</td><td>5 video</td><td>400.000 ₫</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Thông tin hỗ trợ -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-icon" style="background:var(--accent-light);color:var(--accent)"><i class="ti ti-headset"></i></div>
+          <div>
+            <div class="settings-card-title">Thông tin hỗ trợ</div>
+            <div class="settings-card-sub">Liên kết và số điện thoại hiện cho khách khi cần trợ giúp</div>
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="settings-form-row">
+            <label class="settings-label"><i class="ti ti-brand-hipchat"></i> Link Zalo hỗ trợ</label>
+            <input class="settings-input" id="settingZalo" type="url" placeholder="https://zalo.me/...">
+          </div>
+          <div class="settings-form-row">
+            <label class="settings-label"><i class="ti ti-phone"></i> Số điện thoại hỗ trợ</label>
+            <input class="settings-input" id="settingPhone" type="text" placeholder="0789.434.345">
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /settingsBody -->
+  </div><!-- /sectionSettings -->
 
 </main>
 
@@ -635,6 +818,114 @@ function showSection(section, evt) {
   if (trigger && trigger.classList) trigger.classList.add('active');
   if (section === 'payments')  loadPayments();
   if (section === 'customers') loadCustomers();
+  if (section === 'settings')  loadSettings();
+}
+
+// ══════════════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════════════
+let settingsCache = {};
+
+async function loadSettings() {
+  const supa = window.vpostSupabase;
+  document.getElementById('settingsLoading').style.display = 'block';
+  document.getElementById('settingsBody').style.display    = 'none';
+
+  // Load settings từ Supabase
+  const { data: rows, error } = await supa.from('app_settings').select('key,value');
+  if (error) { showToast('Lỗi tải cài đặt: ' + error.message); }
+
+  // Build cache
+  settingsCache = {};
+  (rows || []).forEach(r => { settingsCache[r.key] = r.value; });
+
+  // Populate form
+  const msgEnabled = settingsCache['system_message_enabled'] === 'true';
+  const msgType    = settingsCache['system_message_type'] || 'info';
+  const msgText    = settingsCache['system_message'] || '';
+
+  document.getElementById('settingMsgEnabled').checked = msgEnabled;
+  document.getElementById('settingMsgText').value = msgText;
+  document.querySelectorAll('input[name="msgType"]').forEach(r => {
+    r.checked = (r.value === msgType);
+  });
+
+  document.getElementById('settingZalo').value  = settingsCache['support_zalo']  || '';
+  document.getElementById('settingPhone').value = settingsCache['support_phone'] || '';
+
+  // Wire preview
+  document.getElementById('settingMsgText').addEventListener('input', updateMsgPreview);
+  document.querySelectorAll('input[name="msgType"]').forEach(r => r.addEventListener('change', updateMsgPreview));
+  updateMsgPreview();
+
+  // Load quick stats
+  await loadAdminStats();
+
+  document.getElementById('settingsLoading').style.display = 'none';
+  document.getElementById('settingsBody').style.display    = 'block';
+}
+
+function updateMsgPreview() {
+  const text = document.getElementById('settingMsgText').value.trim();
+  const type = document.querySelector('input[name="msgType"]:checked')?.value || 'info';
+  const typeIcon = { info: 'ti-info-circle', warning: 'ti-alert-triangle', danger: 'ti-alert-octagon' };
+  const preview = document.getElementById('settingMsgPreviewBox');
+  const wrap    = document.getElementById('settingMsgPreview');
+  if (!text) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  preview.className  = 'system-banner ' + type;
+  preview.innerHTML  = `<i class="ti ${typeIcon[type]}" style="flex-shrink:0;font-size:16px"></i>${text}`;
+}
+
+async function saveSettings() {
+  const supa = window.vpostSupabase;
+  const btn  = document.getElementById('btnSaveSettings');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Đang lưu...';
+
+  const updates = [
+    { key: 'system_message',         value: document.getElementById('settingMsgText').value.trim() },
+    { key: 'system_message_enabled', value: document.getElementById('settingMsgEnabled').checked ? 'true' : 'false' },
+    { key: 'system_message_type',    value: document.querySelector('input[name="msgType"]:checked')?.value || 'info' },
+    { key: 'support_zalo',           value: document.getElementById('settingZalo').value.trim() },
+    { key: 'support_phone',          value: document.getElementById('settingPhone').value.trim() },
+  ];
+
+  for (const u of updates) {
+    const { error } = await supa.from('app_settings').upsert({ key: u.key, value: u.value, updated_at: new Date().toISOString() });
+    if (error) { showToast('Lỗi: ' + error.message); break; }
+  }
+
+  showToast('✅ Đã lưu cài đặt!');
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i> Lưu cài đặt';
+}
+
+async function loadAdminStats() {
+  const supa = window.vpostSupabase;
+
+  // Đếm users theo gói
+  const { data: profiles } = await supa.from('profiles').select('plan, is_locked').neq('role', 'admin');
+  const total   = (profiles || []).length;
+  const trial   = (profiles || []).filter(p => p.plan === 'trial').length;
+  const paid    = (profiles || []).filter(p => ['basic','standard','pro'].includes(p.plan)).length;
+
+  document.getElementById('sSumTotalVal').textContent = total;
+  document.getElementById('sSumTrialVal').textContent = trial;
+  document.getElementById('sSumPaidVal').textContent  = paid;
+
+  // Doanh thu tháng này (approved payments)
+  const now   = new Date();
+  const from  = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const { data: pays } = await supa.from('payments')
+    .select('amount_vnd')
+    .eq('status', 'approved')
+    .gte('created_at', from);
+  const revenue = (pays || []).reduce((s, p) => s + (p.amount_vnd || 0), 0);
+  document.getElementById('sSumRevenueVal').textContent =
+    revenue > 0 ? revenue.toLocaleString('vi-VN') + ' ₫' : '0 ₫';
+
+  // Pending payments
+  const { count } = await supa.from('payments').select('id', { count: 'exact', head: true }).eq('status', 'pending');
+  document.getElementById('sSumPendingVal').textContent = count ?? 0;
 }
 
 // ── Init ────────────────────────────────────────────────────

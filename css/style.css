@@ -419,6 +419,29 @@ button, input, select, textarea { font-family: inherit; }
   .btn-schedule,.btn-skip { width: 100%; }
 }
 
+/* PLAN EXPIRY BANNER */
+.plan-expiry-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-radius: var(--radius); margin-bottom: 16px;
+  font-size: 13.5px; font-weight: 500;
+}
+.plan-expiry-banner a { margin-left: auto; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.plan-expiry-banner.warn   { background: #fffbeb; border: 1px solid #f6d860; color: #92400e; }
+.plan-expiry-banner.warn a { color: #d97706; }
+.plan-expiry-banner.danger   { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+.plan-expiry-banner.danger a { color: var(--danger); }
+
+/* SYSTEM MESSAGE BANNER (from admin settings) */
+.system-msg-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-radius: var(--radius); margin-bottom: 16px;
+  font-size: 13.5px; font-weight: 500;
+}
+.system-msg-banner i { font-size: 17px; flex-shrink: 0; }
+.system-msg-banner.info    { background: #e8f4fd; border: 1px solid #90cdf4; color: #1a4fa8; }
+.system-msg-banner.warning { background: #fffbeb; border: 1px solid #f6d860; color: #92400e; }
+.system-msg-banner.danger  { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+
 /* ANIMATIONS */
 @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
