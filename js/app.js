@@ -253,10 +253,17 @@ async function refreshStats() {
     if (statPosts) statPosts.textContent = postedCount;
     if (statAuto)  statAuto.textContent  = autoCount;
 
-    // Ước lượng tương tác (tạm — sẽ thay bằng FB Graph API ở phase sau)
-    if (statInteract) {
-      const realInteractions = (allMonth.data || []).reduce((s, p) => s + (p.interactions || 0), 0);
-      statInteract.textContent = realInteractions > 0 ? realInteractions : totalThisMonth * 12;
+    // AI calls hôm nay từ usage_log
+    if (statInteract && window.vpostSupabase) {
+      try {
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const { count } = await window.vpostSupabase
+          .from('usage_log')
+          .select('*', { count: 'exact', head: true })
+          .eq('action', 'caption_generate')
+          .gte('created_at', todayStart.toISOString());
+        statInteract.textContent = count ?? 0;
+      } catch(_) { statInteract.textContent = 0; }
     }
 
     // Streak: đếm số ngày liên tiếp có post
@@ -413,14 +420,14 @@ const industryAssets = {
 };
 
 // ===== LOAD THÔNG TIN SHOP THEO USER THẬT =====
-function applyShopAssets() {
+function applyShopAssets(overrideIndustry, overrideName) {
   try {
     const user = (window.VpostAuth ? VpostAuth.getCurrentUser() : null) || JSON.parse(localStorage.getItem('vpost_user') || '{}');
     if (!user || !user.loggedIn) return;
 
-    const industry = user.industry || 'other';
+    const industry = overrideIndustry || user.industry || 'other';
     const assets = industryAssets[industry] || industryAssets['other'];
-    const shopName = user.shopName || user.name || 'Shop của bạn';
+    const shopName = overrideName || user.shopName || user.name || 'Shop của bạn';
 
     // Cập nhật tên shop
     ['heroShopName', 'heroPlatformPage'].forEach(id => {
@@ -430,24 +437,23 @@ function applyShopAssets() {
     document.querySelectorAll('.shop-hero-name').forEach(el => el.textContent = shopName);
     document.querySelectorAll('.platform-page').forEach(el => el.textContent = shopName);
 
-    // Cập nhật ảnh cover và avatar theo ngành (cả app.html lẫn settings.html)
+    // Cập nhật ảnh cover và avatar theo ngành
     document.querySelectorAll('.shop-hero-cover, .shop-profile-cover img').forEach(el => { el.src = assets.cover; });
     document.querySelectorAll('.shop-avatar, .shop-profile-avatar, #settingsAvatar').forEach(el => { el.src = assets.avatar; });
 
-    // Cập nhật ảnh mẫu theo ngành (loop để khi industry đổi ảnh cũng đổi)
+    // Cập nhật ảnh mẫu theo ngành
     const sampleImgs = document.querySelectorAll('.sample-img');
     sampleImgs.forEach((img, i) => {
       const idx = i % assets.samples.length;
       if (assets.samples[idx]) img.src = assets.samples[idx];
     });
 
-    // Set placeholder 0 cho stats — refreshStats() sẽ load real data từ Supabase
+    // Set placeholder 0 cho stats
     ['statPosts','statAuto','statStreak','statInteract'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.textContent) el.textContent = '0';
     });
 
-    // Lưu ngày join nếu chưa có (giữ để các phase sau dùng)
     if (!user.joinDate) {
       user.joinDate = new Date().toISOString();
       localStorage.setItem('vpost_user', JSON.stringify(user));
@@ -459,10 +465,41 @@ function applyShopAssets() {
   } catch(e) { console.log('applyShopAssets error:', e); }
 }
 
+// ===== LOAD SHOP TỪ SUPABASE (luôn mới nhất) =====
+async function loadShopFromSupabase() {
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
+
+    const { data: profile } = await supa
+      .from('profiles')
+      .select('shop_name, industry')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!profile) return;
+
+    // Sync về localStorage để các module khác dùng
+    try {
+      const stored = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+      if (profile.shop_name) stored.shopName = profile.shop_name;
+      if (profile.industry)  stored.industry  = profile.industry;
+      localStorage.setItem('vpost_user', JSON.stringify(stored));
+    } catch(_) {}
+
+    // Cập nhật UI với data thật từ Supabase
+    applyShopAssets(profile.industry, profile.shop_name);
+
+  } catch(e) { console.warn('[Vpost] loadShopFromSupabase error:', e); }
+}
+
 // Gọi khi trang load xong
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.location.href.includes('login') && !window.location.href.includes('onboarding')) {
-    setTimeout(applyShopAssets, 100);
+    setTimeout(applyShopAssets, 100);       // Hiện ngay từ localStorage (nhanh)
+    setTimeout(loadShopFromSupabase, 400);  // Sau đó sync từ Supabase (luôn mới nhất)
   }
 });
 

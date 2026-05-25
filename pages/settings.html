@@ -290,6 +290,10 @@
           <option value="education">📚 Giáo dục / Đào tạo</option>
           <option value="furniture">🪑 Buôn bán nội thất</option>
           <option value="sport">⚽ Thể thao / Fitness</option>
+          <option value="realestate">🏢 Bất động sản</option>
+          <option value="shoes">👟 Giày dép</option>
+          <option value="authentic">💎 Hàng Authentic</option>
+          <option value="perfume">🌸 Nước hoa</option>
           <option value="other">🎁 Ngành khác</option>
         </select>
       </div>
@@ -448,74 +452,91 @@ async function doLogout() {
 </body>
 </html>
 <script>
-// Load thông tin user thật vào settings
-document.addEventListener('DOMContentLoaded', () => {
+const INDUSTRY_LABELS = {
+  coffee:'☕ Cà phê / Đồ uống', fashion:'👗 Thời trang',
+  beauty:'💄 Mỹ phẩm / Làm đẹp', food:'🍜 Ẩm thực / Nhà hàng',
+  tech:'📱 Điện tử / Công nghệ', home:'🏠 Nội thất / Gia dụng',
+  health:'💊 Sức khoẻ / Dược phẩm', education:'📚 Giáo dục / Đào tạo',
+  furniture:'🪑 Buôn bán nội thất', sport:'⚽ Thể thao / Fitness',
+  realestate:'🏢 Bất động sản', shoes:'👟 Giày dép',
+  authentic:'💎 Hàng Authentic', perfume:'🌸 Nước hoa',
+  other:'🎁 Ngành khác'
+};
+
+// Áp dụng data lên UI
+function applySettingsUI(shopName, shopAddr, shopDesc, industry, plan) {
+  const nameInput = document.querySelector('input[placeholder="Tên shop của bạn"]');
+  const addrInput = document.querySelector('input[placeholder="Địa chỉ shop"]');
+  const descArea  = document.querySelector('textarea.settings-input');
+  const industrySelect = document.getElementById('industrySelect');
+  const profileName    = document.querySelector('.shop-profile-name');
+  const profileInd     = document.querySelector('.shop-profile-industry');
+  const planBadge      = document.querySelector('.plan-badge');
+  const planNames = { trial:'Dùng thử', basic:'Cơ Bản', standard:'Tiêu Chuẩn', pro:'Pro' };
+
+  if (nameInput && shopName)  nameInput.value = shopName;
+  if (addrInput && shopAddr)  addrInput.value = shopAddr;
+  if (descArea  && shopDesc)  descArea.value  = shopDesc;
+  if (industrySelect && industry) industrySelect.value = industry;
+  if (profileName && shopName)    profileName.textContent = shopName;
+  if (profileInd  && industry)    profileInd.textContent  = INDUSTRY_LABELS[industry] || industry;
+  if (planBadge   && plan)        planBadge.textContent   = 'Gói ' + (planNames[plan] || plan);
+}
+
+// Load từ localStorage trước (nhanh), sau đó override bằng Supabase
+document.addEventListener('DOMContentLoaded', async () => {
+  // Bước 1: localStorage
   try {
     const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
-    if (!user.loggedIn) return;
+    if (user.loggedIn) applySettingsUI(user.shopName, user.shopAddr, user.shopDesc, user.industry, user.plan);
+  } catch(_) {}
 
-    // Tên shop
-    const nameInput = document.querySelector('input[placeholder="Tên shop của bạn"]');
-    if (nameInput && user.shopName) nameInput.value = user.shopName;
+  // Bước 2: Supabase — data thật, luôn mới nhất
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
 
-    // Địa chỉ
-    const addrInput = document.querySelector('input[placeholder="Địa chỉ shop"]');
-    if (addrInput && user.shopAddr) addrInput.value = user.shopAddr;
+    const { data: p } = await supa.from('profiles')
+      .select('shop_name, industry, plan')
+      .eq('id', session.user.id).single();
+    if (!p) return;
 
-    // Mô tả
-    const descArea = document.querySelector('textarea.settings-input');
-    if (descArea && user.shopDesc) descArea.value = user.shopDesc;
+    applySettingsUI(p.shop_name, null, null, p.industry, p.plan);
 
-    // Ngành hàng
-    const industrySelect = document.getElementById('industrySelect');
-    if (industrySelect && user.industry) industrySelect.value = user.industry;
-
-    // Shop profile name
-    const profileName = document.querySelector('.shop-profile-name');
-    if (profileName && user.shopName) profileName.textContent = user.shopName;
-
-    // Shop profile industry
-    const profileIndustry = document.querySelector('.shop-profile-industry');
-    if (profileIndustry && user.industry) {
-      const labels = {
-        coffee:'☕ Cà phê / Đồ uống', fashion:'👗 Thời trang',
-        beauty:'💄 Mỹ phẩm / Làm đẹp', food:'🍜 Ẩm thực / Nhà hàng',
-        tech:'📱 Điện tử / Công nghệ', home:'🏠 Nội thất / Gia dụng',
-        health:'💊 Sức khoẻ / Dược phẩm', education:'📚 Giáo dục / Đào tạo',
-        furniture:'🪑 Buôn bán nội thất', sport:'⚽ Thể thao / Fitness',
-        other:'🎁 Ngành khác'
-      };
-      profileIndustry.textContent = labels[user.industry] || user.industry;
-    }
-
-    // Plan badge
-    const planBadge = document.querySelector('.plan-badge');
-    const planNames = { trial:'Dùng thử', basic:'Cơ Bản', standard:'Tiêu Chuẩn', pro:'Pro' };
-    if (planBadge && user.plan) planBadge.textContent = 'Gói ' + (planNames[user.plan] || user.plan);
-
-  } catch(e) {}
+    // Sync ngược về localStorage
+    const stored = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+    if (p.shop_name) stored.shopName = p.shop_name;
+    if (p.industry)  stored.industry  = p.industry;
+    if (p.plan)      stored.plan      = p.plan;
+    localStorage.setItem('vpost_user', JSON.stringify(stored));
+  } catch(e) { console.warn('[Settings] Supabase load error:', e); }
 });
 
-function updateIndustry(val) {
+// Đổi ngành hàng → lưu Supabase + localStorage
+async function updateIndustry(val) {
   try {
-    const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
-    user.industry = val;
-    localStorage.setItem('vpost_user', JSON.stringify(user));
-    // Cập nhật ảnh ngay trên trang settings
-    if (window.applyShopAssets) window.applyShopAssets();
-    // Cập nhật label ngành ngay dưới tên shop
-    const labels = {
-      coffee:'☕ Cà phê / Đồ uống', fashion:'👗 Thời trang',
-      beauty:'💄 Mỹ phẩm / Làm đẹp', food:'🍜 Ẩm thực / Nhà hàng',
-      tech:'📱 Điện tử / Công nghệ', home:'🏠 Nội thất / Gia dụng',
-      health:'💊 Sức khoẻ / Dược phẩm', education:'📚 Giáo dục / Đào tạo',
-      furniture:'🪑 Buôn bán nội thất', sport:'⚽ Thể thao / Fitness',
-      other:'🎁 Ngành khác'
-    };
+    // Cập nhật UI ngay lập tức
     const ind = document.querySelector('.shop-profile-industry');
-    if (ind) ind.textContent = labels[val] || val;
-    if (window.showToast) showToast('Đã cập nhật ngành hàng — ảnh sẽ đổi theo ✨');
-  } catch(e) {}
+    if (ind) ind.textContent = INDUSTRY_LABELS[val] || val;
+    if (window.applyShopAssets) window.applyShopAssets(val);
+
+    // Lưu localStorage
+    const stored = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+    stored.industry = val;
+    localStorage.setItem('vpost_user', JSON.stringify(stored));
+
+    // Lưu Supabase
+    const supa = window.vpostSupabase;
+    if (supa) {
+      const { data: { session } } = await supa.auth.getSession();
+      if (session?.user?.id) {
+        await supa.from('profiles').update({ industry: val }).eq('id', session.user.id);
+      }
+    }
+    if (window.showToast) showToast('Đã cập nhật ngành hàng ✨');
+  } catch(e) { console.warn('[Settings] updateIndustry error:', e); }
 }
 
 // ============================================================
