@@ -1024,4 +1024,59 @@ function showUpgradePrompt(type) {
 }
 
 async function doLogout() {
-  if (!confirm('Bạn có chắc muốn đăng xuất không?')) retur
+  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
+  try { await window.vpostAuth?.signOut(); } catch(e) {}
+  localStorage.removeItem('vpost_user');
+  window.location.href = '../login.html';
+}
+
+// ===== DRAG & DROP =====
+function initDragDrop() {
+  const zone = document.querySelector('.upload-grid-zone');
+  if (!zone) return;
+
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    zone.classList.add('drag-over');
+  });
+
+  zone.addEventListener('dragleave', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    zone.classList.remove('drag-over');
+  });
+
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    zone.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    // Fill from the first empty slot
+    let startIdx = uploadedImages.findIndex(img => !img);
+    if (startIdx === -1) startIdx = 0;
+    files.forEach((file, fi) => {
+      const idx = startIdx + fi;
+      if (idx >= MAX_IMAGES) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        uploadedImages[idx] = ev.target.result;
+        renderSlots();
+        if (uploadedImages.filter(Boolean).length >= 2) previewSlides();
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  renderSlots();
+  renderQuota();
+  initDragDrop();
+});
+
+</script>
+</body>
+</html>
