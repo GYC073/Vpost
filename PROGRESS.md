@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-25 (session 4)
+**Last updated:** 2026-05-25 (session 5)
 
 ---
 
@@ -100,15 +100,36 @@
 - [x] `pages/video.html` + `pages/caption.html` — modal upgrade khi hết quota thay vì toast đơn thuần
 - [x] `assets/` folder tạo sẵn (cần thêm `qr-momo.jpg`)
 
-**Còn lại Phase 5:**
-- [ ] Admin panel: tab xem `fb_api_log` (debug FB posts)
-- [ ] Admin panel: thống kê doanh thu thật từ payments approved
-- [ ] Sidebar các page: hiện đúng tên gói + ngày hết hạn từ Supabase (hiện hardcode)
-- [ ] `app.html` dashboard: banner "X ngày còn lại" nếu plan sắp hết hạn
+**Đã làm thêm (session 5 — 2026-05-25):**
+- [x] `js/sidebar.js` — load plan + days left từ Supabase, hiển thị động trên sidebar mọi page
+- [x] `css/style.css` — thêm `.plan-expiry-banner`, `.system-msg-banner` styles
+- [x] `app.html` — banner `#planExpiryBanner` (warn/danger ≤5 ngày) + `#systemMessageBanner` (từ admin)
+- [x] `admin.html` tab Khách hàng — **kết nối Supabase thật**: loadCustomers, renderTable, toggleCustomer, openEditModal, saveCustomer, extendPlan (không còn localStorage demo)
+- [x] `admin.html` tab Thanh toán — **kết nối Supabase thật**: loadPayments, confirmPayment (approve + cập nhật profiles.plan), rejectPayment
+- [x] `admin.html` tab Cài đặt hệ thống — **MỚI HOÀN TOÀN**:
+  - Thống kê nhanh: tổng user, đang trial, đang trả phí, doanh thu tháng, chờ xác nhận TT
+  - Thông báo hệ thống: bật/tắt toggle, loại (info/warning/danger), nội dung, xem preview → hiện banner cho tất cả user
+  - Giới hạn AI theo gói: bảng read-only quota mỗi gói
+  - Thông tin hỗ trợ: Zalo URL + phone lưu vào Supabase
+- [x] `supabase/migrations/006_app_settings.sql` — bảng `app_settings` (key-value), RLS policies, default values — **đã chạy thành công trên Supabase**
+- [x] Fix nhiều lần file `admin.html` bị truncate (mất JS) — đã ổn định với 1 script block duy nhất
 
-**Ghi chú:**
-- Momo QR: cần save `D:\vpost\assets\qr-momo.jpg` (ảnh QR Momo của Thắng)
-- MB Bank QR: tự động generate via VietQR API (dynamic theo số tiền + nội dung CK)
+**Còn lại Phase 5:**
+- [ ] Admin panel: tab Thống kê — biểu đồ doanh thu, bài đăng theo ngày (hiện vẫn "đang phát triển")
+- [ ] Admin panel: tab xem `fb_api_log` (debug FB posts)
+- [ ] Test thực tế tab Cài đặt hệ thống sau khi push + deploy
+
+**Git commits session 5:**
+- `6612e6a` feat: admin settings + payments real data; fix script duplication
+- `990f9f7` feat: admin settings page - thong bao, quota, ho tro, thong ke nhanh
+- `b001e8f` feat: admin customers tab -> Supabase real data
+- `5d51b20` feat: sidebar dong + banner het han + Momo QR lon hon
+
+**Ghi chú kỹ thuật quan trọng:**
+- `admin.html` hay bị truncate khi Edit tool chạy trên file lớn → dùng Python để append/rewrite an toàn hơn
+- Git lock file `.git/index.lock` chỉ tồn tại trong Linux sandbox, KHÔNG tồn tại trên Windows → user chỉ cần chạy git trực tiếp từ Windows CMD/PowerShell, không cần `del` gì cả
+- Migration 006 đã chạy: bảng `app_settings` có 5 rows mặc định (system_message, system_message_enabled, system_message_type, support_zalo, support_phone)
+- MB Bank QR: VietQR API động theo amount + note. Momo QR: ảnh tĩnh `assets/qr-momo.jpg` (đã có)
 
 ### Phase 6 — Hoàn thiện Meta App Review (sau khi submit)
 - [ ] Chờ Meta review (~5–7 ngày làm việc)
