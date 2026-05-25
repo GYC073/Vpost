@@ -86,6 +86,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .btn-add { display: flex; align-items: center; gap: 6px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
 .btn-add:hover { background: var(--primary-dark); }
 .btn-add i { font-size: 16px; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* TABLE */
 .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
@@ -317,45 +318,48 @@ tr:hover td { background: var(--bg); }
         <div class="topbar-title">Thanh toán chờ xác nhận</div>
         <div class="topbar-sub">Các shop đã chuyển khoản, chờ admin kích hoạt</div>
       </div>
+      <div class="topbar-actions">
+        <select class="filter-select" id="payStatusFilter" onchange="loadPayments()" style="min-width:140px">
+          <option value="pending">Chờ xác nhận</option>
+          <option value="approved">Đã duyệt</option>
+          <option value="rejected">Đã từ chối</option>
+          <option value="">Tất cả</option>
+        </select>
+        <button class="btn-add" onclick="loadPayments()" style="background:var(--surface);color:var(--primary);border:1.5px solid var(--primary)">
+          <i class="ti ti-refresh"></i> Làm mới
+        </button>
+      </div>
     </div>
-    <div class="table-card">
+
+    <!-- Loading state -->
+    <div id="paymentsLoading" style="text-align:center;padding:40px;color:var(--text-secondary)">
+      <i class="ti ti-loader-2" style="font-size:32px;display:block;margin-bottom:8px;animation:spin 1s linear infinite"></i>
+      Đang tải...
+    </div>
+
+    <!-- Empty state -->
+    <div id="paymentsEmpty" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:48px;text-align:center;color:var(--text-secondary)">
+      <i class="ti ti-cash-off" style="font-size:48px;display:block;margin-bottom:12px;color:var(--border)"></i>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Không có yêu cầu nào</div>
+      <div style="font-size:13px">Chưa có shop nào gửi yêu cầu thanh toán</div>
+    </div>
+
+    <!-- Payments table -->
+    <div class="table-card" id="paymentsTable" style="display:none">
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Shop</th><th>Gói muốn đăng ký</th><th>Số tiền</th><th>Thời gian</th><th>Thao tác</th></tr>
+            <tr>
+              <th>Shop</th>
+              <th>Gói đăng ký</th>
+              <th>Số tiền</th>
+              <th>Nội dung CK</th>
+              <th>Ghi chú</th>
+              <th>Thời gian</th>
+              <th>Thao tác</th>
+            </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><div class="shop-cell"><div class="shop-avatar">T</div><div><div class="shop-name">Tiệm Bánh Mì Tuấn</div><div class="shop-phone">0901 234 567</div></div></div></td>
-              <td><span class="plan-badge standard">Tiêu chuẩn</span></td>
-              <td style="font-weight:600;color:var(--green)">350.000 ₫</td>
-              <td style="color:var(--text-secondary);font-size:12px">Hôm nay, 09:23</td>
-              <td><div class="action-cell">
-                <button class="btn-add" style="font-size:12px;padding:6px 12px" onclick="showToast('Đã kích hoạt Tiệm Bánh Mì Tuấn! ✅')"><i class="ti ti-check"></i>Kích hoạt</button>
-                <button class="action-btn danger" onclick="showToast('Đã từ chối!')"><i class="ti ti-x"></i></button>
-              </div></td>
-            </tr>
-            <tr>
-              <td><div class="shop-cell"><div class="shop-avatar" style="background:linear-gradient(135deg,#48cfad,#38b2ac)">M</div><div><div class="shop-name">Mỹ Phẩm Lan Anh</div><div class="shop-phone">0901 234 567</div></div></div></td>
-              <td><span class="plan-badge basic">Cơ bản</span></td>
-              <td style="font-weight:600;color:var(--green)">200.000 ₫</td>
-              <td style="color:var(--text-secondary);font-size:12px">Hôm nay, 08:10</td>
-              <td><div class="action-cell">
-                <button class="btn-add" style="font-size:12px;padding:6px 12px" onclick="showToast('Đã kích hoạt Mỹ Phẩm Lan Anh! ✅')"><i class="ti ti-check"></i>Kích hoạt</button>
-                <button class="action-btn danger" onclick="showToast('Đã từ chối!')"><i class="ti ti-x"></i></button>
-              </div></td>
-            </tr>
-            <tr>
-              <td><div class="shop-cell"><div class="shop-avatar" style="background:linear-gradient(135deg,#FF8C42,#e05a00)">F</div><div><div class="shop-name">Fashion Hằng Boutique</div><div class="shop-phone">0987 654 321</div></div></div></td>
-              <td><span class="plan-badge pro">Pro</span></td>
-              <td style="font-weight:600;color:var(--green)">700.000 ₫</td>
-              <td style="color:var(--text-secondary);font-size:12px">Hôm qua, 21:45</td>
-              <td><div class="action-cell">
-                <button class="btn-add" style="font-size:12px;padding:6px 12px" onclick="showToast('Đã kích hoạt Fashion Hằng Boutique! ✅')"><i class="ti ti-check"></i>Kích hoạt</button>
-                <button class="action-btn danger" onclick="showToast('Đã từ chối!')"><i class="ti ti-x"></i></button>
-              </div></td>
-            </tr>
-          </tbody>
+          <tbody id="paymentsTbody"></tbody>
         </table>
       </div>
     </div>
@@ -383,9 +387,9 @@ tr:hover td { background: var(--bg); }
         <label class="modal-label">Gói dịch vụ</label>
         <select class="modal-input" id="modalPlan">
           <option value="trial">Dùng thử (3 ngày)</option>
-          <option value="basic">Cơ bản — 200k/tháng</option>
-          <option value="standard">Tiêu chuẩn — 350k/tháng</option>
-          <option value="pro">Pro — 700k/tháng</option>
+          <option value="basic">Cơ bản — 100k/tháng</option>
+          <option value="standard">Tiêu chuẩn — 200k/tháng</option>
+          <option value="pro">Pro — 400k/tháng</option>
         </select>
       </div>
       <div class="modal-form-group">
@@ -585,6 +589,8 @@ function showSection(section, evt) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const trigger = (evt && evt.currentTarget) || (window.event && window.event.currentTarget);
   if (trigger && trigger.classList) trigger.classList.add('active');
+  // Load dữ liệu thật khi mở tab Payments
+  if (section === 'payments') loadPayments();
 }
 
 function showToast(msg) {
@@ -595,6 +601,25 @@ function showToast(msg) {
 
 // Init
 renderTable(customers);
-</script>
-</body>
-</html>
+
+// ===== PAYMENTS (Supabase) =====
+const planLabelsP = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
+const planPrices  = { basic: 100000, standard: 200000, pro: 400000 };
+
+async function loadPayments() {
+  const supa = window.vpostSupabase;
+  if (!supa) return;
+
+  document.getElementById('paymentsLoading').style.display = 'block';
+  document.getElementById('paymentsEmpty').style.display = 'none';
+  document.getElementById('paymentsTable').style.display = 'none';
+
+  const status = document.getElementById('payStatusFilter').value;
+  let query = supa
+    .from('payments')
+    .select('*, profiles(shop_name, phone)')
+    .order('created_at', { ascending: false });
+  if (status) query = query.eq('status', status);
+
+  const { data, error } = await query;
+  document.getElementById('paymentsLoading').style.display = 'n

@@ -117,23 +117,26 @@ function renderExpired(customer) {
     <div class="plan-grid">
       <div class="plan-card">
         <div class="plan-name">Cơ bản</div>
-        <div class="plan-price">200k</div>
+        <div class="plan-price">100k</div>
         <div class="plan-period">/tháng</div>
       </div>
       <div class="plan-card recommended">
         <div class="recommended-tag">⭐ Phổ biến</div>
         <div class="plan-name">Tiêu chuẩn</div>
-        <div class="plan-price">400k</div>
+        <div class="plan-price">200k</div>
         <div class="plan-period">/tháng</div>
       </div>
       <div class="plan-card">
         <div class="plan-name">Pro</div>
-        <div class="plan-price">700k</div>
+        <div class="plan-price">400k</div>
         <div class="plan-period">/tháng</div>
       </div>
     </div>
+    <a class="zalo-btn" href="pages/upgrade.html" style="background:#2D6BE4;margin-bottom:8px">
+      <i class="ti ti-crown"></i> Nâng cấp ngay
+    </a>
     <a class="zalo-btn" href="https://zalo.me/0789434345" target="_blank">
-      <i class="ti ti-brand-hipchat"></i> Liên hệ qua Zalo để gia hạn
+      <i class="ti ti-brand-hipchat"></i> Liên hệ qua Zalo
     </a>
     <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i> Đăng xuất</button>`;
 }
@@ -161,8 +164,4 @@ function logout() {
 
 // Render theo lý do
 if (access.reason === 'expired') renderExpired(access.customer);
-else if (access.reason === 'disabled') renderDisabled(access.customer);
-else window.location.href = 'app.html'; // Đã OK thì về trang chủ
-</script>
-</body>
-</html>
+else if (access.reason === 'dis

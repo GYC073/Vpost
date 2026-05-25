@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nâng cấp gói — Vpost</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* ===== UPGRADE PAGE ===== */
+.upgrade-wrap { max-width: 720px; margin: 0 auto; padding: 0 4px; }
+.page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.page-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
+
+/* Plan cards */
+.plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+@media(max-width: 600px) { .plan-grid { grid-template-columns: 1fr; } }
+.plan-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 16px; padding: 20px 16px;
+  cursor: pointer; transition: all 0.2s; position: relative; text-align: center;
+}
+.plan-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(45,107,228,0.12); }
+.plan-card.selected { border-color: var(--primary); background: var(--primary-light, #e8f0fd); box-shadow: 0 6px 20px rgba(45,107,228,0.15); }
+.plan-card.recommended { border-color: #7C5CFC; }
+.plan-card.recommended.selected { background: #f3f0ff; }
+.plan-card.pro-card { border-color: var(--border); }
+.plan-card.pro-card.selected { border-color: #F59E0B; background: #fffbeb; }
+.plan-badge-tag {
+  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+  background: #7C5CFC; color: #fff; white-space: nowrap;
+}
+.plan-icon { font-size: 28px; margin-bottom: 8px; }
+.plan-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.plan-price { font-size: 24px; font-weight: 800; color: var(--primary); }
+.plan-period { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+.plan-features { list-style: none; padding: 0; margin: 0; text-align: left; }
+.plan-features li { font-size: 12px; color: var(--text-secondary); padding: 4px 0; display: flex; align-items: center; gap: 6px; }
+.plan-features li i { color: #22c55e; font-size: 14px; flex-shrink: 0; }
+.plan-select-btn {
+  margin-top: 16px; width: 100%; padding: 9px;
+  border: 1.5px solid var(--primary); border-radius: 10px;
+  background: transparent; color: var(--primary);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s;
+}
+.plan-card.selected .plan-select-btn { background: var(--primary); color: #fff; }
+.plan-card.recommended .plan-select-btn { border-color: #7C5CFC; color: #7C5CFC; }
+.plan-card.recommended.selected .plan-select-btn { background: #7C5CFC; color: #fff; }
+.plan-card.pro-card .plan-select-btn { border-color: #F59E0B; color: #F59E0B; }
+.plan-card.pro-card.selected .plan-select-btn { background: #F59E0B; color: #fff; }
+
+/* Trial badge */
+.trial-banner {
+  background: linear-gradient(135deg, #e8f5e9, #f1f8ff);
+  border: 1px solid #a7d7a8; border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px; font-size: 13px;
+}
+.trial-banner i { color: #22c55e; font-size: 20px; flex-shrink: 0; }
+.trial-banner strong { color: var(--text); }
+
+/* Step 2 — Payment */
+.step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.step-back { background: none; border: 1.5px solid var(--border); border-radius: 10px; padding: 6px 12px; cursor: pointer; font-family: inherit; font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+.step-back:hover { border-color: var(--text-secondary); color: var(--text); }
+.selected-plan-chip { display: flex; align-items: center; gap: 8px; background: var(--primary-light, #e8f0fd); color: var(--primary); font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 20px; }
+
+.transfer-note-box {
+  background: #f0fdf4; border: 1.5px solid #86efac;
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+}
+.transfer-note-label { font-size: 11px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.transfer-note-value { font-size: 18px; font-weight: 800; color: #166534; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+.copy-btn { background: #166534; color: #fff; border: none; border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.transfer-note-hint { font-size: 12px; color: #166534; margin-top: 6px; opacity: 0.75; }
+
+/* Payment method tabs */
+.pay-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.pay-tab { flex: 1; padding: 10px 8px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; color: var(--text-secondary); }
+.pay-tab.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light, #e8f0fd); }
+
+.pay-content { display: none; }
+.pay-content.active { display: block; }
+
+.qr-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 16px;
+}
+.qr-wrap img { width: 200px; height: 200px; border-radius: 8px; object-fit: contain; }
+.qr-bank-name { font-size: 13px; font-weight: 700; color: var(--text); margin-top: 12px; }
+.qr-account { font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
+.qr-owner { font-size: 12px; color: var(--text-secondary); }
+.qr-amount { display: inline-block; margin-top: 10px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; font-size: 14px; font-weight: 700; padding: 5px 14px; border-radius: 20px; }
+
+/* Submit section */
+.submit-section { margin-top: 8px; }
+.note-input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: inherit; font-size: 14px; color: var(--text);
+  background: var(--surface); outline: none; margin-bottom: 12px;
+  transition: border-color 0.15s;
+}
+.note-input:focus { border-color: var(--primary); }
+.submit-btn {
+  width: 100%; padding: 14px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 12px; font-family: inherit;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity 0.2s;
+}
+.submit-btn:hover { opacity: 0.92; }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.submit-hint { font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 10px; line-height: 1.6; }
+
+/* Step 3 — Success */
+.success-card { text-align: center; padding: 40px 20px; }
+.success-icon { width: 80px; height: 80px; background: #f0fdf4; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.success-icon i { font-size: 40px; color: #22c55e; }
+.success-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.success-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
+.success-info { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 24px; text-align: left; }
+.success-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+.success-label { color: var(--text-secondary); }
+.success-value { font-weight: 600; }
+.back-home-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; }
+
+/* Current plan banner */
+.current-plan-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.current-plan-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+.current-plan-dot.trial { background: #F59E0B; }
+.current-plan-dot.expired { background: #E24B4A; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <span class="logo-text">Vpost</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="../app.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+    <a href="calendar.html" class="nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+    <a href="caption.html" class="nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+    <a href="video.html" class="nav-item"><i class="ti ti-video"></i><span>Tạo Video</span></a>
+    <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+    <a href="upgrade.html" class="nav-item active"><i class="ti ti-crown"></i><span>Nâng cấp</span></a>
+  </nav>
+  <div class="sidebar-plan" id="sidebarPlan">
+    <div class="plan-badge" id="sidebarPlanBadge">...</div>
+    <div class="plan-expire" id="sidebarPlanExpire"></div>
+  </div>
+  <button onclick="doLogout()" style="display:flex;align-items:center;gap:9px;margin:0 12px 16px;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:none;color:rgba(255,255,255,0.4);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;width:calc(100% - 24px);transition:all 0.15s" onmouseover="this.style.background='rgba(220,38,38,0.15)';this.style.color='#FCA5A5'" onmouseout="this.style.background='none';this.style.color='rgba(255,255,255,0.4)'">
+    <i class="ti ti-logout" style="font-size:17px"></i><span>Đăng xuất</span>
+  </button>
+</aside>
+
+<!-- Mobile topbar -->
+<header class="mobile-topbar">
+  <button class="menu-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+  <div class="mobile-logo">
+    <div class="logo-icon sm"><i class="ti ti-pencil-star"></i></div>
+    <span>Vpost</span>
+  </div>
+  <div style="width:40px"></div>
+</header>
+
+<!-- Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="upgrade-wrap">
+
+    <!-- ===== STEP 1: CHỌN GÓI ===== -->
+    <div id="step1">
+      <div class="page-title">Nâng cấp gói dịch vụ</div>
+      <div class="page-sub">Chọn gói phù hợp với nhu cầu của shop bạn</div>
+
+      <!-- Current plan info -->
+      <div class="current-plan-box" id="currentPlanBox" style="display:none">
+        <div class="current-plan-dot" id="currentPlanDot"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600" id="currentPlanText">Gói hiện tại: ...</div>
+          <div style="font-size:12px;color:var(--text-secondary)" id="currentPlanExpire"></div>
+        </div>
+      </div>
+
+      <!-- Trial banner -->
+      <div class="trial-banner" id="trialBanner" style="display:none">
+        <i class="ti ti-clock"></i>
+        <div><strong>Bạn đang dùng thử miễn phí!</strong> Đăng ký gói để tiếp tục sử dụng sau khi hết thử.</div>
+      </div>
+
+      <!-- Plan cards -->
+      <div class="plan-grid">
+
+        <!-- Cơ bản -->
+        <div class="plan-card" id="card-basic" onclick="selectPlan('basic')">
+          <div class="plan-icon">🥉</div>
+          <div class="plan-name">Cơ bản</div>
+          <div class="plan-price">100k</div>
+          <div class="plan-period">/tháng</div>
+          <ul class="plan-features">
+            <li><i class="ti ti-check"></i>1 bài đăng/ngày</li>
+            <li><i class="ti ti-check"></i>1 video/ngày</li>
+            <li><i class="ti ti-check"></i>AI caption</li>
+            <li><i class="ti ti-check"></i>Tự động đăng 10h</li>
+          </ul>
+          <button class="plan-select-btn" id="btn-basic">Chọn gói này</button>
+        </div>
+
+        <!-- Tiêu chuẩn (Recommended) -->
+        <div class="plan-card recommended" id="card-standard" onclick="selectPlan('standard')">
+          <div class="plan-badge-tag">⭐ Phổ biến</div>
+          <div class="plan-icon">🥈</div>
+          <div class="plan-name">Tiêu chuẩn</div>
+          <div class="plan-price" style="color:#7C5CFC">200k</div>
+          <div class="plan-period">/tháng</div>
+          <ul class="plan-features">
+            <li><i class="ti ti-check"></i>2 bài đăng/ngày</li>
+            <li><i class="ti ti-check"></i>2 video/ngày</li>
+            <li><i class="ti ti-check"></i>5 tone giọng văn</li>
+            <li><i class="ti ti-check"></i>Bài tuyển dụng</li>
+            <li><i class="ti ti-check"></i>Nhắc Zalo tự động</li>
+          </ul>
+          <button class="plan-select-btn" id="btn-standard">Chọn gói này</button>
+        </div>
+
+        <!-- Pro -->
+        <div class="plan-card pro-card" id="card-pro" onclick="selectPlan('pro')">
+          <div class="plan-icon">🥇</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price" style="color:#F59E0B">400k</div>
+          <div class="plan-period">/tháng</div>
+          <ul class="plan-features">
+            <li><i class="ti ti-check"></i>2 bài đăng/ngày</li>
+            <li><i class="ti ti-check"></i>5 video/ngày</li>
+            <li><i class="ti ti-check"></i>Tone giọng tuỳ chỉnh</li>
+            <li><i class="ti ti-check"></i>Ưu tiên hỗ trợ 24/7</li>
+          </ul>
+          <button class="plan-select-btn" id="btn-pro">Chọn gói này</button>
+        </div>
+
+      </div>
+
+      <div style="text-align:center;font-size:12px;color:var(--text-secondary)">
+        <i class="ti ti-lock" style="font-size:14px"></i>
+        Thanh toán bảo mật qua chuyển khoản ngân hàng hoặc Momo. Admin xác nhận trong vòng 2–4 giờ.
+      </div>
+    </div>
+
+    <!-- ===== STEP 2: THANH TOÁN ===== -->
+    <div id="step2" style="display:none">
+      <div class="step-header">
+        <button class="step-back" onclick="goStep(1)"><i class="ti ti-arrow-left"></i> Quay lại</button>
+        <div class="selected-plan-chip" id="selectedPlanChip"></div>
+      </div>
+
+      <!-- Nội dung chuyển khoản -->
+      <div class="transfer-note-box">
+        <div class="transfer-note-label"><i class="ti ti-alert-triangle"></i> Bắt buộc — Nội dung chuyển khoản</div>
+        <div class="transfer-note-value">
+          <span id="transferNoteText"></span>
+          <button class="copy-btn" onclick="copyNote()"><i class="ti ti-copy"></i> Copy</button>
+        </div>
+        <div class="transfer-note-hint">Điền chính xác nội dung này để admin xác nhận nhanh hơn nhé!</div>
+      </div>
+
+      <!-- Payment tabs -->
+      <div class="pay-tabs">
+        <button class="pay-tab active" id="tabMB" onclick="switchTab('mb')">
+          🏦 MB Bank
+        </button>
+        <button class="pay-tab" id="tabMomo" onclick="switchTab('momo')">
+          🟣 Momo
+        </button>
+      </div>
+
+      <!-- MB Bank -->
+      <div class="pay-content active" id="contentMB">
+        <div class="qr-wrap">
+          <img id="mbQrImg" src="" alt="QR MB Bank" onerror="this.style.display='none';document.getElementById('mbQrFallback').style.display='block'">
+          <div id="mbQrFallback" style="display:none;padding:20px;font-size:13px;color:var(--text-secondary)">
+            <i class="ti ti-qrcode" style="font-size:48px;display:block;margin-bottom:8px;color:var(--border)"></i>
+            Quét mã trên app ngân hàng
+          </div>
+          <div class="qr-bank-name">MB Bank</div>
+          <div class="qr-account">0789 434 345</div>
+          <div class="qr-owner">NGUYỄN PHAN ĐẮC THẮNG</div>
+          <div class="qr-amount" id="mbAmount"></div>
+        </div>
+      </div>
+
+      <!-- Momo -->
+      <div class="pay-content" id="contentMomo">
+        <div class="qr-wrap">
+          <img src="../assets/qr-momo.jpg" alt="QR Momo" style="width:200px;height:200px;border-radius:8px;object-fit:contain" onerror="this.style.display='none';document.getElementById('momoFallback').style.display='block'">
+          <div id="momoFallback" style="display:none;padding:20px;font-size:13px;color:var(--text-secondary)">
+            <i class="ti ti-qrcode" style="font-size:48px;display:block;margin-bottom:8px;color:var(--border)"></i>
+            Quét mã trên app Momo
+          </div>
+          <div class="qr-bank-name">Ví Momo</div>
+          <div class="qr-account">0789 111 574</div>
+          <div class="qr-owner">NGUYỄN PHAN ĐẮC THẮNG</div>
+          <div class="qr-amount" id="momoAmount"></div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-section">
+        <input class="note-input" id="noteInput" type="text" placeholder="Ghi chú thêm (tuỳ chọn) — VD: shop mỹ phẩm ABC">
+        <button class="submit-btn" id="submitBtn" onclick="submitPayment()">
+          <i class="ti ti-check"></i> Tôi đã chuyển khoản
+        </button>
+        <div class="submit-hint">
+          Sau khi nhấn, admin sẽ xác nhận và kích hoạt gói cho bạn trong vòng <strong>2–4 giờ</strong> trong giờ hành chính.<br>
+          Cần hỗ trợ gấp? <a href="https://zalo.me/0789434345" target="_blank" style="color:var(--primary)">Nhắn Zalo ngay</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STEP 3: SUCCESS ===== -->
+    <div id="step3" style="display:none">
+      <div class="success-card">
+        <div class="success-icon"><i class="ti ti-circle-check"></i></div>
+        <div class="success-title">Yêu cầu đã được gửi! 🎉</div>
+        <div class="success-sub">Admin sẽ xác nhận và kích hoạt gói của bạn trong vòng 2–4 giờ. Trong thời gian chờ, bạn vẫn có thể sử dụng gói hiện tại.</div>
+        <div class="success-info" id="successInfo"></div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a href="../app.html" class="back-home-btn"><i class="ti ti-home"></i> Về trang chủ</a>
+          <a href="https://zalo.me/0789434345" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#0068FF;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600">
+            <i class="ti ti-brand-hipchat"></i> Nhắn Zalo
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /upgrade-wrap -->
+</main>
+
+<!-- Mobile nav -->
+<nav class="mobile-nav">
+  <a href="../app.html" class="mobile-nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+  <a href="calendar.html" class="mobile-nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+  <a href="caption.html" class="mobile-nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+  <a href="video.html" class="mobile-nav-item"><i class="ti ti-video"></i><span>Video</span></a>
+  <a href="upgrade.html" class="mobile-nav-item active"><i class="ti ti-crown"></i><span>Nâng cấp</span></a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+const PLAN_INFO = {
+  basic:    { name: 'Cơ bản',     price: 100000, priceStr: '100.000 ₫', code: 'COBAN',     icon: '🥉', color: '#2D6BE4' },
+  standard: { name: 'Tiêu chuẩn', price: 200000, priceStr: '200.000 ₫', code: 'TIEUCHUAN', icon: '🥈', color: '#7C5CFC' },
+  pro:      { name: 'Pro',         price: 400000, priceStr: '400.000 ₫', code: 'PRO',        icon: '🥇', color: '#F59E0B' },
+};
+
+let selectedPlan = null;
+let userPhone = '';
+let userId = null;
+
+// ===== INIT =====
+async function init() {
+  const supa = window.vpostSupabase;
+  const { data: { session } } = await supa.auth.getSession();
+  if (!session) { window.location.href = '../login.html'; return; }
+
+  userId = session.user.id;
+  const { data: profile } = await supa.from('profiles').select('shop_name, plan, plan_expires_at, phone').eq('id', userId).single();
+
+  if (profile) {
+    userPhone = profile.phone || '';
+    renderCurrentPlan(profile);
+
+    // Update sidebar plan
+    const planNames = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
+    const badge = document.getElementById('sidebarPlanBadge');
+    if (badge) badge.textContent = 'Gói ' + (planNames[profile.plan] || 'Dùng thử');
+    const expEl = document.getElementById('sidebarPlanExpire');
+    if (expEl && profile.plan_expires_at) {
+      const d = new Date(profile.plan_expires_at);
+      expEl.textContent = 'Hết hạn: ' + d.toLocaleDateString('vi-VN');
+    }
+  }
+}
+
+function renderCurrentPlan(profile) {
+  const box = document.getElementById('currentPlanBox');
+  const dot = document.getElementById('currentPlanDot');
+  const text = document.getElementById('currentPlanText');
+  const expire = document.getElementById('currentPlanExpire');
+  const trialBanner = document.getElementById('trialBanner');
+
+  const planNames = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
+  const isExpired = profile.plan_expires_at && new Date(profile.plan_expires_at) < new Date();
+
+  if (profile.plan === 'trial') {
+    trialBanner.style.display = 'flex';
+  }
+
+  box.style.display = 'flex';
+  dot.className = 'current-plan-dot ' + (isExpired ? 'expired' : profile.plan === 'trial' ? 'trial' : '');
+  text.textContent = 'Gói hiện tại: ' + (planNames[profile.plan] || 'Dùng thử');
+  if (profile.plan_expires_at) {
+    const d = new Date(profile.plan_expires_at);
+    const daysLeft = Math.ceil((d - new Date()) / 86400000);
+    expire.textContent = isExpired
+      ? '⚠️ Đã hết hạn'
+      : daysLeft <= 5
+      ? `⏳ Còn ${daysLeft} ngày (hết hạn ${d.toLocaleDateString('vi-VN')})`
+      : `Hết hạn ${d.toLocaleDateString('vi-VN')}`;
+  }
+}
+
+// ===== STEP NAVIGATION =====
+function goStep(n) {
+  document.getElementById('step1').style.display = n === 1 ? 'block' : 'none';
+  document.getElementById('step2').style.display = n === 2 ? 'block' : 'none';
+  document.getElementById('step3').style.display = n === 3 ? 'block' : 'none';
+  window.scrollTo(0, 0);
+}
+
+// ===== PLAN SELECTION =====
+function selectPlan(plan) {
+  selectedPlan = plan;
+  // Visual
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.plan-select-btn').forEach(b => b.textContent = 'Chọn gói này');
+  document.getElementById('card-' + plan).classList.add('selected');
+  document.getElementById('btn-' + plan).textContent = '✓ Đã chọn';
+
+  // Build transfer note
+  const note = `VPOST ${PLAN_INFO[plan].code} ${userPhone}`;
+  document.getElementById('transferNoteText').textContent = note;
+
+  // Chip
+  const info = PLAN_INFO[plan];
+  document.getElementById('selectedPlanChip').innerHTML = `${info.icon} ${info.name} — ${info.priceStr}`;
+
+  // QR URLs
+  const encodedNote = encodeURIComponent(note);
+  const encodedName = encodeURIComponent('NGUYEN PHAN DAC THANG');
+  const mbQrUrl = `https://img.vietqr.io/image/MB-0789434345-compact2.jpg?amount=${info.price}&addInfo=${encodedNote}&accountName=${encodedName}`;
+  document.getElementById('mbQrImg').src = mbQrUrl;
+  document.getElementById('mbAmount').textContent = info.priceStr;
+  document.getElementById('momoAmount').textContent = info.priceStr;
+
+  // Go to step 2 after short delay
+  setTimeout(() => goStep(2), 200);
+}
+
+function copyNote() {
+  const note = document.getElementById('transferNoteText').textContent;
+  navigator.clipboard.writeText(note).then(() => {
+    showToast('Đã copy nội dung CK! 📋');
+  });
+}
+
+// ===== TAB SWITCH =====
+function switchTab(tab) {
+  document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pay-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab' + (tab === 'mb' ? 'MB' : 'Momo')).classList.add('active');
+  document.getElementById('content' + (tab === 'mb' ? 'MB' : 'Momo')).classList.add('active');
+}
+
+// ===== SUBMIT PAYMENT =====
+async function submitPayment() {
+  if (!selectedPlan) return;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Đang gửi...';
+
+  const supa = window.vpostSupabase;
+  const note = document.getElementById('noteInput').value.trim();
+  const info = PLAN_INFO[selectedPlan];
+  const transferNote = document.getElementById('transferNoteText').textContent;
+
+  const { error } = await supa.from('payments').insert({
+    user_id: userId,
+    plan: selectedPlan,
+    amount_vnd: info.price,
+    months: 1,
+    transfer_note: transferNote,
+    admin_note: note || null,
+    status: 'pending'
+  });
+
+  if (error) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-check"></i> Tôi đã chuyển khoản';
+    showToast('Lỗi gửi yêu cầu: ' + error.message);
+    return;
+  }
+
+  // Success
+  document.getElementById('successInfo').innerHTML = `
+    <div class="success-row"><span class="success-label">Gói đăng ký</span><span class="success-value">${info.icon} ${info.name}</span></div>
+    <div class="success-row"><span class="success-label">Số tiền</span><span class="success-value" style="color:#22c55e">${info.priceStr}</span></div>
+    <div class="success-row"><span class="success-label">Nội dung CK</span><span class="success-value">${transferNote}</span></div>
+    <div class="success-row"><span class="success-label">Trạng thái</span><span class="success-value" style="color:#F59E0B">Chờ xác nhận</span></div>
+  `;
+  goStep(3);
+}
+
+// ===== HELPERS =====
+function doLogout() {
+  window.vpostSupabase.auth.signOut().then(() => { window.location.href = '../login.html'; });
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>

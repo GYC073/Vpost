@@ -458,7 +458,7 @@
 <script src="../js/app.js"></script>
 <script>
 // ===== CONFIG =====
-const PLAN_QUOTA = { basic: 1, standard: 2, pro: 5 };
+const PLAN_QUOTA = { trial: 1, basic: 1, standard: 2, pro: 5 };
 const MAX_IMAGES = 5;
 
 // ===== STATE =====
@@ -798,7 +798,7 @@ function pickMime() {
 async function startGenerate() {
   const { remaining } = getQuota();
   if (remaining <= 0) {
-    showToast('Hết lượt tạo video hôm nay! Nâng cấp gói để tạo thêm 🚀');
+    showUpgradePrompt('video');
     return;
   }
   const imgs = uploadedImages.filter(Boolean);
@@ -971,21 +971,15 @@ function resetVideo() {
   goToStep(1);
 }
 
-// ===== INIT =====
-renderSlots();
-renderQuota();
-</script>
+// ===== UPGRADE PROMPT =====
+function showUpgradePrompt(type) {
+  const existing = document.getElementById('upgradeModal');
+  if (existing) existing.remove();
 
-<script>
-async function doLogout() {
-  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
-  try {
-    if (window.vpostAuth?.signOut) await window.vpostAuth.signOut();
-  } catch (e) { console.warn('[Vpost] signOut error:', e); }
-  localStorage.removeItem('vpost_user');
-  const isInner = window.location.href.includes('/pages/');
-  window.location.href = isInner ? '../login.html' : 'login.html';
-}
-</script>
-</body>
-</html>
+  const planNames = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
+  const nextPlan = { trial:'basic', basic:'standard', standard:'pro', pro:'pro' };
+  const user = VpostAuth.getCurrentUser();
+  const plan = user?.plan || 'basic';
+  const next = nextPlan[plan];
+  const quotaInfo = type === 'video'
+    ? { icon:'🎬', label:'video', cur: PLAN_QUOTA[plan] || 1,

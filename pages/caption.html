@@ -577,7 +577,7 @@ async function generateCaptions() {
     console.error('[Vpost] Caption error:', err);
     // Bắt lỗi quota / plan expired riêng
     if (err.code === 'quota_exceeded') {
-      showToast(`⚠️ ${err.message}`);
+      showUpgradePrompt('caption');
       resetBtn();
       return;
     }
@@ -791,6 +791,5 @@ async function doLogout() {
   localStorage.removeItem('vpost_user');
   window.location.href = isInner ? '../login.html' : 'login.html';
 }
-</script>
-</body>
-</html>
+
+function showUpgradePrompt(typ
