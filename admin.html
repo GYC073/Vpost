@@ -410,16 +410,7 @@ tr:hover td { background: var(--bg); }
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
 <script>
-// Tạo data mẫu nếu chưa có (chạy 1 lần khi admin mở trang lần đầu)
-if (window.VpostAuth && VpostAuth.seedDemoData) VpostAuth.seedDemoData();
-
-let customers = VpostAuth.getCustomers();
-
-let editingId = null;
-let currentFilter = '';
-let currentStatusFilter = '';
-let currentPlanFilter = '';
-
+// ===== CONFIG =====
 const gradients = [
   'linear-gradient(135deg,#2D6BE4,#7C5CFC)',
   'linear-gradient(135deg,#48cfad,#38b2ac)',
@@ -427,160 +418,213 @@ const gradients = [
   'linear-gradient(135deg,#E24B4A,#c0392b)',
   'linear-gradient(135deg,#F59E0B,#d97706)',
 ];
-
 const planLabels = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
-const planClass = { trial:'trial', basic:'basic', standard:'standard', pro:'pro' };
-const statusLabels = { active:'Đang dùng', trial:'Dùng thử', expired:'Hết hạn', pending:'Chờ kích hoạt' };
+const planClass  = { trial:'trial', basic:'basic', standard:'standard', pro:'pro' };
 
+let allProfiles = [];   // cache từ Supabase
+let editingId   = null;
+let currentFilter = '', currentStatusFilter = '', currentPlanFilter = '';
+
+// ── Tính ngày còn lại ──────────────────────────────────────
 function daysLeft(dateStr) {
-  const diff = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
-  return diff;
+  if (!dateStr) return null;
+  return Math.ceil((new Date(dateStr) - new Date()) / 86400000);
 }
 
+// ── Suy trạng thái từ profile Supabase ──────────────────────
+function getStatus(p) {
+  if (p.is_locked) return 'locked';
+  const days = daysLeft(p.plan_expires_at);
+  if (days === null) return 'active';
+  if (days < 0)  return 'expired';
+  if (p.plan === 'trial') return 'trial';
+  return 'active';
+}
+
+const statusLabels = { active:'Đang dùng', trial:'Dùng thử', expired:'Hết hạn', locked:'Đã khoá' };
+
+// ── Load profiles từ Supabase ───────────────────────────────
+async function loadCustomers() {
+  const supa = window.vpostSupabase;
+  if (!supa) return;
+
+  const tbody = document.getElementById('customerTable');
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-secondary)">
+    <i class="ti ti-loader-2" style="font-size:28px;animation:spin 1s linear infinite;display:block;margin-bottom:8px"></i>Đang tải...</td></tr>`;
+
+  const { data, error } = await supa
+    .from('profiles')
+    .select('id, shop_name, phone, plan, plan_expires_at, is_locked, role, created_at')
+    .neq('role', 'admin')        // Ẩn admin khỏi danh sách
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--danger)">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+    return;
+  }
+
+  allProfiles = data || [];
+  renderTable(getFiltered());
+}
+
+// ── Render bảng ─────────────────────────────────────────────
 function renderTable(data) {
   const tbody = document.getElementById('customerTable');
   tbody.innerHTML = '';
-  data.forEach((c, i) => {
-    const days = daysLeft(c.expire);
-    const expireHtml = days < 0
-      ? `<div class="expire-chip"><i class="ti ti-alert-circle"></i>Hết hạn ${Math.abs(days)} ngày trước</div>`
-      : days <= 5
-      ? `<div class="expire-chip"><i class="ti ti-clock"></i>Còn ${days} ngày</div>`
-      : `<div class="expire-ok">${new Date(c.expire).toLocaleDateString('vi-VN')}</div>`;
 
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-secondary)">Không có khách hàng nào</td></tr>`;
+    updateStats();
+    return;
+  }
+
+  data.forEach((p, i) => {
+    const status  = getStatus(p);
+    const days    = daysLeft(p.plan_expires_at);
+    const initial = (p.shop_name || '?')[0].toUpperCase();
+    const grad    = gradients[i % gradients.length];
+
+    const expireHtml = days === null ? '—'
+      : days < 0  ? `<div class="expire-chip"><i class="ti ti-alert-circle"></i>Hết hạn ${Math.abs(days)} ngày trước</div>`
+      : days <= 5 ? `<div class="expire-chip"><i class="ti ti-clock"></i>Còn ${days} ngày</div>`
+      : `<div class="expire-ok">${new Date(p.plan_expires_at).toLocaleDateString('vi-VN')}</div>`;
+
+    const isActive = !p.is_locked;
     tbody.innerHTML += `
-      <tr id="row${c.id}">
+      <tr>
         <td>
           <div class="shop-cell">
-            <div class="shop-avatar" style="background:${gradients[i % gradients.length]}">${c.initial}</div>
+            <div class="shop-avatar" style="background:${grad}">${initial}</div>
             <div>
-              <div class="shop-name">${c.name}</div>
-              <div class="shop-phone">${c.phone}</div>
+              <div class="shop-name">${p.shop_name || '(chưa đặt tên)'}</div>
+              <div class="shop-phone">${p.phone || p.id.slice(0,8)}</div>
             </div>
           </div>
         </td>
-        <td><span class="plan-badge ${planClass[c.plan]}">${planLabels[c.plan]}</span></td>
-        <td><span class="status-badge ${c.status}"><span class="dot"></span>${statusLabels[c.status]}</span></td>
+        <td><span class="plan-badge ${planClass[p.plan]}">${planLabels[p.plan] || p.plan}</span></td>
+        <td><span class="status-badge ${status}"><span class="dot"></span>${statusLabels[status] || status}</span></td>
         <td>${expireHtml}</td>
         <td>
           <label class="toggle">
-            <input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleCustomer(${c.id}, this.checked)">
+            <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleCustomer('${p.id}', this.checked, '${p.shop_name || ''}')">
             <span class="toggle-slider"></span>
           </label>
         </td>
         <td>
           <div class="action-cell">
-            <button class="action-btn" onclick="openEditModal(${c.id})" title="Chỉnh sửa"><i class="ti ti-edit"></i></button>
-            <button class="action-btn" onclick="extendPlan(${c.id})" title="Gia hạn"><i class="ti ti-calendar-plus"></i></button>
-            <button class="action-btn danger" onclick="deleteCustomer(${c.id})" title="Xoá"><i class="ti ti-trash"></i></button>
+            <button class="action-btn" onclick="openEditModal('${p.id}')" title="Chỉnh sửa gói"><i class="ti ti-edit"></i></button>
+            <button class="action-btn" onclick="extendPlan('${p.id}', '${p.shop_name || ''}')" title="Gia hạn 30 ngày"><i class="ti ti-calendar-plus"></i></button>
           </div>
         </td>
       </tr>`;
   });
 
-  // Cập nhật stats
-  document.getElementById('statTotal').textContent = customers.length;
-  document.getElementById('statActive').textContent = customers.filter(c => c.status === 'active').length;
-  document.getElementById('statTrial').textContent = customers.filter(c => c.status === 'trial').length;
-  document.getElementById('statExpired').textContent = customers.filter(c => c.status === 'expired').length;
-  const expiring = customers.filter(c => daysLeft(c.expire) >= 0 && daysLeft(c.expire) <= 5).length;
-  document.getElementById('expireBadge').textContent = expiring;
-  document.getElementById('expireBadge').style.display = expiring > 0 ? '' : 'none';
+  updateStats();
 }
 
+function updateStats() {
+  const all = allProfiles;
+  document.getElementById('statTotal').textContent   = all.length;
+  document.getElementById('statActive').textContent  = all.filter(p => getStatus(p) === 'active').length;
+  document.getElementById('statTrial').textContent   = all.filter(p => getStatus(p) === 'trial').length;
+  document.getElementById('statExpired').textContent = all.filter(p => ['expired','locked'].includes(getStatus(p))).length;
+  const expiring = all.filter(p => { const d = daysLeft(p.plan_expires_at); return d !== null && d >= 0 && d <= 5; }).length;
+  const badge = document.getElementById('expireBadge');
+  badge.textContent = expiring;
+  badge.style.display = expiring > 0 ? '' : 'none';
+}
+
+// ── Filter ──────────────────────────────────────────────────
 function getFiltered() {
-  return customers.filter(c => {
+  return allProfiles.filter(p => {
     const matchSearch = !currentFilter ||
-      c.name.toLowerCase().includes(currentFilter.toLowerCase()) ||
-      c.phone.includes(currentFilter);
-    const matchStatus = !currentStatusFilter || c.status === currentStatusFilter;
-    const matchPlan = !currentPlanFilter || c.plan === currentPlanFilter;
+      (p.shop_name || '').toLowerCase().includes(currentFilter.toLowerCase()) ||
+      (p.phone || '').includes(currentFilter);
+    const status = getStatus(p);
+    const matchStatus = !currentStatusFilter || status === currentStatusFilter;
+    const matchPlan   = !currentPlanFilter   || p.plan === currentPlanFilter;
     return matchSearch && matchStatus && matchPlan;
   });
 }
+function filterTable(val)     { currentFilter = val;       renderTable(getFiltered()); }
+function filterByStatus(val)  { currentStatusFilter = val; renderTable(getFiltered()); }
+function filterByPlan(val)    { currentPlanFilter = val;   renderTable(getFiltered()); }
 
-function filterTable(val) { currentFilter = val; renderTable(getFiltered()); }
-function filterByStatus(val) { currentStatusFilter = val; renderTable(getFiltered()); }
-function filterByPlan(val) { currentPlanFilter = val; renderTable(getFiltered()); }
-
-function toggleCustomer(id, enabled) {
-  const c = customers.find(x => x.id === id);
-  if (c) {
-    c.enabled = enabled;
-    c.status = enabled ? (c.plan === 'trial' ? 'trial' : 'active') : 'pending';
-    // Lưu vào VpostAuth — ảnh hưởng ngay tới trang khách
-    VpostAuth.saveCustomers(customers);
-    showToast(enabled ? `✅ Đã kích hoạt ${c.name}!` : `⏸️ Đã tắt ${c.name} — shop sẽ bị khoá ngay`);
-    renderTable(getFiltered());
-  }
+// ── Toggle khoá / mở khoá ──────────────────────────────────
+async function toggleCustomer(id, enabled, shopName) {
+  const supa = window.vpostSupabase;
+  const { error } = await supa.from('profiles')
+    .update({ is_locked: !enabled })
+    .eq('id', id);
+  if (error) { showToast('Lỗi: ' + error.message); return; }
+  const p = allProfiles.find(x => x.id === id);
+  if (p) p.is_locked = !enabled;
+  showToast(enabled ? `✅ Đã mở khoá ${shopName}!` : `🔒 Đã khoá ${shopName}`);
+  renderTable(getFiltered());
 }
 
+// ── Modal chỉnh sửa gói ────────────────────────────────────
 function openAddModal() {
-  editingId = null;
-  document.getElementById('modalTitle').textContent = 'Thêm khách hàng mới';
-  document.getElementById('modalShopName').value = '';
-  document.getElementById('modalPhone').value = '';
-  document.getElementById('modalPlan').value = 'trial';
-  const d = new Date(); d.setDate(d.getDate() + 3);
-  document.getElementById('modalExpire').value = d.toISOString().split('T')[0];
-  document.getElementById('modal').classList.add('show');
+  // Admin không tạo user, chỉ chỉnh sửa. Ẩn nút Thêm.
+  showToast('User tự đăng ký qua login.html');
 }
 
 function openEditModal(id) {
-  const c = customers.find(x => x.id === id);
-  if (!c) return;
+  const p = allProfiles.find(x => x.id === id);
+  if (!p) return;
   editingId = id;
-  document.getElementById('modalTitle').textContent = 'Chỉnh sửa khách hàng';
-  document.getElementById('modalShopName').value = c.name;
-  document.getElementById('modalPhone').value = c.phone;
-  document.getElementById('modalPlan').value = c.plan;
-  document.getElementById('modalExpire').value = c.expire;
+  document.getElementById('modalTitle').textContent = 'Chỉnh sửa gói — ' + (p.shop_name || '');
+  document.getElementById('modalShopName').value = p.shop_name || '';
+  document.getElementById('modalPhone').value    = p.phone || '';
+  document.getElementById('modalPlan').value     = p.plan || 'trial';
+  document.getElementById('modalExpire').value   = p.plan_expires_at ? p.plan_expires_at.split('T')[0] : '';
   document.getElementById('modal').classList.add('show');
 }
 
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
-function saveCustomer() {
-  const name = document.getElementById('modalShopName').value.trim();
-  const phone = document.getElementById('modalPhone').value.trim().replace(/\s/g,'');
-  const plan = document.getElementById('modalPlan').value;
+async function saveCustomer() {
+  if (!editingId) return;
+  const plan   = document.getElementById('modalPlan').value;
   const expire = document.getElementById('modalExpire').value;
-  if (!name || !phone) { showToast('Vui lòng điền đầy đủ thông tin!'); return; }
+  if (!expire) { showToast('Vui lòng chọn ngày hết hạn!'); return; }
 
-  if (editingId) {
-    const c = customers.find(x => x.id === editingId);
-    if (c) { c.name = name; c.phone = phone; c.plan = plan; c.expire = expire; c.initial = name[0].toUpperCase(); c.status = plan === 'trial' ? 'trial' : 'active'; }
-    showToast('Đã cập nhật thông tin! ✅');
-  } else {
-    customers.push({ id: Date.now(), name, phone, plan, status: plan === 'trial' ? 'trial' : 'pending', expire, enabled: plan === 'trial', initial: name[0].toUpperCase() });
-    showToast('Đã thêm khách hàng mới! 🎉');
-  }
-  // Lưu vào VpostAuth — đồng bộ ngay
-  VpostAuth.saveCustomers(customers);
+  const supa = window.vpostSupabase;
+  const { error } = await supa.from('profiles')
+    .update({ plan, plan_expires_at: new Date(expire).toISOString() })
+    .eq('id', editingId);
+
+  if (error) { showToast('Lỗi: ' + error.message); return; }
+
+  const p = allProfiles.find(x => x.id === editingId);
+  if (p) { p.plan = plan; p.plan_expires_at = new Date(expire).toISOString(); }
+  showToast('✅ Đã cập nhật gói!');
   closeModal();
   renderTable(getFiltered());
 }
 
-function deleteCustomer(id) {
-  const c = customers.find(x => x.id === id);
-  if (c && confirm(`Xoá khách hàng "${c.name}"?`)) {
-    customers = customers.filter(x => x.id !== id);
-    VpostAuth.saveCustomers(customers);
-    renderTable(getFiltered());
-    showToast('Đã xoá khách hàng!');
-  }
-}
+// ── Gia hạn +30 ngày ───────────────────────────────────────
+async function extendPlan(id, shopName) {
+  const p = allProfiles.find(x => x.id === id);
+  if (!p) return;
 
-function extendPlan(id) {
-  const c = customers.find(x => x.id === id);
-  if (!c) return;
-  // Dùng VpostAuth.extendCustomer để đồng bộ
-  VpostAuth.extendCustomer(c.phone, 1);
-  customers = VpostAuth.getCustomers();
+  const base = p.plan_expires_at && new Date(p.plan_expires_at) > new Date()
+    ? new Date(p.plan_expires_at)
+    : new Date();
+  base.setDate(base.getDate() + 30);
+
+  const supa = window.vpostSupabase;
+  const { error } = await supa.from('profiles')
+    .update({ plan_expires_at: base.toISOString() })
+    .eq('id', id);
+
+  if (error) { showToast('Lỗi: ' + error.message); return; }
+  p.plan_expires_at = base.toISOString();
+  showToast(`✅ Đã gia hạn 30 ngày cho ${shopName}!`);
   renderTable(getFiltered());
-  showToast(`Đã gia hạn 1 tháng cho ${c.name}! 📅`);
 }
 
+// ── Section switch ──────────────────────────────────────────
 function showSection(section, evt) {
   ['sectionCustomers','sectionStats','sectionPayments','sectionSettings'].forEach(s => {
     const el = document.getElementById(s);
@@ -589,151 +633,12 @@ function showSection(section, evt) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const trigger = (evt && evt.currentTarget) || (window.event && window.event.currentTarget);
   if (trigger && trigger.classList) trigger.classList.add('active');
-  // Load dữ liệu thật khi mở tab Payments
-  if (section === 'payments') loadPayments();
+  if (section === 'payments')  loadPayments();
+  if (section === 'customers') loadCustomers();
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// Init
-renderTable(customers);
-
-// ===== PAYMENTS (Supabase) =====
-const planLabelsP = { trial:'Dùng thử', basic:'Cơ bản', standard:'Tiêu chuẩn', pro:'Pro' };
-const planPrices  = { basic: 100000, standard: 200000, pro: 400000 };
-
-async function loadPayments() {
-  const supa = window.vpostSupabase;
-  if (!supa) return;
-
-  document.getElementById('paymentsLoading').style.display = 'block';
-  document.getElementById('paymentsEmpty').style.display = 'none';
-  document.getElementById('paymentsTable').style.display = 'none';
-
-  const status = document.getElementById('payStatusFilter').value;
-  let query = supa
-    .from('payments')
-    .select('*, profiles(shop_name, phone)')
-    .order('created_at', { ascending: false });
-  if (status) query = query.eq('status', status);
-
-  const { data, error } = await query;
-  document.getElementById('paymentsLoading').style.display = 'none';
-
-  if (error || !data || data.length === 0) {
-    document.getElementById('paymentsEmpty').style.display = 'block';
-    // Update badge
-    document.getElementById('pendingBadge').style.display = 'none';
-    return;
-  }
-
-  document.getElementById('paymentsTable').style.display = 'block';
-  const tbody = document.getElementById('paymentsTbody');
-  tbody.innerHTML = '';
-
-  // Update pending badge
-  const pendingCount = data.filter(p => p.status === 'pending').length;
-  const badge = document.getElementById('pendingBadge');
-  badge.textContent = pendingCount;
-  badge.style.display = pendingCount > 0 ? '' : 'none';
-
-  data.forEach(p => {
-    const shop = p.profiles?.shop_name || 'Shop';
-    const phone = p.profiles?.phone || '';
-    const initial = shop[0]?.toUpperCase() || 'S';
-    const amount = (p.amount_vnd || planPrices[p.plan] || 0).toLocaleString('vi-VN') + ' ₫';
-    const dt = new Date(p.created_at);
-    const timeStr = dt.toLocaleString('vi-VN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-    const gradients = ['linear-gradient(135deg,#2D6BE4,#7C5CFC)','linear-gradient(135deg,#48cfad,#38b2ac)','linear-gradient(135deg,#FF8C42,#e05a00)'];
-    const grad = gradients[initial.charCodeAt(0) % gradients.length];
-
-    const statusHtml = p.status === 'approved'
-      ? `<span class="status-badge active"><span class="dot"></span>Đã duyệt</span>`
-      : p.status === 'rejected'
-      ? `<span class="status-badge expired"><span class="dot"></span>Từ chối</span>`
-      : `<span class="status-badge trial"><span class="dot"></span>Chờ duyệt</span>`;
-
-    const actionHtml = p.status === 'pending'
-      ? `<div class="action-cell">
-          <button class="btn-add" style="font-size:12px;padding:6px 12px;white-space:nowrap" onclick="confirmPayment('${p.id}','${p.user_id}','${p.plan}',this)">
-            <i class="ti ti-check"></i> Kích hoạt
-          </button>
-          <button class="action-btn danger" title="Từ chối" onclick="rejectPayment('${p.id}',this)">
-            <i class="ti ti-x"></i>
-          </button>
-        </div>`
-      : `<span style="font-size:12px;color:var(--text-secondary)">${statusHtml}</span>`;
-
-    tbody.innerHTML += `
-      <tr>
-        <td>
-          <div class="shop-cell">
-            <div class="shop-avatar" style="background:${grad}">${initial}</div>
-            <div>
-              <div class="shop-name">${shop}</div>
-              <div class="shop-phone">${phone}</div>
-            </div>
-          </div>
-        </td>
-        <td><span class="plan-badge ${p.plan}">${planLabelsP[p.plan] || p.plan}</span></td>
-        <td style="font-weight:700;color:var(--green)">${amount}</td>
-        <td style="font-size:12px;color:var(--text-secondary);max-width:160px;word-break:break-all">${p.transfer_note || '—'}</td>
-        <td style="font-size:12px;color:var(--text-secondary)">${p.admin_note || '—'}</td>
-        <td style="font-size:12px;color:var(--text-secondary)">${timeStr}</td>
-        <td>${actionHtml}</td>
-      </tr>`;
-  });
-}
-
-async function confirmPayment(paymentId, userId, plan, btn) {
-  if (!confirm(`Xác nhận kích hoạt gói "${planLabelsP[plan]}" cho shop này?`)) return;
-  btn.disabled = true;
-  btn.innerHTML = '<i class="ti ti-loader-2"></i>';
-
-  const supa = window.vpostSupabase;
-  // Tính ngày hết hạn: hôm nay + 30 ngày
-  const expires = new Date();
-  expires.setDate(expires.getDate() + 30);
-  const expiresStr = expires.toISOString();
-
-  // Cập nhật payment status
-  const { error: e1 } = await supa.from('payments')
-    .update({ status: 'approved', approved_at: new Date().toISOString() })
-    .eq('id', paymentId);
-
-  // Cập nhật profile plan
-  const { error: e2 } = await supa.from('profiles')
-    .update({ plan: plan, plan_expires_at: expiresStr })
-    .eq('id', userId);
-
-  if (e1 || e2) {
-    showToast('Lỗi: ' + (e1?.message || e2?.message));
-    btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-check"></i> Kích hoạt';
-    return;
-  }
-
-  showToast('✅ Đã kích hoạt! Shop sẽ nhận gói ngay khi vào app lại.');
-  loadPayments();
-}
-
-async function rejectPayment(paymentId, btn) {
-  if (!confirm('Từ chối yêu cầu thanh toán này?')) return;
-  btn.disabled = true;
-
-  const supa = window.vpostSupabase;
-  const { error } = await supa.from('payments')
-    .update({ status: 'rejected' })
-    .eq('id', paymentId);
-
-  if (error) { showToast('Lỗi: ' + error.message); btn.disabled = false; return; }
-  showToast('Đã từ chối yêu cầu.');
-  loadPayments();
-}
+// ── Init ────────────────────────────────────────────────────
+loadCustomers();
 </script>
 </body>
 </html>
