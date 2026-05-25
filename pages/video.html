@@ -53,6 +53,11 @@
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 20px;
   margin-bottom: 16px; box-shadow: var(--shadow);
+  transition: border-color 0.2s, background 0.2s;
+}
+.upload-grid-zone.drag-over {
+  border-color: var(--primary); border-style: dashed;
+  background: rgba(99,102,241,0.04);
 }
 .upload-grid-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
 .upload-grid-title i { color: var(--primary); font-size: 16px; }
@@ -1019,12 +1024,4 @@ function showUpgradePrompt(type) {
 }
 
 async function doLogout() {
-  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
-  try { await window.vpostAuth?.signOut(); } catch(e) {}
-  localStorage.removeItem('vpost_user');
-  window.location.href = '../login.html';
-}
-
-</script>
-</body>
-</html>
+  if (!confirm('Bạn có chắc muốn đăng xuất không?')) retur
