@@ -157,7 +157,8 @@ function renderDisabled(customer) {
     <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i> Đăng xuất</button>`;
 }
 
-function logout() {
+async function logout() {
+  try { await window.vpostAuth?.signOut(); } catch(e) {}
   localStorage.removeItem('vpost_user');
   window.location.href = 'login.html';
 }

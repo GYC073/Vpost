@@ -261,7 +261,7 @@ tr:hover td { background: var(--bg); }
   <div class="sidebar-section">Hệ thống</div>
   <button class="nav-item" onclick="showSection('settings', event)"><i class="ti ti-settings"></i>Cài đặt hệ thống</button>
   <button class="nav-item" onclick="showSection('fbLogs', event)"><i class="ti ti-brand-facebook"></i>FB Logs<span class="nav-badge yellow" id="fbErrBadge" style="display:none">!</span></button>
-  <a class="nav-item" href="login.html"><i class="ti ti-logout"></i>Đăng xuất</a>
+  <a class="nav-item" href="#" onclick="(async()=>{try{await window.vpostAuth?.signOut();}catch(e){}localStorage.removeItem('vpost_user');window.location.href='login.html';})()"><i class="ti ti-logout"></i>Đăng xuất</a>
 
   <div class="sidebar-bottom">
     <div class="admin-user">
