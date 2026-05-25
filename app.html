@@ -270,6 +270,59 @@ async function doLogout() {
   localStorage.removeItem('vpost_user');
   window.location.href = 'login.html';
 }
+
+// --- Banner nhắc kết nối Facebook ---
+(async function checkFbConnection() {
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
+
+    // Kiểm tra fb_connections
+    const { data, error } = await supa
+      .from('fb_connections')
+      .select('id, is_active')
+      .eq('user_id', session.user.id)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    // Nếu chưa kết nối → hiện banner
+    if (!data) {
+      const banner = document.createElement('div');
+      banner.id = 'fbConnectBanner';
+      banner.style.cssText = [
+        'display:flex;align-items:center;gap:12px;',
+        'background:linear-gradient(135deg,#1877F2 0%,#4267B2 100%);',
+        'color:#fff;border-radius:12px;padding:14px 18px;margin-bottom:16px;',
+        'box-shadow:0 2px 12px rgba(24,119,242,0.3);'
+      ].join('');
+      banner.innerHTML = `
+        <i class="ti ti-brand-facebook" style="font-size:24px;flex-shrink:0"></i>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;margin-bottom:2px">Kết nối Facebook Fanpage</div>
+          <div style="font-size:12px;opacity:0.85">Để Vpost tự đăng bài mỗi ngày mà không cần mở app</div>
+        </div>
+        <a href="pages/settings.html" style="flex-shrink:0;background:#fff;color:#1877F2;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap">
+          Kết nối ngay
+        </a>
+        <button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer;padding:0 0 0 4px;flex-shrink:0;line-height:1" title="Đóng">×</button>
+      `;
+      // Chèn sau planExpiryBanner
+      const planBanner = document.getElementById('planExpiryBanner');
+      planBanner ? planBanner.after(banner) : document.querySelector('.main').prepend(banner);
+    }
+
+    // Nếu vừa kết nối FB từ onboarding → toast chào mừng
+    const fbConnected = new URLSearchParams(window.location.search).get('fb_connected');
+    if (fbConnected === '1') {
+      history.replaceState({}, '', window.location.pathname);
+      if (typeof showToast === 'function') showToast('🎉 Facebook đã kết nối thành công!');
+    }
+  } catch(e) {
+    console.warn('[FB Banner] error:', e);
+  }
+})();
 </script>
 </body>
 </html>

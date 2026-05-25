@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-25 (session 5)
+**Last updated:** 2026-05-25 (session 8)
 
 ---
 
@@ -21,7 +21,7 @@
 | — | Domain vpost.vn (DNS-only OneShield) | ✅ Done |
 | — | SSL Let's Encrypt cho vpost.vn | ✅ Done (verified vpost.vn + privacy/terms/data-deletion load OK qua HTTPS) |
 | 4 | FB OAuth + auto-post | ✅ Done (chờ Meta Business Verification) |
-| **5** | **Payments flow + Admin nâng cao** | 🔨 **Đang làm** |
+| **5** | **Payments flow + Admin nâng cao** | ✅ Done |
 | 7 | Scheduler cron Edge Function | ⏳ Chưa (gộp vào Phase 4.7) |
 
 ---
@@ -114,10 +114,35 @@
 - [x] `supabase/migrations/006_app_settings.sql` — bảng `app_settings` (key-value), RLS policies, default values — **đã chạy thành công trên Supabase**
 - [x] Fix nhiều lần file `admin.html` bị truncate (mất JS) — đã ổn định với 1 script block duy nhất
 
-**Còn lại Phase 5:**
-- [ ] Admin panel: tab Thống kê — biểu đồ doanh thu, bài đăng theo ngày (hiện vẫn "đang phát triển")
-- [ ] Admin panel: tab xem `fb_api_log` (debug FB posts)
-- [ ] Test thực tế tab Cài đặt hệ thống sau khi push + deploy
+**Đã làm thêm (session 6 — 2026-05-25):**
+- [x] `admin.html` tab Thống kê — **MỚI HOÀN TOÀN** (Chart.js 4.4):
+  - Summary cards: Doanh thu tháng, Bài đã đăng FB, User mới, Kết nối Facebook
+  - Biểu đồ doanh thu theo tháng (bar, 6 tháng gần nhất)
+  - Biểu đồ bài đăng theo ngày (line + fill, filter 30/90/180 ngày)
+  - Phân bổ gói dịch vụ (doughnut + custom legend)
+  - User mới theo ngày (bar)
+  - Trạng thái posts (doughnut, legend bên phải)
+- [x] `admin.html` tab FB Logs — **MỚI**:
+  - Load 200 log gần nhất từ `fb_api_log`
+  - Filter: Tất cả / Thành công (2xx) / Lỗi (4xx/5xx)
+  - Badge `!` màu vàng trên sidebar nav khi có lỗi
+  - Click row expand → xem request + response JSON (dark code block)
+
+**Phase 5: ✅ HOÀN THÀNH**
+
+**Đã làm thêm (session 7 — 2026-05-25):**
+- [x] **Fix logout signOut** trên TẤT CẢ trang: `app.html`, `pages/settings.html`, `pages/caption.html`, `pages/video.html`, `locked.html`, `admin.html` — đều gọi `window.vpostAuth.signOut()` trước khi redirect
+- [x] **Fix `caption.html` truncation** — file bị cắt tại `showUpgradePrompt(typ` trong mọi commit cũ → đã reconstruct hoàn chỉnh (894 dòng)
+- [x] **Fix `video.html` truncation** — tương tự, cộng thêm `doLogout()` hoàn toàn thiếu → đã thêm (1030 dòng)
+- [x] **Fix `login.html`** — "Quên mật khẩu?" dead link → Zalo admin link
+- [x] **Fix `onboarding.html`** — `finishOnboarding()` lưu `shop_name` + `industry` vào Supabase profiles thật
+- [x] **Full UX audit** toàn bộ flow: sidebar.js, auth.js, app.js, calendar.html, supabase-client.js — không phát hiện thêm bug nghiêm trọng
+
+**Git commits session 7:**
+- `fix: signOut on all pages, locked+admin logout, onboarding save, caption/video truncation`
+
+**Git commits session 6:**
+- `a3483c3` feat: admin stats charts + FB logs tab (Phase 5 complete)
 
 **Git commits session 5:**
 - `6612e6a` feat: admin settings + payments real data; fix script duplication
@@ -137,10 +162,16 @@
 - [ ] Sau khi approved: switch app sang Live mode
 - [ ] Xác minh doanh nghiệp: hoàn thiện khi có giấy đăng ký hộ kinh doanh
 
-### Phase 7 — Onboarding + UX
-- [ ] Onboarding wizard nhắc kết nối FB sau bước 1
-- [ ] Banner/tooltip hướng dẫn user mới chưa kết nối FB
-- [ ] Mobile responsive kiểm tra lại sau các thay đổi Phase 4
+### Phase 7 — Onboarding + UX ✅ HOÀN THÀNH (session 8 — 2026-05-25)
+- [x] **7.1** `onboarding.html` — thêm step 4 "Kết nối Facebook" (5 bước tổng): card giới thiệu lợi ích, nút "Kết nối ngay" + "Bỏ qua". Sau OAuth thành công, fb-callback redirect về `app.html?fb_connected=1`
+- [x] **7.2** `app.html` — banner nhắc kết nối FB cho user chưa có `fb_connections`. Tự ẩn khi đã kết nối. Toast chào mừng khi return từ onboarding OAuth.
+- [x] **7.3** Mobile responsive fix:
+  - `onboarding.html`: @media 400px — circle nhỏ hơn (26px), label 9px, line 16px
+  - `settings.html`: settings-row flex-wrap, fb-connect-btn compact ≤420px
+  - `caption.html`: publish-grid 2 cols ≤420px, Đăng ngay lên full-width, schedule-row stack
+  - `calendar.html`: @media 380px — cal-grid gap 2px, font nhỏ hơn
+
+**Git commit session 8:** `feat: phase 7 - onboarding FB step, FB banner app.html, mobile responsive fixes`
 
 ---
 

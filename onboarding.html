@@ -64,8 +64,14 @@ body {
 .ob-step-circle.done { background: var(--accent); border-color: var(--accent); color: #fff; }
 .ob-step-label { font-size: 10px; color: rgba(255,255,255,0.5); text-align: center; }
 .ob-step-label.active { color: #fff; font-weight: 600; }
-.ob-step-line { flex: 1; height: 2px; background: rgba(255,255,255,0.2); margin-bottom: 18px; max-width: 40px; }
+.ob-step-line { flex: 1; height: 2px; background: rgba(255,255,255,0.2); margin-bottom: 18px; max-width: 32px; }
 .ob-step-line.done { background: var(--accent); }
+@media (max-width: 400px) {
+  .ob-step-circle { width: 26px; height: 26px; font-size: 11px; }
+  .ob-step-label { font-size: 9px; }
+  .ob-step-line { max-width: 16px; }
+  .ob-steps { gap: 0; }
+}
 
 .ob-body { padding: 24px 20px; max-width: 480px; margin: 0 auto; }
 
@@ -202,7 +208,12 @@ body {
     <div class="ob-step-line" id="line3"></div>
     <div class="ob-step">
       <div class="ob-step-circle" id="step4Circle">4</div>
-      <div class="ob-step-label" id="step4Label">Hoàn tất</div>
+      <div class="ob-step-label" id="step4Label">Facebook</div>
+    </div>
+    <div class="ob-step-line" id="line4"></div>
+    <div class="ob-step">
+      <div class="ob-step-circle" id="step5Circle">5</div>
+      <div class="ob-step-label" id="step5Label">Xong!</div>
     </div>
   </div>
 </div>
@@ -293,17 +304,65 @@ body {
     </div>
     <div class="ob-actions">
       <button class="btn-back" onclick="goStep(2)"><i class="ti ti-arrow-left"></i></button>
-      <button class="btn-next" onclick="finishOnboarding()">Hoàn tất <i class="ti ti-check"></i></button>
+      <button class="btn-next" onclick="goStep(4)">Tiếp theo <i class="ti ti-arrow-right"></i></button>
     </div>
   </div>
 
-  <!-- Step 4: Thành công -->
+  <!-- Step 4: Kết nối Facebook -->
   <div id="step4" style="display:none">
+    <div class="ob-title">Kết nối Facebook Page</div>
+    <div class="ob-sub">Để Vpost tự đăng bài lên Fanpage mỗi ngày — bước này có thể làm sau</div>
+
+    <div style="background:linear-gradient(135deg,#1877F2 0%,#4267B2 100%);border-radius:var(--radius);padding:20px 18px;margin-bottom:20px;color:#fff">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <i class="ti ti-brand-facebook" style="font-size:28px"></i>
+        <div style="font-size:15px;font-weight:700">Facebook Fanpage</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px">
+          <i class="ti ti-check" style="background:rgba(255,255,255,0.25);border-radius:50%;padding:3px;font-size:13px;flex-shrink:0"></i>
+          <span>Tự động đăng bài đúng giờ mà không cần mở app</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px">
+          <i class="ti ti-check" style="background:rgba(255,255,255,0.25);border-radius:50%;padding:3px;font-size:13px;flex-shrink:0"></i>
+          <span>AI viết caption, bạn chỉ cần duyệt một cú click</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px">
+          <i class="ti ti-check" style="background:rgba(255,255,255,0.25);border-radius:50%;padding:3px;font-size:13px;flex-shrink:0"></i>
+          <span>Quản lý nhiều Fanpage, chọn 1 trang làm mặc định</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--text-secondary);display:flex;gap:10px;align-items:flex-start">
+      <i class="ti ti-shield-check" style="color:var(--primary);font-size:18px;flex-shrink:0;margin-top:1px"></i>
+      <span>Vpost chỉ đăng bài bạn đã duyệt. Không đọc tin nhắn, không thay đổi bất kỳ thứ gì khác trên Facebook của bạn.</span>
+    </div>
+
+    <div id="fbObStatus" style="display:none;text-align:center;padding:10px;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:12px"></div>
+
+    <div class="ob-actions">
+      <button class="btn-back" onclick="goStep(3)"><i class="ti ti-arrow-left"></i></button>
+      <button class="btn-next" id="btnObConnect" onclick="obConnectFB()" style="flex:1;background:linear-gradient(135deg,#1877F2,#4267B2)">
+        <i class="ti ti-brand-facebook"></i> Kết nối ngay
+      </button>
+    </div>
+    <button onclick="goStep(5)" style="width:100%;margin-top:12px;padding:11px;background:none;border:none;color:var(--text-secondary);font-size:13px;cursor:pointer;font-family:inherit">
+      Bỏ qua, kết nối sau trong Cài đặt →
+    </button>
+  </div>
+
+  <!-- Step 5: Thành công -->
+  <div id="step5" style="display:none">
     <div class="success-wrap">
       <div class="success-icon"><i class="ti ti-check"></i></div>
       <div class="success-title">Thiết lập hoàn tất! 🎉</div>
       <div class="success-sub">Shop của bạn đã sẵn sàng. AI sẽ tạo bài đăng mỗi ngày theo đúng phong cách bạn chọn.</div>
       <div class="trial-badge"><i class="ti ti-gift"></i>Bạn có <strong>3 ngày dùng thử miễn phí</strong> bắt đầu từ hôm nay!</div>
+      <div id="obFbConnectedNote" style="display:none;background:var(--accent-light);border:1px solid rgba(72,207,173,0.3);border-radius:var(--radius-sm);padding:11px 16px;font-size:13px;color:#0F6E56;margin-bottom:20px;display:flex;align-items:center;gap:8px">
+        <i class="ti ti-brand-facebook" style="font-size:18px"></i>
+        <span>Facebook đã kết nối! Vpost sẽ tự đăng bài cho bạn 🎉</span>
+      </div>
       <button class="btn-next" style="width:100%; justify-content:center" onclick="window.location.href='app.html'">
         <i class="ti ti-rocket"></i> Bắt đầu sử dụng Vpost
       </button>
@@ -356,7 +415,7 @@ function goStep(step) {
   document.getElementById(`step${step}`).style.display = 'block';
 
   // Update step circles
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 5; i++) {
     const circle = document.getElementById(`step${i}Circle`);
     const label = document.getElementById(`step${i}Label`);
     if (i < step) {
@@ -371,7 +430,7 @@ function goStep(step) {
       circle.innerHTML = i;
       label.className = 'ob-step-label';
     }
-    if (i < 4) {
+    if (i < 5) {
       document.getElementById(`line${i}`).className = i < step ? 'ob-step-line done' : 'ob-step-line';
     }
   }
@@ -421,6 +480,30 @@ async function finishOnboarding() {
 
   goStep(4);
 }
+
+// Kết nối Facebook từ onboarding
+async function obConnectFB() {
+  if (!window.vpostFB) {
+    showObToast('Module Facebook chưa tải xong, thử lại!');
+    return;
+  }
+  // Đánh dấu đang ở onboarding để fb-callback redirect về app.html
+  localStorage.setItem('vpost_from_onboarding', '1');
+  const btn = document.getElementById('btnObConnect');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Đang mở Facebook…';
+  try {
+    window.vpostFB.startConnect();
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-brand-facebook"></i> Kết nối ngay';
+    showObToast('Lỗi: ' + (e.message || e));
+  }
+}
 </script>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<!-- FB OAuth module -->
+<script>window.VPOST_FB_APP_ID = '1765513901484406';</script>
+<script src="js/fb-client.js"></script>
 </body>
 </html>

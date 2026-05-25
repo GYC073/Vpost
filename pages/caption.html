@@ -192,11 +192,18 @@
   .schedule-row.show { display: flex; }
   .schedule-row label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
   .schedule-row input[type="datetime-local"] {
-    flex: 1; min-width: 180px;
+    flex: 1; min-width: 140px;
     padding: 8px 10px; font-size: 13px;
     border: 1px solid var(--border); border-radius: 8px;
     background: var(--surface); color: var(--text);
-    font-family: inherit;
+    font-family: inherit; width: 100%;
+  }
+  @media (max-width: 420px) {
+    .publish-grid { grid-template-columns: 1fr 1fr; }
+    .publish-btn:nth-child(1) { grid-column: 1; }
+    .publish-btn.primary { grid-column: 1 / -1; order: -1; }
+    .schedule-row { flex-direction: column; align-items: stretch; }
+    .schedule-row label { margin-bottom: 4px; }
   }
   .schedule-row button {
     padding: 8px 14px; font-size: 13px; font-weight: 600;

@@ -158,8 +158,11 @@
             .eq('fb_page_id', pageId);
           if (rows && rows[0]) {
             await window.vpostFB.setActivePage(rows[0].id);
-            setStatus('success', 'Đã kết nối Fanpage!', 'Đang chuyển về trang cài đặt…');
-            setTimeout(function(){ window.location.href = 'pages/settings.html'; }, 1200);
+            const fromOnboarding = localStorage.getItem('vpost_from_onboarding');
+            localStorage.removeItem('vpost_from_onboarding');
+            const redirectTarget = fromOnboarding ? 'app.html?fb_connected=1' : 'pages/settings.html';
+            setStatus('success', 'Đã kết nối Fanpage!', 'Đang chuyển về' + (fromOnboarding ? ' trang chủ…' : ' trang cài đặt…'));
+            setTimeout(function(){ window.location.href = redirectTarget; }, 1200);
           }
         } catch(e) {
           alert('Lỗi: ' + (e.message || e));
