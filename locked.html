@@ -164,4 +164,8 @@ function logout() {
 
 // Render theo lý do
 if (access.reason === 'expired') renderExpired(access.customer);
-else if (access.reason === 'dis
+else if (access.reason === 'disabled') renderDisabled(access.customer);
+else window.location.href = 'app.html'; // Đã OK thì về trang chủ
+</script>
+</body>
+</html>

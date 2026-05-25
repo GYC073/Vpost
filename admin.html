@@ -622,4 +622,118 @@ async function loadPayments() {
   if (status) query = query.eq('status', status);
 
   const { data, error } = await query;
-  document.getElementById('paymentsLoading').style.display = 'n
+  document.getElementById('paymentsLoading').style.display = 'none';
+
+  if (error || !data || data.length === 0) {
+    document.getElementById('paymentsEmpty').style.display = 'block';
+    // Update badge
+    document.getElementById('pendingBadge').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('paymentsTable').style.display = 'block';
+  const tbody = document.getElementById('paymentsTbody');
+  tbody.innerHTML = '';
+
+  // Update pending badge
+  const pendingCount = data.filter(p => p.status === 'pending').length;
+  const badge = document.getElementById('pendingBadge');
+  badge.textContent = pendingCount;
+  badge.style.display = pendingCount > 0 ? '' : 'none';
+
+  data.forEach(p => {
+    const shop = p.profiles?.shop_name || 'Shop';
+    const phone = p.profiles?.phone || '';
+    const initial = shop[0]?.toUpperCase() || 'S';
+    const amount = (p.amount_vnd || planPrices[p.plan] || 0).toLocaleString('vi-VN') + ' ₫';
+    const dt = new Date(p.created_at);
+    const timeStr = dt.toLocaleString('vi-VN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    const gradients = ['linear-gradient(135deg,#2D6BE4,#7C5CFC)','linear-gradient(135deg,#48cfad,#38b2ac)','linear-gradient(135deg,#FF8C42,#e05a00)'];
+    const grad = gradients[initial.charCodeAt(0) % gradients.length];
+
+    const statusHtml = p.status === 'approved'
+      ? `<span class="status-badge active"><span class="dot"></span>Đã duyệt</span>`
+      : p.status === 'rejected'
+      ? `<span class="status-badge expired"><span class="dot"></span>Từ chối</span>`
+      : `<span class="status-badge trial"><span class="dot"></span>Chờ duyệt</span>`;
+
+    const actionHtml = p.status === 'pending'
+      ? `<div class="action-cell">
+          <button class="btn-add" style="font-size:12px;padding:6px 12px;white-space:nowrap" onclick="confirmPayment('${p.id}','${p.user_id}','${p.plan}',this)">
+            <i class="ti ti-check"></i> Kích hoạt
+          </button>
+          <button class="action-btn danger" title="Từ chối" onclick="rejectPayment('${p.id}',this)">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>`
+      : `<span style="font-size:12px;color:var(--text-secondary)">${statusHtml}</span>`;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>
+          <div class="shop-cell">
+            <div class="shop-avatar" style="background:${grad}">${initial}</div>
+            <div>
+              <div class="shop-name">${shop}</div>
+              <div class="shop-phone">${phone}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="plan-badge ${p.plan}">${planLabelsP[p.plan] || p.plan}</span></td>
+        <td style="font-weight:700;color:var(--green)">${amount}</td>
+        <td style="font-size:12px;color:var(--text-secondary);max-width:160px;word-break:break-all">${p.transfer_note || '—'}</td>
+        <td style="font-size:12px;color:var(--text-secondary)">${p.admin_note || '—'}</td>
+        <td style="font-size:12px;color:var(--text-secondary)">${timeStr}</td>
+        <td>${actionHtml}</td>
+      </tr>`;
+  });
+}
+
+async function confirmPayment(paymentId, userId, plan, btn) {
+  if (!confirm(`Xác nhận kích hoạt gói "${planLabelsP[plan]}" cho shop này?`)) return;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i>';
+
+  const supa = window.vpostSupabase;
+  // Tính ngày hết hạn: hôm nay + 30 ngày
+  const expires = new Date();
+  expires.setDate(expires.getDate() + 30);
+  const expiresStr = expires.toISOString();
+
+  // Cập nhật payment status
+  const { error: e1 } = await supa.from('payments')
+    .update({ status: 'approved', approved_at: new Date().toISOString() })
+    .eq('id', paymentId);
+
+  // Cập nhật profile plan
+  const { error: e2 } = await supa.from('profiles')
+    .update({ plan: plan, plan_expires_at: expiresStr })
+    .eq('id', userId);
+
+  if (e1 || e2) {
+    showToast('Lỗi: ' + (e1?.message || e2?.message));
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-check"></i> Kích hoạt';
+    return;
+  }
+
+  showToast('✅ Đã kích hoạt! Shop sẽ nhận gói ngay khi vào app lại.');
+  loadPayments();
+}
+
+async function rejectPayment(paymentId, btn) {
+  if (!confirm('Từ chối yêu cầu thanh toán này?')) return;
+  btn.disabled = true;
+
+  const supa = window.vpostSupabase;
+  const { error } = await supa.from('payments')
+    .update({ status: 'rejected' })
+    .eq('id', paymentId);
+
+  if (error) { showToast('Lỗi: ' + error.message); btn.disabled = false; return; }
+  showToast('Đã từ chối yêu cầu.');
+  loadPayments();
+}
+</script>
+</body>
+</html>
