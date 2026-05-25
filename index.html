@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vpost — Tự động đăng bài, tăng tương tác mỗi ngày</title>
-<meta name="description" content="Vpost giúp shop nhỏ tự động đăng bài Facebook mỗi ngày với AI viết caption, tạo video slideshow. Không cần biết marketing, chỉ cần 1 nút bấm.">
+<title>Vpost — AI viết caption, tự đăng Facebook cho shop nhỏ</title>
+<meta name="description" content="Vpost viết caption Facebook theo đúng ngành hàng, tự đăng lúc 10h sáng. Dành cho shop nệm, spa, F&B, thời trang, mỹ phẩm. Dùng thử 3 ngày miễn phí.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
@@ -36,6 +36,52 @@
   --lh-body:  1.6;
 
 }
+
+/* DIFF STRIP */
+.diff-strip { background: #0A0C10; padding: 16px 5vw; }
+.diff-strip-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.diff-item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: rgba(255,255,255,0.65); }
+.diff-item strong { color: #fff; font-weight: 600; }
+.diff-sep { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.2); flex-shrink: 0; }
+.diff-badge { background: rgba(37,99,235,0.25); border: 1px solid rgba(37,99,235,0.5); color: #93C5FD; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+
+/* HERO PILLS */
+.hero-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+.hero-pill { display: flex; align-items: center; gap: 6px; background: var(--ink-08); border: 1px solid var(--ink-20); border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--ink-70); }
+.hero-pill i { font-size: 14px; color: var(--blue); }
+
+/* DEMO SECTION */
+.demo-section { padding: 88px 5vw; background: #fff; }
+.demo-inner { max-width: 1100px; margin: 0 auto; }
+.demo-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.demo-tab { display: flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 30px; border: 1.5px solid var(--ink-20); background: #fff; font-family: var(--f-body); font-size: 13.5px; font-weight: 600; color: var(--ink-50); cursor: pointer; transition: all 0.2s; }
+.demo-tab i { font-size: 16px; }
+.demo-tab:hover { border-color: var(--blue); color: var(--blue); }
+.demo-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.demo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media(max-width:768px){ .demo-grid { grid-template-columns: 1fr; } }
+.demo-panel { display: none; }
+.demo-panel.active { display: block; }
+.caption-card { background: #fff; border: 1.5px solid var(--ink-20); border-radius: 16px; padding: 20px; position: relative; transition: all 0.2s; }
+.caption-card:hover { border-color: var(--blue); box-shadow: 0 4px 20px rgba(37,99,235,0.1); }
+.caption-card-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: var(--blue-l); color: var(--blue); margin-bottom: 12px; }
+.caption-card-tag i { font-size: 13px; }
+.caption-text { font-size: 13.5px; line-height: 1.65; color: var(--ink-70); white-space: pre-wrap; }
+.caption-copy { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--ink-20); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-50); font-size: 14px; transition: all 0.15s; }
+.caption-copy:hover { border-color: var(--blue); color: var(--blue); }
+.demo-cta-row { margin-top: 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.demo-cta-note { font-size: 13.5px; color: var(--ink-50); }
+
+/* LOADING STEPS */
+.ai-steps { display: none; flex-direction: column; gap: 8px; padding: 16px 0; }
+.ai-steps.show { display: flex; }
+.ai-step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); opacity: 0.4; transition: all 0.3s; }
+.ai-step.active { opacity: 1; color: var(--primary); font-weight: 500; }
+.ai-step.done { opacity: 0.7; color: var(--green, #059669); }
+.ai-step-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; background: var(--ink-08, #F3F4F6); }
+.ai-step.active .ai-step-icon { background: var(--primary); color: #fff; animation: pulse 1s ease-in-out infinite; }
+.ai-step.done .ai-step-icon { background: var(--green, #059669); color: #fff; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
 html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 body { font-family: var(--f-body); background: var(--white); color: var(--ink); overflow-x: hidden; }
 
@@ -384,7 +430,7 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
   </a>
   <div class="nav-links">
     <a href="#how">Cách hoạt động</a>
-    <a href="#features">Tính năng</a>
+    <a href="#demo">Demo</a>
     <a href="#pricing">Bảng giá</a>
     <a href="#faq">FAQ</a>
   </div>
@@ -398,18 +444,24 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-content">
-      <div class="hero-badge reveal"><i class="ti ti-sparkles"></i>AI viết bài — bạn tập trung bán hàng</div>
+      <div class="hero-badge reveal"><i class="ti ti-map-pin"></i>Dành riêng cho shop nhỏ Việt Nam</div>
       <h1 class="hero-title reveal reveal-delay-1">
-        Fanpage sống động
-        <span class="line2">mỗi ngày — <span class="accent">không cần nghĩ.</span></span>
+        Đăng bài mỗi ngày mà
+        <span class="line2"><span class="accent">không cần thuê content.</span></span>
       </h1>
       <p class="hero-desc reveal reveal-delay-2">
-        Vpost tự động tạo caption, đăng bài Facebook và tạo video slideshow cho shop của bạn. <strong>Chỉ cần 1 nút bấm</strong> — AI lo phần còn lại.
+        AI viết caption đúng ngành hàng của bạn — nệm, spa, F&B, thời trang, mỹ phẩm. <strong>Xong trong 10 giây, tự đăng lên Facebook lúc 10h sáng.</strong> Không cần biết marketing.
       </p>
       <div class="hero-actions reveal reveal-delay-2">
         <a href="login.html" class="btn-hero-primary"><i class="ti ti-rocket"></i>Dùng thử 3 ngày miễn phí</a>
         <a href="#how" class="btn-hero-ghost"><i class="ti ti-play"></i>Xem cách hoạt động</a>
       </div>
+      <div class="hero-pills reveal reveal-delay-2">
+        <span class="hero-pill"><i class="ti ti-clock-bolt"></i>Caption xong trong 10 giây</span>
+        <span class="hero-pill"><i class="ti ti-calendar-bolt"></i>Tự đăng lúc 10h sáng</span>
+        <span class="hero-pill"><i class="ti ti-building-store"></i>Hiểu ngành: nệm, spa, F&B…</span>
+      </div>
+
       <div class="hero-social-proof reveal reveal-delay-3">
         <div class="avatars">
           <img src="https://images.unsplash.com/photo-1494790108755-2616b612b5bc?w=60&q=80" alt="">
@@ -468,6 +520,20 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
     </div>
   </div>
 </section>
+
+<!-- DIFF STRIP -->
+<div class="diff-strip">
+  <div class="diff-strip-inner">
+    <span class="diff-badge">Vpost vs ChatGPT</span>
+    <div class="diff-item"><i class="ti ti-circle-x" style="color:#EF4444"></i> ChatGPT <strong>không tự đăng bài</strong> lên Facebook được</div>
+    <div class="diff-sep"></div>
+    <div class="diff-item"><i class="ti ti-circle-check" style="color:#34D399"></i> Vpost <strong>tự đăng đúng giờ</strong> — dù bạn đang ngủ</div>
+    <div class="diff-sep"></div>
+    <div class="diff-item"><i class="ti ti-circle-x" style="color:#EF4444"></i> ChatGPT <strong>không hiểu ngành</strong> của bạn sẵn</div>
+    <div class="diff-sep"></div>
+    <div class="diff-item"><i class="ti ti-circle-check" style="color:#34D399"></i> Vpost <strong>nhớ tên shop, ngành hàng</strong> — viết đúng luôn</div>
+  </div>
+</div>
 
 <!-- LOGOS -->
 <div class="logos-section">
@@ -551,6 +617,194 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
   </div>
 </section>
 
+
+<!-- DEMO CAPTION THEO NGÀNH -->
+<section class="demo-section" id="demo">
+  <div class="demo-inner">
+    <div class="section-tag reveal"><i class="ti ti-eye"></i>Xem thử ngay</div>
+    <h2 class="section-title reveal reveal-delay-1">AI viết caption<br>đúng ngành hàng của bạn</h2>
+    <p class="section-sub reveal reveal-delay-2" style="margin-bottom:28px">Không cần nhập gì thêm — chỉ cần chọn ngành và bấm Generate. Đây là những gì AI tạo ra:</p>
+
+    <div class="demo-tabs reveal reveal-delay-2">
+      <button class="demo-tab active" onclick="switchDemo('nem', this)"><i class="ti ti-bed"></i>Nệm / Nội thất</button>
+      <button class="demo-tab" onclick="switchDemo('spa', this)"><i class="ti ti-sparkles"></i>Spa / Làm đẹp</button>
+      <button class="demo-tab" onclick="switchDemo('fb', this)"><i class="ti ti-tools-kitchen-2"></i>Quán ăn / F&B</button>
+      <button class="demo-tab" onclick="switchDemo('fashion', this)"><i class="ti ti-hanger"></i>Thời trang</button>
+      <button class="demo-tab" onclick="switchDemo('cosmetic', this)"><i class="ti ti-droplet"></i>Mỹ phẩm</button>
+    </div>
+
+    <!-- NỆM -->
+    <div class="demo-panel active" id="demo-nem">
+      <div class="demo-grid">
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-tag"></i>Flash sale cuối tuần</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">🛏️ Đệm lò xo túi 1m6 — chỉ còn 3 cái cuối kho!
+
+Ngủ ngon từ đêm nay, giao hàng trong 2h nội thành. Inbox ngay hoặc gọi hotline bên dưới nhé 👇
+
+#NemGiaTot #GiaoHangNhanh #NemLoxo</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-message-circle"></i>Feedback khách</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">💬 Chị khách ở Đông Hà đặt tháng trước nhắn lại: "Mua đệm bên em về ngủ ngon hơn hẳn, chồng hỏi mua ở đâu" 🤗
+
+Cảm ơn chị đã tin tưởng! Shop cam kết đổi trả trong 30 ngày nếu không ưng ý.
+
+#Review #KhachHangTinTuong</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-gift"></i>Khuyến mãi tháng</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">🔥 Tháng này mua đệm tặng gối cao su non trị giá 350k!
+
+Áp dụng cho tất cả đệm từ 1m4 trở lên. Số lượng quà có hạn — inbox sớm để được giữ phần nhé.
+
+#KhuyenMai #TangQua #NemChat</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPA -->
+    <div class="demo-panel" id="demo-spa">
+      <div class="demo-grid">
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-tag"></i>Ưu đãi dịch vụ</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">✨ Combo triệt lông diode 6 buổi — tặng thêm 1 buổi chăm sóc da mặt miễn phí!
+
+Ưu đãi áp dụng đến hết tháng. Slot cuối tuần còn rất ít, đặt lịch ngay hôm nay nhé!
+
+#TrietLong #Combo #SpaGiaTot</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-camera"></i>Kết quả thực tế</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">🌿 Sau 3 buổi trị nám bằng Pico Laser — làn da sáng hơn rõ rệt, không đau, không cần nghỉ hồi phục.
+
+Bạn đang lo về nám hoặc tàn nhang? Chat với mình để được tư vấn miễn phí nhé! 💬
+
+#PicoLaser #TriNam #KetQuaThuc</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-clock"></i>Book slot hôm nay</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">💆‍♀️ Thứ 2 đầu tuần — bắt đầu tuần mới với làn da sạch bóng!
+
+Facial 90 phút chỉ 299k hôm nay. Còn 3 slot buổi sáng. Comment "BOOK" để mình giữ chỗ cho nhé!
+
+#Facial #BookNow #SpaGanDay</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- F&B -->
+    <div class="demo-panel" id="demo-fb">
+      <div class="demo-grid">
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-bowl"></i>Món đặc biệt hôm nay</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">🍜 Hôm nay thứ 2 buồn? Có tô bún bò nấu từ 4h sáng, nước dùng trong vắt, thịt mềm tan.
+
+Quán mở 6h–14h, cách ngã tư lớn 200m. Ghé liền đi bạn!
+
+#BunBo #AnSang #QuanNgon</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-discount-2"></i>Combo giảm giá</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">🥤 Combo sinh tố xoài + bánh mì thịt nướng chỉ 39k — giảm 25% so với gọi riêng!
+
+Áp dụng tất cả ngày trong tuần. Tag người hay ăn cùng bạn để nhắc nhau ghé nha 😋
+
+#Combo #GiamGia #AnUong</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-camera"></i>Check-in cuối tuần</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">📸 Bàn đẹp, ánh sáng tự nhiên, view góc phố — hội bạn check-in cực chill!
+
+Mở đến 23h mỗi tối, có chỗ đặt trước cho nhóm lớn. Nhắn inbox để book bàn nhé 🙌
+
+#CheckIn #CafeGoiCam #DiCungNhau</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THỜI TRANG -->
+    <div class="demo-panel" id="demo-fashion">
+      <div class="demo-grid">
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-sparkles"></i>Hàng mới về</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">👗 New arrivals hôm nay — 20 mẫu váy hè, chất đũi tự nhiên, mặc mát cả ngày.
+
+Size S–XL, ship toàn quốc. Xem full lookbook trong album ảnh nhé, order trước 15h giao trong ngày!
+
+#HangMoi #VayHe #ThoiTrangNu</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-bolt"></i>Flash sale 2 tiếng</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">⚡ Flash sale 2 tiếng — tất cả áo sơ mi giảm 30%, còn đúng 47 sản phẩm.
+
+Vào album chọn mẫu và DM size + địa chỉ. Ai nhanh người đó có! 🔥
+
+#FlashSale #AoSoMi #GiamGia30</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-outfit"></i>Gợi ý mix đồ</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">🪞 Set đi làm mùa hè: áo linen trắng + quần ống suông be = công thức không bao giờ sai 👌
+
+Cả set chỉ 389k, có sẵn tất cả size. Inbox để được tư vấn thêm nhé 💌
+
+#OOTD #MixDo #ThoiTrangVanPhong</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MỸ PHẨM -->
+    <div class="demo-panel" id="demo-cosmetic">
+      <div class="demo-grid">
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-droplet"></i>Sản phẩm mới</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">🌸 Serum vitamin C mới về — nhiều bạn inbox hỏi suốt rồi giờ có hàng rồi nè!
+
+30ml dùng được 2 tháng, phù hợp da hỗn hợp và da dầu. Order sớm kẻo hết đợt đầu nhé!
+
+#SerumVitaminC #Skincare #MyPham</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-photo"></i>Trước & Sau</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">✅ Trước – Sau 4 tuần dùng kem dưỡng ẩm (không filter, ánh sáng tự nhiên).
+
+Da chị từ khô bong tróc sang căng bóng mịn màng luôn! 🥹 Comment "MUA" để mình gửi link và giá nhé.
+
+#TruocSau #KemDuong #SkincareResult</div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-card-tag"><i class="ti ti-sun"></i>Kem chống nắng</div>
+          <button class="caption-copy" onclick="copyDemo(this)" title="Sao chép"><i class="ti ti-copy"></i></button>
+          <div class="caption-text">☀️ Kem chống nắng cho da dầu — không nhờn, không trắng bệch, dùng cả ngày ổn.
+
+SPF 50+ PA++++. Giá 185k/tuýp 50ml. Freeship khi mua 2 tuýp. Inbox hoặc comment "ORDER" nhé!
+
+#KemChongNang #SPF50 #DaDau</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-cta-row reveal">
+      <a href="login.html" class="btn-hero-primary" style="font-size:14px;padding:12px 22px"><i class="ti ti-rocket"></i>Tự tạo caption cho shop của bạn</a>
+      <span class="demo-cta-note">✅ Dùng thử 3 ngày miễn phí · Không cần thẻ tín dụng</span>
+    </div>
+  </div>
+</section>
+
 <!-- PRICING -->
 <section class="pricing-section" id="pricing">
   <div class="pricing-inner">
@@ -562,7 +816,7 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
     <div class="pricing-grid">
       <div class="pricing-card reveal reveal-delay-1">
         <div class="pricing-plan">Cơ bản</div>
-        <div class="pricing-price">200k</div>
+        <div class="pricing-price">100k</div>
         <div class="pricing-period">/tháng</div>
         <div class="pricing-divider"></div>
         <ul class="pricing-features">
@@ -578,7 +832,7 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
       <div class="pricing-card featured reveal reveal-delay-2">
         <div class="popular-tag">⭐ Phổ biến nhất</div>
         <div class="pricing-plan">Tiêu chuẩn</div>
-        <div class="pricing-price">400k</div>
+        <div class="pricing-price">200k</div>
         <div class="pricing-period">/tháng</div>
         <div class="pricing-divider"></div>
         <ul class="pricing-features">
@@ -587,13 +841,13 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
           <li><i class="ti ti-check"></i>2 video slideshow/ngày</li>
           <li><i class="ti ti-check"></i>5 tone giọng khác nhau</li>
           <li><i class="ti ti-check"></i>Bài tuyển dụng</li>
-          <li><i class="ti ti-check"></i>Nhắc nhở qua Zalo</li>
+          <li><i class="ti ti-check"></i>Lịch đăng bài chi tiết</li>
         </ul>
         <a href="login.html" class="btn-pricing white">Bắt đầu dùng thử</a>
       </div>
       <div class="pricing-card reveal reveal-delay-3">
         <div class="pricing-plan">Pro</div>
-        <div class="pricing-price">700k</div>
+        <div class="pricing-price">400k</div>
         <div class="pricing-period">/tháng</div>
         <div class="pricing-divider"></div>
         <ul class="pricing-features">
@@ -715,7 +969,7 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
       <div>
         <div class="footer-col-title">Sản phẩm</div>
         <ul class="footer-links">
-          <li><a href="#features">Tính năng</a></li>
+          <li><a href="#demo">Demo</a></li>
           <li><a href="#pricing">Bảng giá</a></li>
           <li><a href="#how">Cách hoạt động</a></li>
           <li><a href="login.html">Đăng ký</a></li>
@@ -742,6 +996,26 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
 </footer>
 
 <script>
+
+// Demo tabs
+function switchDemo(id, btn) {
+  document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.demo-tab').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('demo-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function copyDemo(btn) {
+  const text = btn.closest('.caption-card').querySelector('.caption-text').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-check"></i>';
+    btn.style.borderColor = 'var(--green, #059669)';
+    btn.style.color = 'var(--green, #059669)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = ''; btn.style.color = ''; }, 1500);
+  });
+}
 // Scroll reveal
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });

@@ -221,6 +221,17 @@
     animation: spin 0.8s linear infinite;
   }
   .loading-text { font-size: 14px; color: var(--text-secondary); }
+
+/* AI Steps loading */
+.ai-steps { display: none; flex-direction: column; gap: 10px; padding: 4px 0; }
+.ai-steps.show { display: flex; }
+.ai-step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-hint); transition: all 0.4s; }
+.ai-step.active { color: var(--primary); font-weight: 600; }
+.ai-step.done   { color: var(--success, #3BBD6E); }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: all 0.3s; }
+.ai-step.active .step-dot { background: var(--primary); transform: scale(1.3); box-shadow: 0 0 0 4px rgba(45,107,228,0.15); }
+.ai-step.done .step-dot   { background: var(--success, #3BBD6E); transform: scale(1); box-shadow: none; }
+
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -375,7 +386,16 @@
   <!-- Loading -->
   <div class="loading-bar" id="loadingBar">
     <div class="spinner"></div>
-    <div class="loading-text">AI đang viết caption cho bạn...</div>
+    <div>
+      <div class="loading-text" id="loadingText">AI đang phân tích ngành hàng...</div>
+      <div class="ai-steps" id="aiSteps">
+        <div class="ai-step" id="step1"><span class="step-dot"></span>Phân tích ngành hàng và tone giọng</div>
+        <div class="ai-step" id="step2"><span class="step-dot"></span>Tạo hook thu hút đầu bài</div>
+        <div class="ai-step" id="step3"><span class="step-dot"></span>Viết nội dung + CTA chuyển đổi</div>
+        <div class="ai-step" id="step4"><span class="step-dot"></span>Thêm hashtag và emoji phù hợp</div>
+        <div class="ai-step" id="step5"><span class="step-dot"></span>Tạo 3 biến thể caption...</div>
+      </div>
+    </div>
   </div>
 
   <!-- Results -->
@@ -505,6 +525,34 @@ const topicDescriptions = {
   fallback: 'bài đăng hàng ngày giữ tương tác khi không có sản phẩm mới'
 };
 
+
+// Animated loading steps
+function animateSteps() {
+  const steps = ['step1','step2','step3','step4','step5'];
+  const delays = [0, 700, 1400, 2100, 2800];
+  const stepsEl = document.getElementById('aiSteps');
+  if (stepsEl) stepsEl.classList.add('show');
+  steps.forEach((id, i) => {
+    setTimeout(() => {
+      // Đánh dấu bước trước là done
+      if (i > 0) {
+        const prev = document.getElementById(steps[i-1]);
+        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+      }
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+    }, delays[i]);
+  });
+}
+
+function resetSteps() {
+  ['step1','step2','step3','step4','step5'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('active','done'); }
+  });
+  const stepsEl = document.getElementById('aiSteps');
+  if (stepsEl) stepsEl.classList.remove('show');
+}
 async function generateCaptions() {
   const loading = document.getElementById('loadingBar');
   const results = document.getElementById('resultsSection');
@@ -512,12 +560,14 @@ async function generateCaptions() {
 
   const resetBtn = () => {
     loading.classList.remove('show');
+  resetSteps();
     btn.disabled = false;
     btn.innerHTML = '<i class="ti ti-sparkles"></i> Tạo Caption với AI';
   };
 
   results.classList.remove('show');
   loading.classList.add('show');
+  animateSteps();
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i> AI đang viết...';
 
