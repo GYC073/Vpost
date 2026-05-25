@@ -46,6 +46,30 @@ const INDUSTRY_LABEL: Record<string, string> = {
   other:      "kinh doanh",
 };
 
+// Few-shot caption examples cho từng ngành — giúp AI hiểu đúng tone, từ ngữ, cấu trúc
+const INDUSTRY_EXAMPLES: Record<string, string[]> = {
+  realestate: [
+    `Bạn đang tìm nhà để ở hay để đầu tư? 🏠\n\nNhiều người nghĩ hai mục tiêu này mâu thuẫn — nhưng thực ra có những căn hộ vừa tiện nghi để ở, vừa có tiềm năng tăng giá tốt sau 3–5 năm.\n\nNhắn mình để được tư vấn miễn phí nhé! 👇\n\n#BatDongSan #NhaDat #DauTuThongMinh`,
+    `3 điều PHẢI kiểm tra trước khi mua đất 📋\n\n1️⃣ Pháp lý — sổ đỏ/hồng đầy đủ chưa?\n2️⃣ Quy hoạch — khu đất có nằm vùng giải toả không?\n3️⃣ Hạ tầng — đường vào, điện, nước có sẵn chưa?\n\nMua đất phải kỹ — liên hệ mình để được hỗ trợ tận tình! 🏡\n\n#MuaDat #TuVanBDS #AnCuLapNghiep`,
+    `Anh Minh vừa nhận nhà tuần trước 🎉\n\n"Pháp lý rõ ràng, giá hợp lý, hỗ trợ vay ngân hàng tận tình — mình rất hài lòng!"\n\nBạn cũng đang tìm nhà? Nhắn tin mình ngay — có danh sách căn hộ/đất nền nhiều tầm giá! 💬\n\n#NhaDat #MuaBanNhaDat #ChoThueNhaDat`,
+  ],
+  shoes: [
+    `Đôi giày nói lên cả phong cách của bạn 👟\n\nMẫu mới về hôm nay — form chuẩn, đế êm, phối được mọi outfit từ đi làm đến dạo phố.\n\nSize 36–44, inbox ngay trước khi hết hàng nha! 🔥\n\n#GiayDep #NewArrival #OutfitOfTheDay`,
+    `Mẹo phối đồ với giày trắng ai cũng cần biết 🤍\n\n✅ Jean xanh + áo thun → casual chill\n✅ Váy midi + giày trắng → nữ tính ngọt ngào\n✅ Quần tây + sơ mi → công sở xịn xò\n\nShop đang có nhiều mẫu giày trắng đẹp — DM để xem thêm nhé! 😍\n\n#GiayTrang #PhaDo #StyleViet`,
+    `Còn đúng 3 đôi size 38 thôi nha 🫣\n\nMẫu này ra là hết vèo — form ôm chân, đế cao 3cm tạo dáng, chất liệu không bị hôi chân dù đi cả ngày.\n\nNhanh tay inbox trước khi hết nhé bạn ơi! 👇\n\n#GiayNu #SaleGiay #GiayDepGiaRe`,
+  ],
+  authentic: [
+    `Mua hàng hiệu mà sợ hàng fake? 😤\n\nShop cam kết AUTH 100% — có bill mua hàng, tem chống giả, ảnh thực tế. Check auth thoải mái trước khi nhận hàng.\n\nTag người hay mua hàng hiệu để biết địa chỉ uy tín nhé! 💎\n\n#HangAuth #HangHieu #Auth100`,
+    `Hàng auth khác hàng rep ở điểm nào? 🧐\n\nĐường may, logo, chất liệu — chuẩn từng chi tiết nhỏ nhất. Hàng auth không chỉ là thương hiệu, là đầu tư dài hạn: dùng bền, giữ giá, tự tin khi diện.\n\nShop có sẵn nhiều mẫu — DM để xem hàng và báo giá nhé!\n\n#Authentic #LuxuryGoods #HangXin`,
+    `Unbox hàng mới về 📦✨\n\nVừa nhập về hôm nay, bill + hộp + phụ kiện đầy đủ 100%. Ai đang săn mẫu này nhắn inbox ngay — có ảnh thực tế gửi liền!\n\n#UnboxAuth #HangHieuAuth #NewArrival`,
+  ],
+  perfume: [
+    `Mùi hương nói lên cá tính của bạn 🌸\n\nFloral nhẹ nhàng cho cô nàng dịu dàng — Woody ấm áp cho chàng trai lịch lãm — Fresh mát lạnh cho ngày hè năng động.\n\nShop có hơn 100 mẫu — inbox để được tư vấn mùi phù hợp nhất với bạn! 🌿\n\n#NuocHoa #Perfume #MuiHuong`,
+    `Tại sao xịt lên người lại khác khi test trên giấy? 🤔\n\nVì mùi hương phản ứng với thân nhiệt và mùi da riêng của mỗi người — đó là lý do nước hoa rất "riêng" và đặc biệt.\n\nShop cho test thử trước khi mua, ưng 100% mới chốt! 💫\n\n#NuocHoa #TuVanNuocHoa #Perfume`,
+    `Không biết tặng gì cho người thương? 💝\n\nMột chai nước hoa đúng mùi người ấy thích = điểm 10 tình cảm đảm bảo!\n\nShop tư vấn miễn phí + gói quà đẹp + ship toàn quốc. Nhắn mình ngay nha! 🎁\n\n#NuocHoaTangQua #GiftSet #Perfume`,
+  ],
+};
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -138,8 +162,14 @@ Deno.serve(async (req) => {
       .map((h, i) => `${i + 1}. ${h.caption}`)
       .join("\n") || "(chưa có caption nào)";
 
-    const industryLabel = INDUSTRY_LABEL[profile.industry ?? "other"] ?? "kinh doanh";
+    const industryKey = profile.industry ?? "other";
+    const industryLabel = INDUSTRY_LABEL[industryKey] ?? "kinh doanh";
     const toneLabel = TONE_MAP[tone] ?? TONE_MAP.fun;
+    const industryExamples = INDUSTRY_EXAMPLES[industryKey] ?? [];
+
+    const examplesBlock = industryExamples.length > 0
+      ? `\nVÍ DỤ CAPTION CHUẨN CHO NGÀNH NÀY (học phong cách, từ ngữ, cấu trúc — KHÔNG copy nguyên):\n${industryExamples.map((ex, i) => `[Ví dụ ${i + 1}]\n${ex}`).join("\n\n")}\n`
+      : "";
 
     const systemPrompt = `Bạn là chuyên gia viết caption Facebook cho các shop nhỏ ở Việt Nam.
 Quy tắc:
@@ -156,7 +186,7 @@ Mô tả shop: ${profile.shop_desc ?? "(chủ shop chưa điền)"}
 Tone giọng: ${toneLabel}
 ${topic ? `Chủ đề hôm nay: ${topic}` : ""}
 ${userDesc ? `Gợi ý thêm từ chủ shop: ${userDesc}` : ""}
-
+${examplesBlock}
 10 caption shop đã đăng gần đây (TRÁNH viết lặp):
 ${recent}
 
