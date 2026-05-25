@@ -217,10 +217,29 @@ tr:hover td { background: var(--bg); }
   .topbar { flex-wrap: wrap; gap: 12px; }
 }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* CHART CONTAINERS */
+.chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+@media(max-width:800px){ .chart-row { grid-template-columns: 1fr; } }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.chart-card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.chart-card-sub   { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+.chart-wrap { position: relative; height: 220px; }
+.chart-wrap-tall  { height: 260px; }
+
+/* FB LOGS */
+.log-row-detail { display: none; background: #f8f9fc; }
+.log-row-detail.open { display: table-row; }
+.log-json { font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; background: #1e2235; color: #a9d1ff; padding: 12px; border-radius: 8px; max-height: 200px; overflow-y: auto; }
+.log-section-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.status-code { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+.status-code.ok  { background: var(--green-light); color: var(--green); }
+.status-code.err { background: var(--danger-light); color: var(--danger); }
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -241,6 +260,7 @@ tr:hover td { background: var(--bg); }
 
   <div class="sidebar-section">Hệ thống</div>
   <button class="nav-item" onclick="showSection('settings', event)"><i class="ti ti-settings"></i>Cài đặt hệ thống</button>
+  <button class="nav-item" onclick="showSection('fbLogs', event)"><i class="ti ti-brand-facebook"></i>FB Logs<span class="nav-badge yellow" id="fbErrBadge" style="display:none">!</span></button>
   <a class="nav-item" href="login.html"><i class="ti ti-logout"></i>Đăng xuất</a>
 
   <div class="sidebar-bottom">
@@ -354,12 +374,99 @@ tr:hover td { background: var(--bg); }
         <div class="topbar-title">Thống kê</div>
         <div class="topbar-sub">Tổng quan hoạt động hệ thống</div>
       </div>
+      <div class="topbar-actions">
+        <select class="filter-select" id="statRangeSelect" onchange="loadStats()" style="min-width:140px">
+          <option value="30">30 ngày qua</option>
+          <option value="90">3 tháng qua</option>
+          <option value="180">6 tháng qua</option>
+        </select>
+        <button class="btn-add" onclick="loadStats()" style="background:var(--surface);color:var(--primary);border:1.5px solid var(--primary)">
+          <i class="ti ti-refresh"></i> Làm mới
+        </button>
+      </div>
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px;text-align:center;color:var(--text-secondary);">
-      <i class="ti ti-chart-bar" style="font-size:48px;margin-bottom:12px;display:block;color:var(--border)"></i>
-      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Tính năng đang phát triển</div>
-      <div style="font-size:13px">Biểu đồ thống kê doanh thu, bài đăng sẽ có trong phiên bản tiếp theo</div>
+
+    <!-- Loading -->
+    <div id="statsLoading" style="text-align:center;padding:48px;color:var(--text-secondary)">
+      <i class="ti ti-loader-2" style="font-size:32px;display:block;margin-bottom:8px;animation:spin 1s linear infinite"></i>
+      Đang tải thống kê...
     </div>
+
+    <div id="statsBody" style="display:none">
+
+      <!-- Summary cards -->
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon orange"><i class="ti ti-cash"></i></div>
+            <span class="stat-trend up" id="stRevTrend">tháng này</span>
+          </div>
+          <div class="stat-value" id="stRevenue">—</div>
+          <div class="stat-label">Doanh thu (đã duyệt)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon blue"><i class="ti ti-send"></i></div>
+            <span class="stat-trend up" id="stPostTrend"></span>
+          </div>
+          <div class="stat-value" id="stPosts">—</div>
+          <div class="stat-label">Bài đã đăng FB</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon green"><i class="ti ti-user-plus"></i></div>
+            <span class="stat-trend up" id="stNewUserTrend"></span>
+          </div>
+          <div class="stat-value" id="stNewUsers">—</div>
+          <div class="stat-label">Người dùng mới</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon" style="background:var(--primary-light);color:var(--primary)"><i class="ti ti-brand-facebook"></i></div>
+            <span class="stat-trend up">kết nối</span>
+          </div>
+          <div class="stat-value" id="stFbConn">—</div>
+          <div class="stat-label">Kết nối Facebook</div>
+        </div>
+      </div>
+
+      <!-- Charts row 1: Revenue bar + Plan doughnut -->
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Doanh thu theo tháng</div>
+          <div class="chart-card-sub">Số tiền thanh toán đã được duyệt (VNĐ)</div>
+          <div class="chart-wrap chart-wrap-tall"><canvas id="chartRevenue"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Phân bổ gói dịch vụ</div>
+          <div class="chart-card-sub">Tổng số user hiện tại</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="chartPlans"></canvas></div>
+          <div id="chartPlansLegend" style="margin-top:12px;display:flex;flex-direction:column;gap:6px;font-size:12px"></div>
+        </div>
+      </div>
+
+      <!-- Charts row 2: Posts per day line -->
+      <div class="chart-card" style="margin-bottom:16px">
+        <div class="chart-card-title">Bài đăng theo ngày</div>
+        <div class="chart-card-sub">Số bài post lên Facebook thành công mỗi ngày</div>
+        <div class="chart-wrap chart-wrap-tall"><canvas id="chartPostsDaily"></canvas></div>
+      </div>
+
+      <!-- Charts row 3: New users + AI caption usage -->
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Người dùng đăng ký theo ngày</div>
+          <div class="chart-card-sub">Số tài khoản mới tạo mỗi ngày</div>
+          <div class="chart-wrap"><canvas id="chartNewUsers"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Trạng thái bài đăng</div>
+          <div class="chart-card-sub">Phân bổ trạng thái tất cả posts</div>
+          <div class="chart-wrap" style="height:180px"><canvas id="chartPostStatus"></canvas></div>
+        </div>
+      </div>
+
+    </div><!-- /statsBody -->
   </div>
 
   <!-- SECTION: PAYMENTS -->
@@ -547,6 +654,55 @@ tr:hover td { background: var(--bg); }
 
     </div><!-- /settingsBody -->
   </div><!-- /sectionSettings -->
+
+  <!-- SECTION: FB LOGS -->
+  <div id="sectionFbLogs" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">FB API Logs</div>
+        <div class="topbar-sub">Lịch sử gọi Facebook Graph API — debug lỗi đăng bài</div>
+      </div>
+      <div class="topbar-actions">
+        <select class="filter-select" id="fbLogStatusFilter" onchange="loadFbLogs()" style="min-width:140px">
+          <option value="">Tất cả</option>
+          <option value="ok">Thành công (2xx)</option>
+          <option value="err">Lỗi (4xx/5xx)</option>
+        </select>
+        <button class="btn-add" onclick="loadFbLogs()" style="background:var(--surface);color:var(--primary);border:1.5px solid var(--primary)">
+          <i class="ti ti-refresh"></i> Làm mới
+        </button>
+      </div>
+    </div>
+
+    <div id="fbLogsLoading" style="text-align:center;padding:40px;color:var(--text-secondary)">
+      <i class="ti ti-loader-2" style="font-size:32px;display:block;margin-bottom:8px;animation:spin 1s linear infinite"></i>
+      Đang tải...
+    </div>
+    <div id="fbLogsEmpty" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:48px;text-align:center;color:var(--text-secondary)">
+      <i class="ti ti-brand-facebook" style="font-size:48px;display:block;margin-bottom:12px;color:var(--border)"></i>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Chưa có log nào</div>
+      <div style="font-size:13px">Chưa có lượt gọi FB API nào được ghi lại</div>
+    </div>
+
+    <div class="table-card" id="fbLogsTable" style="display:none">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Shop</th>
+              <th>Endpoint</th>
+              <th>Status</th>
+              <th>Lỗi</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody id="fbLogsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 
 </main>
 
@@ -809,7 +965,7 @@ async function extendPlan(id, shopName) {
 
 // ── Section switch ──────────────────────────────────────────
 function showSection(section, evt) {
-  ['sectionCustomers','sectionStats','sectionPayments','sectionSettings'].forEach(s => {
+  ['sectionCustomers','sectionStats','sectionPayments','sectionSettings','sectionFbLogs'].forEach(s => {
     const el = document.getElementById(s);
     if (el) el.style.display = s === `section${section.charAt(0).toUpperCase()+section.slice(1)}` ? 'block' : 'none';
   });
@@ -819,6 +975,8 @@ function showSection(section, evt) {
   if (section === 'payments')  loadPayments();
   if (section === 'customers') loadCustomers();
   if (section === 'settings')  loadSettings();
+  if (section === 'stats')     loadStats();
+  if (section === 'fbLogs')    loadFbLogs();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1028,6 +1186,339 @@ async function rejectPayment(payId) {
   if (error) { showToast('Lỗi: ' + error.message); return; }
   showToast('🚫 Đã từ chối yêu cầu.');
   loadPayments();
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════════════════════════
+let chartRevInst, chartPlansInst, chartDailyInst, chartNewUsersInst, chartPostStatusInst;
+
+function destroyChart(inst) { if (inst) { try { inst.destroy(); } catch(e){} } }
+
+function hexAlpha(hex, a) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+async function loadStats() {
+  const supa = window.vpostSupabase;
+  document.getElementById('statsLoading').style.display = 'block';
+  document.getElementById('statsBody').style.display    = 'none';
+
+  const days = parseInt(document.getElementById('statRangeSelect')?.value || '30');
+  const from = new Date(); from.setDate(from.getDate() - days);
+  const fromISO = from.toISOString();
+
+  // ── 1. Doanh thu theo tháng (6 tháng gần nhất) ─────────────
+  const { data: pays } = await supa.from('payments')
+    .select('amount_vnd, created_at')
+    .eq('status', 'approved')
+    .order('created_at');
+
+  // ── 2. Posts đã đăng FB ─────────────────────────────────────
+  const { data: posts } = await supa.from('posts')
+    .select('status, posted_at, created_at')
+    .order('created_at');
+
+  // ── 3. Profiles ─────────────────────────────────────────────
+  const { data: profiles } = await supa.from('profiles')
+    .select('plan, created_at')
+    .neq('role','admin');
+
+  // ── 4. FB connections ───────────────────────────────────────
+  const { count: fbCount } = await supa.from('fb_connections')
+    .select('id', { count: 'exact', head: true })
+    .eq('is_active', true);
+
+  // ──── Summary cards ──────────────────────────────────────────
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const revThisMonth = (pays||[]).filter(p => p.created_at >= monthStart)
+    .reduce((s,p) => s + (p.amount_vnd||0), 0);
+
+  document.getElementById('stRevenue').textContent =
+    revThisMonth > 0 ? revThisMonth.toLocaleString('vi-VN') + ' ₫' : '0 ₫';
+
+  const postedRecent = (posts||[]).filter(p => ['posted','auto_posted'].includes(p.status) && p.posted_at >= fromISO).length;
+  document.getElementById('stPosts').textContent = postedRecent;
+  document.getElementById('stPostTrend').textContent = days + ' ngày qua';
+
+  const newUsersRecent = (profiles||[]).filter(p => p.created_at >= fromISO).length;
+  document.getElementById('stNewUsers').textContent = newUsersRecent;
+  document.getElementById('stNewUserTrend').textContent = days + ' ngày qua';
+
+  document.getElementById('stFbConn').textContent = fbCount ?? 0;
+
+  // ──── Chart 1: Doanh thu theo tháng (bar) ───────────────────
+  const monthRevMap = {};
+  (pays||[]).forEach(p => {
+    const d = new Date(p.created_at);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    monthRevMap[key] = (monthRevMap[key]||0) + (p.amount_vnd||0);
+  });
+  // Last 6 months labels
+  const revLabels = [], revData = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    revLabels.push(d.toLocaleDateString('vi-VN', {month:'short', year:'numeric'}));
+    revData.push((monthRevMap[key]||0) / 1000); // nghìn đồng
+  }
+  destroyChart(chartRevInst);
+  chartRevInst = new Chart(document.getElementById('chartRevenue'), {
+    type: 'bar',
+    data: {
+      labels: revLabels,
+      datasets: [{
+        label: 'Doanh thu (nghìn ₫)',
+        data: revData,
+        backgroundColor: hexAlpha('#2D6BE4', 0.8),
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' },
+             ticks: { callback: v => v.toLocaleString('vi-VN') + 'k' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ──── Chart 2: Phân bổ gói (doughnut) ───────────────────────
+  const planCount = { trial:0, basic:0, standard:0, pro:0 };
+  (profiles||[]).forEach(p => { if (planCount[p.plan] !== undefined) planCount[p.plan]++; });
+  const planColors = ['#48cfad','#2D6BE4','#7C5CFC','#F59E0B'];
+  const planNames  = ['Dùng thử','Cơ bản','Tiêu chuẩn','Pro'];
+  const planVals   = [planCount.trial, planCount.basic, planCount.standard, planCount.pro];
+  destroyChart(chartPlansInst);
+  chartPlansInst = new Chart(document.getElementById('chartPlans'), {
+    type: 'doughnut',
+    data: {
+      labels: planNames,
+      datasets: [{ data: planVals, backgroundColor: planColors, borderWidth: 2, borderColor: '#fff', hoverOffset: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      cutout: '68%'
+    }
+  });
+  // Custom legend
+  const legend = document.getElementById('chartPlansLegend');
+  legend.innerHTML = planNames.map((n,i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="width:10px;height:10px;border-radius:3px;background:${planColors[i]};display:inline-block"></span>
+        <span style="color:var(--text-secondary)">${n}</span>
+      </div>
+      <span style="font-weight:700;color:var(--text)">${planVals[i]}</span>
+    </div>`).join('');
+
+  // ──── Chart 3: Bài đăng theo ngày (line) ────────────────────
+  const dailyPostMap = {};
+  (posts||[]).filter(p => ['posted','auto_posted'].includes(p.status) && p.posted_at >= fromISO)
+    .forEach(p => {
+      const key = p.posted_at.slice(0,10);
+      dailyPostMap[key] = (dailyPostMap[key]||0) + 1;
+    });
+  const postDays = [], postVals = [];
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    postDays.push(i === 0 ? 'Hôm nay' : d.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit'}));
+    postVals.push(dailyPostMap[key]||0);
+  }
+  destroyChart(chartDailyInst);
+  chartDailyInst = new Chart(document.getElementById('chartPostsDaily'), {
+    type: 'line',
+    data: {
+      labels: postDays,
+      datasets: [{
+        label: 'Bài đăng',
+        data: postVals,
+        borderColor: '#2D6BE4',
+        backgroundColor: hexAlpha('#2D6BE4', 0.08),
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#2D6BE4',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { stepSize: 1 } },
+        x: { grid: { display: false }, ticks: {
+          maxTicksLimit: 10,
+          maxRotation: 0,
+        }}
+      }
+    }
+  });
+
+  // ──── Chart 4: Người dùng mới theo ngày (bar) ────────────────
+  const newUserMap = {};
+  (profiles||[]).filter(p => p.created_at >= fromISO).forEach(p => {
+    const key = p.created_at.slice(0,10);
+    newUserMap[key] = (newUserMap[key]||0) + 1;
+  });
+  const nuDays = [], nuVals = [];
+  for (let i = Math.min(days,30)-1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    nuDays.push(d.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit'}));
+    nuVals.push(newUserMap[key]||0);
+  }
+  destroyChart(chartNewUsersInst);
+  chartNewUsersInst = new Chart(document.getElementById('chartNewUsers'), {
+    type: 'bar',
+    data: {
+      labels: nuDays,
+      datasets: [{
+        label: 'User mới',
+        data: nuVals,
+        backgroundColor: hexAlpha('#48cfad', 0.8),
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' } },
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 8, maxRotation: 0 } }
+      }
+    }
+  });
+
+  // ──── Chart 5: Trạng thái posts (doughnut) ───────────────────
+  const statusMap = {};
+  (posts||[]).forEach(p => { statusMap[p.status] = (statusMap[p.status]||0)+1; });
+  const stOrder  = ['posted','auto_posted','scheduled','draft','failed'];
+  const stLabels = ['Đã đăng','Auto-post','Lên lịch','Nháp','Lỗi'];
+  const stColors = ['#3BBD6E','#48cfad','#2D6BE4','#9CA3AF','#E24B4A'];
+  const stVals   = stOrder.map(s => statusMap[s]||0);
+  destroyChart(chartPostStatusInst);
+  chartPostStatusInst = new Chart(document.getElementById('chartPostStatus'), {
+    type: 'doughnut',
+    data: {
+      labels: stLabels,
+      datasets: [{ data: stVals, backgroundColor: stColors, borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 10, padding: 10 } }
+      },
+      cutout: '55%'
+    }
+  });
+
+  document.getElementById('statsLoading').style.display = 'none';
+  document.getElementById('statsBody').style.display    = 'block';
+}
+
+// ══════════════════════════════════════════════════════════════
+// FB LOGS
+// ══════════════════════════════════════════════════════════════
+async function loadFbLogs() {
+  const supa = window.vpostSupabase;
+  const filterStatus = document.getElementById('fbLogStatusFilter')?.value || '';
+
+  document.getElementById('fbLogsLoading').style.display = 'block';
+  document.getElementById('fbLogsEmpty').style.display   = 'none';
+  document.getElementById('fbLogsTable').style.display   = 'none';
+
+  let query = supa.from('fb_api_log')
+    .select('id, user_id, post_id, endpoint, status_code, error, created_at, profiles(shop_name)')
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  if (filterStatus === 'ok')  query = query.gte('status_code', 200).lte('status_code', 299);
+  if (filterStatus === 'err') query = query.or('status_code.gte.400,status_code.is.null');
+
+  const { data, error } = await query;
+  document.getElementById('fbLogsLoading').style.display = 'none';
+
+  if (error) { showToast('Lỗi load logs: ' + error.message); return; }
+  if (!data || !data.length) {
+    document.getElementById('fbLogsEmpty').style.display = 'block'; return;
+  }
+
+  // Badge lỗi
+  const errCount = data.filter(l => l.status_code >= 400 || !l.status_code).length;
+  const badge = document.getElementById('fbErrBadge');
+  if (badge) { badge.textContent = errCount; badge.style.display = errCount > 0 ? '' : 'none'; }
+
+  const tbody = document.getElementById('fbLogsTbody');
+  tbody.innerHTML = data.map((l, i) => {
+    const isOk = l.status_code && l.status_code < 400;
+    const codeHtml = l.status_code
+      ? `<span class="status-code ${isOk ? 'ok':'err'}">${l.status_code}</span>`
+      : `<span class="status-code err">—</span>`;
+    const errHtml = l.error
+      ? `<span style="font-size:12px;color:var(--danger);max-width:200px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.error.replace(/"/g,"'")}">${l.error}</span>`
+      : `<span style="font-size:12px;color:var(--text-hint)">—</span>`;
+    const shopName = l.profiles?.shop_name || l.user_id?.slice(0,8) || '—';
+    const timeStr  = new Date(l.created_at).toLocaleString('vi-VN');
+    const endpoint = l.endpoint || '—';
+    const shortEp  = endpoint.length > 40 ? '...' + endpoint.slice(-37) : endpoint;
+    return `
+      <tr style="cursor:pointer" onclick="toggleLogDetail('detail-${i}')">
+        <td style="width:32px;text-align:center;color:var(--text-hint)">
+          <i class="ti ti-chevron-right" id="arrow-${i}" style="font-size:14px;transition:transform 0.2s"></i>
+        </td>
+        <td>
+          <div style="font-size:13px;font-weight:600">${shopName}</div>
+          <div style="font-size:11px;color:var(--text-hint)">${l.user_id?.slice(0,12)||''}…</div>
+        </td>
+        <td>
+          <div style="font-size:12px;font-family:monospace;color:var(--primary)" title="${endpoint}">${shortEp}</div>
+          ${l.post_id ? `<div style="font-size:11px;color:var(--text-hint)">post: ${l.post_id.slice(0,8)}…</div>` : ''}
+        </td>
+        <td>${codeHtml}</td>
+        <td>${errHtml}</td>
+        <td style="font-size:12px;color:var(--text-secondary);white-space:nowrap">${timeStr}</td>
+      </tr>
+      <tr class="log-row-detail" id="detail-${i}">
+        <td colspan="6" style="padding:12px 16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <div class="log-section-label">Request</div>
+              <div class="log-json">${escapeHtml(JSON.stringify(l.request||null, null, 2))}</div>
+            </div>
+            <div>
+              <div class="log-section-label">Response</div>
+              <div class="log-json">${escapeHtml(JSON.stringify(l.response||null, null, 2))}</div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('fbLogsTable').style.display = 'block';
+}
+
+function toggleLogDetail(id) {
+  const row = document.getElementById(id);
+  if (!row) return;
+  const idx = id.split('-')[1];
+  const arrow = document.getElementById('arrow-' + idx);
+  const isOpen = row.classList.toggle('open');
+  if (arrow) arrow.style.transform = isOpen ? 'rotate(90deg)' : '';
+}
+
+function escapeHtml(str) {
+  if (!str || str === 'null') return '<span style="color:#666">null</span>';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ── Init ────────────────────────────────────────────────────
