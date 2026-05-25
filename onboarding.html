@@ -311,12 +311,47 @@ body {
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
 <script>
 let selectedIndustry = '';
+
+function showObToast(msg) {
+  let t = document.getElementById('obToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'obToast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1d2e;color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
 let selectedTone = 'fun';
 let currentStep = 1;
 
 function goStep(step) {
+  // Validation
+  if (step === 2 && currentStep === 1) {
+    const name = document.getElementById('shopName').value.trim();
+    if (!name) {
+      document.getElementById('shopName').style.borderColor = '#E24B4A';
+      document.getElementById('shopName').focus();
+      showObToast('Vui lòng nhập tên shop của bạn!');
+      return;
+    }
+    document.getElementById('shopName').style.borderColor = '';
+  }
+  if (step === 3 && currentStep === 2) {
+    if (!selectedIndustry) {
+      showObToast('Vui lòng chọn ngành hàng!');
+      return;
+    }
+  }
   document.getElementById(`step${currentStep}`).style.display = 'none';
   document.getElementById(`step${step}`).style.display = 'block';
 
@@ -355,15 +390,35 @@ function selectTone(btn, tone) {
   selectedTone = tone;
 }
 
-function finishOnboarding() {
+async function finishOnboarding() {
+  const shopName = document.getElementById('shopName').value.trim();
+  const shopAddr = document.getElementById('shopAddr').value.trim();
+  const shopDesc = document.getElementById('shopDesc').value.trim();
+
+  // Save localStorage (dùng cho code cũ)
   const user = JSON.parse(localStorage.getItem('vpost_user') || '{}');
-  user.shopName = document.getElementById('shopName').value || user.name;
-  user.shopAddr = document.getElementById('shopAddr').value;
-  user.shopDesc = document.getElementById('shopDesc').value;
+  user.shopName = shopName || user.name;
+  user.shopAddr = shopAddr;
+  user.shopDesc = shopDesc;
   user.industry = selectedIndustry;
   user.tone = selectedTone;
   user.isNew = false;
   localStorage.setItem('vpost_user', JSON.stringify(user));
+
+  // Save lên Supabase profiles
+  try {
+    if (window.vpostSupabase) {
+      const { data: { session } } = await window.vpostSupabase.auth.getSession();
+      if (session?.user?.id) {
+        await window.vpostSupabase.from('profiles').update({
+          shop_name: shopName || user.name,
+          industry:  selectedIndustry,
+          full_name: shopName || user.name,
+        }).eq('id', session.user.id);
+      }
+    }
+  } catch(e) { console.warn('Supabase onboarding save failed:', e); }
+
   goStep(4);
 }
 </script>

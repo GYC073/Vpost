@@ -264,12 +264,11 @@
 <script src="js/app.js"></script>
 
 <script>
-function doLogout() {
-  if (confirm('Bạn có chắc muốn đăng xuất không?')) {
-    localStorage.removeItem('vpost_user');
-    const isInner = window.location.href.includes('/pages/');
-    window.location.href = isInner ? '../login.html' : 'login.html';
-  }
+async function doLogout() {
+  if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
+  try { await window.vpostAuth?.signOut(); } catch(e) {}
+  localStorage.removeItem('vpost_user');
+  window.location.href = 'login.html';
 }
 </script>
 </body>
