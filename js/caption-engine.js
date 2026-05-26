@@ -166,6 +166,8 @@ Trả lời ĐÚNG JSON sau, không thêm gì khác:
       tone,
       userDesc: enrichedDesc,
       topic,
+      contentType: options.contentType || 'facebook',
+      styleSamples: options.styleSamples || '',
     });
 
     // Map error sang exception để caption.html bắt được
