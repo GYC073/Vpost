@@ -77,6 +77,8 @@
   .cal-dot.scheduled { background: var(--purple); }
   .cal-dot.draft { background: #9CA3AF; }
   .cal-dot.failed { background: #DC2626; }
+  .cal-dot.posting { background: var(--amber); animation: posting-pulse 1s ease-in-out infinite; }
+  @keyframes posting-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
   .cal-day.today .cal-dot { background: rgba(255,255,255,0.85); }
   .cal-day.selected:not(.today) .cal-dot.posted { background: var(--green); }
 
@@ -152,8 +154,21 @@
   .status-scheduled { background: var(--purple-light); color: var(--purple); }
   .status-draft { background: #F3F4F6; color: #4B5563; }
   .status-failed { background: #FEE2E2; color: #991B1B; }
+  .status-posting { background: #FEF3C7; color: #92400E; }
 
   .post-list-right { display: flex; align-items: center; gap: 8px; }
+  .post-actions { display: flex; align-items: center; gap: 4px; }
+  .post-action-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-secondary); cursor: pointer; font-size: 14px;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .post-action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .post-action-btn.danger:hover { border-color: #DC2626; color: #DC2626; background: #FEE2E2; }
+  .post-action-btn.success:hover { border-color: #059669; color: #059669; background: var(--accent-light); }
+  .post-action-btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
   .fb-badge {
     display: inline-flex; align-items: center; gap: 4px;
     padding: 3px 8px; border-radius: 6px;
@@ -270,6 +285,7 @@ function dateKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String
 const STATUS_MAP = {
   posted: 'posted',
   scheduled: 'scheduled',
+  posting: 'posting',
   pending: 'pending',
   auto_posted: 'auto',
   auto: 'auto',
@@ -419,14 +435,33 @@ function clearSelection() {
 }
 
 /* ===== RENDER POST LIST ===== */
-const statusLabels = { posted:'Đã đăng', auto:'AI tự đăng', pending:'Chờ duyệt', scheduled:'Đã lên lịch', draft:'Nháp', failed:'Lỗi đăng' };
-const statusIcons  = { posted:'ti-brand-facebook', auto:'ti-robot', pending:'ti-clock', scheduled:'ti-calendar', draft:'ti-device-floppy', failed:'ti-alert-triangle' };
+const statusLabels = { posted:'Đã đăng', auto:'AI tự đăng', pending:'Chờ duyệt', scheduled:'Đã lên lịch', posting:'Đang đăng...', draft:'Nháp', failed:'Lỗi đăng' };
+const statusIcons  = { posted:'ti-brand-facebook', auto:'ti-robot', pending:'ti-clock', scheduled:'ti-calendar', posting:'ti-loader-2', draft:'ti-device-floppy', failed:'ti-alert-triangle' };
+
+function postActionBtns(post) {
+  if (post.status === 'scheduled') return `
+    <div class="post-actions">
+      <button class="post-action-btn success" title="Đăng ngay lên Facebook" onclick="postNow('${post.id}',this);event.stopPropagation()"><i class="ti ti-send"></i></button>
+      <button class="post-action-btn danger" title="Hủy lịch - chuyển về nháp" onclick="cancelSchedule('${post.id}',this);event.stopPropagation()"><i class="ti ti-calendar-x"></i></button>
+    </div>`;
+  if (post.status === 'failed') return `
+    <div class="post-actions">
+      <button class="post-action-btn" title="Thêm vào hàng chờ đăng lại" onclick="retryPost('${post.id}',this);event.stopPropagation()"><i class="ti ti-refresh"></i></button>
+      <button class="post-action-btn danger" title="Xóa bài này" onclick="deletePost('${post.id}',this);event.stopPropagation()"><i class="ti ti-trash"></i></button>
+    </div>`;
+  if (post.status === 'draft') return `
+    <div class="post-actions">
+      <button class="post-action-btn danger" title="Xóa bài nháp" onclick="deletePost('${post.id}',this);event.stopPropagation()"><i class="ti ti-trash"></i></button>
+    </div>`;
+  return '';
+}
 
 function postItemHTML(post) {
   let meta;
   const interTxt = post.interactions ? ` · ${post.interactions} tương tác` : '';
   if (post.status === 'posted') meta = `Đăng lúc ${post.time}${interTxt}`;
   else if (post.status === 'auto') meta = `AI tự đăng lúc ${post.time}${interTxt}`;
+  else if (post.status === 'posting') meta = 'Cron đang xử lý, vui lòng chờ...';
   else if (post.status === 'pending') meta = `Tự đăng lúc ${post.time} nếu bỏ qua`;
   else if (post.status === 'draft') meta = 'Bản nháp — chưa lên lịch';
   else if (post.status === 'failed') meta = `Lỗi: ${post.fb_error || 'không rõ'}`;
@@ -445,11 +480,12 @@ function postItemHTML(post) {
       </div>
       <div class="post-list-info">
         <div class="post-list-title">${post.title}</div>
-        <div class="post-list-meta"><i class="ti ${statusIcons[post.status]}"></i>${meta}</div>
+        <div class="post-list-meta"><i class="ti ${statusIcons[post.status] || 'ti-calendar'}"></i>${meta}</div>
       </div>
       <div class="post-list-right">
         ${fbBadge}
-        <span class="post-list-status status-${post.status}">${statusLabels[post.status]}</span>
+        <span class="post-list-status status-${post.status}">${statusLabels[post.status] || post.status}</span>
+        ${postActionBtns(post)}
       </div>
     </div>`;
 }
@@ -516,6 +552,77 @@ async function changeMonth(dir) {
   await new Promise(r => setTimeout(r, 100));
   await renderCalendar();
 })();
+</script>
+
+<script>
+// ===== POST ACTIONS =====
+const SUPABASE_FUNC_URL = 'https://elfswkmautcyrrkecrns.supabase.co/functions/v1';
+
+async function _refreshCalendar() {
+  monthPosts = {};
+  await renderCalendar();
+}
+
+async function cancelSchedule(postId, btn) {
+  if (!confirm('Huy lich bai nay va chuyen ve ban nhap?')) return;
+  btn.disabled = true;
+  const supa = window.vpostSupabase;
+  const { error } = await supa.from('posts')
+    .update({ status: 'draft', scheduled_at: null })
+    .eq('id', postId);
+  if (error) { showToast('Loi: ' + error.message); btn.disabled = false; return; }
+  showToast('Da huy lich - bai chuyen ve nhap');
+  await _refreshCalendar();
+}
+
+async function postNow(postId, btn) {
+  if (!confirm('Dang bai nay len Facebook ngay bay gio?')) return;
+  btn.disabled = true;
+  showToast('Dang dang len Facebook...');
+  try {
+    const { data: { session } } = await window.vpostSupabase.auth.getSession();
+    const res = await fetch(SUPABASE_FUNC_URL + '/fb-post', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ post_id: postId })
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      showToast('Dang Facebook thanh cong!');
+      await _refreshCalendar();
+    } else {
+      showToast('Dang that bai: ' + (data.error || 'Loi khong xac dinh'));
+      btn.disabled = false;
+    }
+  } catch (e) {
+    showToast('Loi ket noi: ' + e.message);
+    btn.disabled = false;
+  }
+}
+
+async function retryPost(postId, btn) {
+  if (!confirm('Them bai nay vao hang cho dang lai?')) return;
+  btn.disabled = true;
+  const supa = window.vpostSupabase;
+  const { error } = await supa.from('posts')
+    .update({ status: 'scheduled', fb_retry_count: 0, scheduled_at: new Date().toISOString(), fb_error: null })
+    .eq('id', postId);
+  if (error) { showToast('Loi: ' + error.message); btn.disabled = false; return; }
+  showToast('Da them vao hang cho - cron se dang trong vai phut');
+  await _refreshCalendar();
+}
+
+async function deletePost(postId, btn) {
+  if (!confirm('Xoa bai nay vinh vien? Khong the hoan tac.')) return;
+  btn.disabled = true;
+  const { error } = await window.vpostSupabase.from('posts').delete().eq('id', postId);
+  if (error) { showToast('Loi xoa: ' + error.message); btn.disabled = false; return; }
+  showToast('Da xoa bai');
+  await _refreshCalendar();
+}
 </script>
 
 <script>
