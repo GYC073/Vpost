@@ -156,6 +156,43 @@
 - Migration 006 đã chạy: bảng `app_settings` có 5 rows mặc định (system_message, system_message_enabled, system_message_type, support_zalo, support_phone)
 - MB Bank QR: VietQR API động theo amount + note. Momo QR: ảnh tĩnh `assets/qr-momo.jpg` (đã có)
 
+### Phase 7 — Scheduler / Cron (session 10 — 2026-05-26)
+
+**Mục tiêu:** Hoàn thiện UI + logic cho tính năng đăng bài tự động theo lịch.
+
+**Đã làm (session 10):**
+- [x] **calendar.html** — thêm status `posting` đầy đủ:
+  - `STATUS_MAP`: `posting: 'posting'`
+  - `statusLabels`: `posting: 'Đang đăng...'`, `statusIcons`: `posting: 'ti-loader-2'`
+  - `.cal-dot.posting` với animation pulse (amber, nhấp nháy khi cron đang xử lý)
+  - `.status-posting` badge (vàng nhạt)
+  - `postItemHTML`: hiển thị "Cron đang xử lý, vui lòng chờ..."
+- [x] **calendar.html** — thêm action buttons vào post cards:
+  - `scheduled`: nút **Đăng ngay** (gọi `fb-post` edge function với user JWT) + **Hủy lịch** (→ draft)
+  - `failed`: nút **Thử lại** (reset về scheduled, fb_retry_count=0) + **Xóa**
+  - `draft`: nút **Xóa**
+  - CSS: `.post-action-btn`, `.post-actions`, hover states (success/danger)
+- [x] **calendar.html** — JS action functions: `cancelSchedule`, `postNow`, `retryPost`, `deletePost`, `_refreshCalendar`
+
+**Git commit session 10:** `feat(phase7): calendar post actions - cancel/postNow/retry/delete + posting status`
+
+**Còn lại để Phase 7 hoàn chỉnh:**
+- [ ] **Deploy edge functions** (cần chạy từ terminal local):
+  ```
+  npx supabase functions deploy fb-oauth-exchange
+  npx supabase functions deploy fb-post
+  npx supabase functions deploy fb-scheduler --no-verify-jwt
+  ```
+- [ ] Test end-to-end: tạo bài → lên lịch → chờ cron → verify đăng thành công
+- [ ] Verify pg_cron đang chạy đúng: Supabase Dashboard → Database → Cron Jobs
+
+**Ghi chú kỹ thuật:**
+- `postNow` từ calendar gọi trực tiếp `fb-post` edge function với user JWT (không qua scheduler)
+- `retryPost` reset `scheduled_at = now()` và `fb_retry_count = 0` → cron 5 phút sau sẽ pick up
+- `SCHEDULER_SECRET` đã set, pg_cron đã tạo (*/5 và */30) — chỉ thiếu deploy function
+
+---
+
 ### Phase 6 — Hoàn thiện Meta App Review (sau khi submit)
 - [ ] Chờ Meta review (~5–7 ngày làm việc)
 - [ ] Nếu bị reject: đọc feedback, fix và resubmit
@@ -172,6 +209,26 @@
   - `calendar.html`: @media 380px — cal-grid gap 2px, font nhỏ hơn
 
 **Git commit session 8:** `feat: phase 7 - onboarding FB step, FB banner app.html, mobile responsive fixes`
+
+### Session 9 — 2026-05-25 (tiếp theo session 8)
+- [x] **4 ngành hàng mới**: bất động sản (`realestate`), giày dép (`shoes`), hàng authentic (`authentic`), nước hoa (`perfume`)
+  - `pages/settings.html`: thêm 4 option vào `#industrySelect`
+  - `js/app.js`: thêm vào `industryAssets` với Unsplash images q=80
+  - `supabase/functions/generate-caption/index.ts`: thêm `INDUSTRY_LABEL` + `INDUSTRY_EXAMPLES` (3 caption mẫu/ngành) → few-shot prompting
+- [x] **Fix ảnh mẫu trên app.html**: nâng từ q=70 → q=80, thêm box-shadow vào `.sample-img` (80×60px)
+- [x] **Fix stats real data**: `refreshStats()` → query `usage_log` đếm AI calls hôm nay thay vì fake data
+- [x] **Fix shop name từ Supabase**: `loadShopFromSupabase()` query profiles, override localStorage sau 400ms
+- [x] **Fix industry change**: `updateIndustry()` trong settings.html giờ async, upsert vào `profiles` Supabase
+- [x] **Fix login.html**: footer phone color `rgba(255,255,255,0.45)` → `.75` (dễ đọc hơn trên nền tối)
+- [x] **Fix landing mobile**: navbar buttons responsive @media 600px + 400px (ẩn "Đăng nhập" ≤400px)
+- [x] **Fix video.html JS syntax error**: escape backtick `\`` trong template literal → JS vỡ hoàn toàn
+- [x] **Fix video.html không có ô ảnh khi load**: `renderSlots()` + `renderQuota()` + `initDragDrop()` chưa bao giờ được gọi lúc init → thêm `DOMContentLoaded` listener
+- [x] **Add drag-drop thật cho video.html**: `initDragDrop()` với dragover/dragleave/drop events + `.drag-over` CSS state
+
+**Git commits session 9:**
+- `fix(video): init renderSlots+renderQuota on load, add real drag-drop support`
+
+- [x] **Fix video.html upload/drag-drop**: `renderSlots()` + `renderQuota()` + `initDragDrop()` chưa được gọi lúc load → thêm `DOMContentLoaded` listener. Đã deploy + verify OK (5 ô ảnh hiện, drag-drop hoạt động)
 
 ---
 

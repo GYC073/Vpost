@@ -158,39 +158,59 @@ Deno.serve(async (req) => {
       .order("generated_at", { ascending: false })
       .limit(10);
 
-    const recent = (history ?? [])
-      .map((h, i) => `${i + 1}. ${h.caption}`)
-      .join("\n") || "(chưa có caption nào)";
+    const allHistory = history ?? [];
+
+    // 3 bài gần nhất → style guide (bắt chước giọng văn của shop)
+    const styleGuide = allHistory.slice(0, 3)
+      .map((h: {caption: string}, i: number) => `[Mẫu ${i + 1}]\n${h.caption}`)
+      .join("\n\n");
+
+    // 10 bài gần nhất → tránh lặp nội dung
+    const recentContent = allHistory.slice(0, 10)
+      .map((h: {caption: string}, i: number) => `${i + 1}. ${h.caption.slice(0, 80)}`)
+      .join("\n") || "(chưa có)";
 
     const industryKey = profile.industry ?? "other";
     const industryLabel = INDUSTRY_LABEL[industryKey] ?? "kinh doanh";
     const toneLabel = TONE_MAP[tone] ?? TONE_MAP.fun;
     const industryExamples = INDUSTRY_EXAMPLES[industryKey] ?? [];
 
-    const examplesBlock = industryExamples.length > 0
-      ? `\nVÍ DỤ CAPTION CHUẨN CHO NGÀNH NÀY (học phong cách, từ ngữ, cấu trúc — KHÔNG copy nguyên):\n${industryExamples.map((ex, i) => `[Ví dụ ${i + 1}]\n${ex}`).join("\n\n")}\n`
-      : "";
+    // Nếu shop đã có lịch sử → dùng làm style guide thay vì ví dụ ngành
+    const referenceBlock = styleGuide
+      ? `PHONG CÁCH VIẾT CỦA SHOP NÀY — bắt chước cách dùng từ, nhịp câu, độ dài, cách đặt emoji (KHÔNG copy nội dung):\n${styleGuide}\n`
+      : industryExamples.length > 0
+        ? `VÍ DỤ THAM KHẢO NGÀNH (học phong cách — KHÔNG copy):\n${industryExamples.map((ex: string, i: number) => `[Ví dụ ${i + 1}]\n${ex}`).join("\n\n")}\n`
+        : "";
 
-    const systemPrompt = `Bạn là chuyên gia viết caption Facebook cho các shop nhỏ ở Việt Nam.
-Quy tắc:
-- Viết tiếng Việt tự nhiên, NGẮN GỌN (60-130 chữ mỗi caption).
-- Có 1-3 emoji vừa phải, đặt đúng chỗ (không nhồi cuối câu).
-- KHÔNG dùng hashtag dài lê thê — tối đa 2-3 hashtag ngắn ở cuối.
-- Mỗi caption phải có CTA (call-to-action) rõ ràng.
-- Phù hợp văn hoá người Việt, không "dịch máy".
-- TRÁNH lặp lại ý/cấu trúc các caption đã sinh gần đây.
-- Mỗi caption tách nhau bằng dòng riêng chứa "---".`;
+    const systemPrompt = `Bạn là chuyên gia viết caption Facebook cho shop nhỏ Việt Nam.
+
+MỤC TIÊU: Caption đọc lên phải nghe như CHÍNH CHỦ SHOP đang nhắn với khách quen — không phải AI viết bài marketing.
+
+TUYỆT ĐỐI CẤM các cụm từ sáo rỗng sau (có 1 cụm này là caption bị loại):
+"đừng bỏ lỡ", "inbox ngay", "chất lượng tuyệt vời", "siêu hot", "deal hấp dẫn", "cơ hội vàng", "liên hệ để được tư vấn", "đội ngũ chuyên nghiệp", "sản phẩm uy tín", "nhanh tay", "giá cực tốt", "không thể bỏ lỡ", "đừng bỏ qua"
+
+BA CẤU TRÚC BẮT BUỘC — mỗi caption dùng đúng 1 cấu trúc, theo thứ tự A→B→C:
+[A – Chuyện kể] Mở bằng 1 tình huống/quan sát thật → dẫn vào sản phẩm một cách tự nhiên
+[B – Thẳng thắn] Chia sẻ thẳng 1 điều thú vị/thực tế về sản phẩm, không hoa mỹ, không quảng cáo
+[C – Góc nhìn khách] Lời phản hồi của khách, hoặc mẹo/tip hữu ích liên quan sản phẩm
+
+QUY TẮC ĐỊNH DẠNG:
+- Độ dài: 50–100 chữ (ngắn — người Việt scroll nhanh)
+- Emoji: 0–2 cái, đặt tự nhiên trong câu (KHÔNG nhồi cuối đoạn)
+- Hashtag: tối đa 2, phải cụ thể (tránh #MuaNgay #Sale quá chung)
+- Tách caption bằng dòng chỉ có "---"`;
 
     const userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
-Mô tả shop: ${profile.shop_desc ?? "(chủ shop chưa điền)"}
-Tone giọng: ${toneLabel}
-${topic ? `Chủ đề hôm nay: ${topic}` : ""}
-${userDesc ? `Gợi ý thêm từ chủ shop: ${userDesc}` : ""}
-${examplesBlock}
-10 caption shop đã đăng gần đây (TRÁNH viết lặp):
-${recent}
+${profile.shop_desc ? `Mô tả: ${profile.shop_desc}` : ""}
+Tone: ${toneLabel}
+${topic ? `Chủ đề / sản phẩm hôm nay: ${topic}` : ""}
+${userDesc ? `Ghi chú từ chủ shop: ${userDesc}` : ""}
 
-Hãy viết 3 caption KHÁC BIỆT, mỗi caption tách bằng "---" trên dòng riêng.`;
+${referenceBlock}
+TRÁNH lặp ý với các bài đã đăng:
+${recentContent}
+
+Viết đúng 3 caption theo thứ tự cấu trúc A → B → C, tách bằng "---".`;
 
     // ----- Gọi Claude Haiku -----
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");

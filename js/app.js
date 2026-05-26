@@ -120,7 +120,9 @@ function pickSample(img) {
   img.classList.add('selected');
   document.getElementById('uploadPlaceholder').style.display = 'none';
   document.getElementById('uploadPreview').style.display = 'block';
-  document.getElementById('previewImg').src = img.src;
+  // Nâng resolution lên 1080px khi dùng thật (thumbnail chỉ 200px sẽ vỡ khi đăng FB)
+  const hiResUrl = img.src.replace(/w=\d+/, 'w=1080').replace(/q=\d+/, 'q=85');
+  document.getElementById('previewImg').src = hiResUrl;
 }
 
 // ============================================================

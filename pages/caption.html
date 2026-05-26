@@ -85,6 +85,38 @@
   }
   .generate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
   .generate-btn i { font-size: 18px; }
+  /* ===== TEMPLATE GALLERY ===== */
+  .tpl-toggle {
+    display: flex; align-items: center; gap: 8px;
+    background: none; border: 1.5px dashed var(--border);
+    color: var(--text-secondary); border-radius: 10px;
+    padding: 9px 14px; font-size: 13px; font-weight: 600;
+    cursor: pointer; width: 100%; transition: all 0.2s;
+    font-family: inherit;
+  }
+  .tpl-toggle:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .tpl-toggle i { font-size: 16px; transition: transform 0.2s; }
+  .tpl-toggle.open i.ti-chevron-down { transform: rotate(180deg); }
+  .tpl-grid {
+    display: none;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px; margin-top: 10px;
+  }
+  .tpl-grid.show { display: grid; }
+  .tpl-card {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 13px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: var(--bg);
+    cursor: pointer; transition: all 0.18s; text-align: left;
+  }
+  .tpl-card:hover { border-color: var(--primary); background: var(--primary-light); }
+  .tpl-card.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+  .tpl-icon { font-size: 20px; flex-shrink: 0; line-height: 1; margin-top: 1px; }
+  .tpl-name { font-size: 12.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .tpl-card.active .tpl-name { color: #fff; }
+  .tpl-desc { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+  .tpl-card.active .tpl-desc { color: rgba(255,255,255,0.8); }
+  @media (max-width: 420px) { .tpl-grid { grid-template-columns: 1fr; } }
 
   .result-card {
     background: var(--surface);
@@ -215,29 +247,102 @@
 
   .loading-bar {
     display: none;
-    flex-direction: column; align-items: center; gap: 12px;
-    padding: 32px;
+    flex-direction: column; align-items: center; gap: 20px;
+    padding: 36px 24px;
     text-align: center;
   }
   .loading-bar.show { display: flex; }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--purple);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  .loading-text { font-size: 14px; color: var(--text-secondary); }
 
-/* AI Steps loading */
-.ai-steps { display: none; flex-direction: column; gap: 10px; padding: 4px 0; }
-.ai-steps.show { display: flex; }
-.ai-step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-hint); transition: all 0.4s; }
-.ai-step.active { color: var(--primary); font-weight: 600; }
-.ai-step.done   { color: var(--success, #3BBD6E); }
-.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: all 0.3s; }
-.ai-step.active .step-dot { background: var(--primary); transform: scale(1.3); box-shadow: 0 0 0 4px rgba(45,107,228,0.15); }
-.ai-step.done .step-dot   { background: var(--success, #3BBD6E); transform: scale(1); box-shadow: none; }
+  /* Icon vòng tròn AI */
+  .loading-icon-wrap {
+    position: relative; width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .loading-icon-wrap i {
+    font-size: 28px; color: var(--primary); position: relative; z-index: 1;
+    animation: iconPulse 2s ease-in-out infinite;
+  }
+  @keyframes iconPulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.1);opacity:0.8;} }
+  .loading-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 2.5px solid transparent;
+    border-top-color: var(--primary);
+    border-right-color: rgba(45,107,228,0.3);
+    animation: spin 1.2s linear infinite;
+  }
+  .loading-ring-2 {
+    position: absolute; inset: 5px; border-radius: 50%;
+    border: 2px solid transparent;
+    border-bottom-color: var(--primary);
+    border-left-color: rgba(45,107,228,0.2);
+    animation: spin 1.8s linear infinite reverse;
+  }
+
+  /* Headline loading */
+  .loading-headline {
+    font-size: 14.5px; font-weight: 600; color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .loading-sub {
+    font-size: 12.5px; color: var(--text-secondary); margin-top: -12px;
+  }
+
+  /* Steps mới */
+  .ai-steps {
+    display: none; flex-direction: column; gap: 0;
+    width: 100%; max-width: 320px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .ai-steps.show { display: flex; }
+  .ai-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    font-size: 13px; color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.3s, color 0.3s;
+    position: relative;
+  }
+  .ai-step:last-child { border-bottom: none; }
+  .ai-step.active {
+    background: var(--primary-light, rgba(45,107,228,0.06));
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .ai-step.done { color: #059669; }
+  .ai-step.done .step-status-wrap { color: #059669; }
+
+  /* Dot / check icon bên trái */
+  .step-status-wrap {
+    width: 18px; height: 18px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-hint);
+    font-size: 15px;
+  }
+  .step-dot-idle {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); flex-shrink: 0;
+    transition: all 0.3s;
+  }
+  .ai-step.active .step-dot-idle {
+    background: var(--primary);
+    box-shadow: 0 0 0 3px rgba(45,107,228,0.15);
+    animation: dotPulse 1s ease-in-out infinite;
+  }
+  @keyframes dotPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.4);} }
+  .ai-step.done .step-dot-idle { display: none; }
+  .step-check { display: none; font-size: 14px; }
+  .ai-step.done .step-check { display: inline; }
+
+  /* Cursor nhấp nháy trên step active */
+  .step-cursor {
+    display: none; width: 2px; height: 13px;
+    background: var(--primary); border-radius: 1px;
+    margin-left: 2px;
+    animation: blink 0.8s step-end infinite;
+  }
+  .ai-step.active .step-cursor { display: inline-block; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
 
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -326,6 +431,50 @@
   </div>
 
   <!-- Mô tả -->
+  <!-- Template Gallery -->
+  <div class="section-card" id="templateSection">
+    <div class="section-label"><i class="ti ti-layout-grid"></i>Tình huống bài đăng <span style="font-size:11px;color:var(--text-hint);font-weight:400">(tuỳ chọn)</span></div>
+    <button class="tpl-toggle" id="tplToggle" onclick="toggleTemplates()">
+      <i class="ti ti-template"></i>
+      <span id="tplToggleText">Chọn từ template có sẵn</span>
+      <i class="ti ti-chevron-down" style="margin-left:auto"></i>
+    </button>
+    <div class="tpl-grid" id="tplGrid">
+      <button class="tpl-card" onclick="applyTemplate(0,this)">
+        <span class="tpl-icon">🎉</span>
+        <div><div class="tpl-name">Khai trương</div><div class="tpl-desc">Mở cửa, giới thiệu shop</div></div>
+      </button>
+      <button class="tpl-card" onclick="applyTemplate(1,this)">
+        <span class="tpl-icon">🔥</span>
+        <div><div class="tpl-name">Flash sale</div><div class="tpl-desc">Giảm giá có giới hạn</div></div>
+      </button>
+      <button class="tpl-card" onclick="applyTemplate(2,this)">
+        <span class="tpl-icon">📦</span>
+        <div><div class="tpl-name">Hàng mới về</div><div class="tpl-desc">Ra mắt sản phẩm mới</div></div>
+      </button>
+      <button class="tpl-card" onclick="applyTemplate(3,this)">
+        <span class="tpl-icon">⭐</span>
+        <div><div class="tpl-name">Review khách</div><div class="tpl-desc">Phản hồi, đánh giá tốt</div></div>
+      </button>
+      <button class="tpl-card" onclick="applyTemplate(4,this)">
+        <span class="tpl-icon">📺</span>
+        <div><div class="tpl-name">Livestream</div><div class="tpl-desc">Thông báo buổi live</div></div>
+      </button>
+      <button class="tpl-card" onclick="applyTemplate(5,this)">
+        <span class="tpl-icon">📦</span>
+        <div><div class="tpl-name">Xả kho</div><div class="tpl-desc">Thanh lý, dọn kho cuối kỳ</div></div>
+      </button>
+      <button class="tpl-card" onclick="applyTemplate(6,this)">
+        <span class="tpl-icon">🎁</span>
+        <div><div class="tpl-name">Combo / Tặng quà</div><div class="tpl-desc">Mua kèm, ưu đãi bộ</div></div>
+      </button>
+      <button class="tpl-card" onclick="applyTemplate(7,this)">
+        <span class="tpl-icon">💡</span>
+        <div><div class="tpl-name">Mẹo / Tip</div><div class="tpl-desc">Chia sẻ kiến thức ngành</div></div>
+      </button>
+    </div>
+  </div>
+
   <div class="section-card" id="normalDescSection">
     <div class="section-label"><i class="ti ti-message-circle"></i>Gợi ý cho AI</div>
     <textarea class="desc-textarea" id="userDesc" placeholder="Ví dụ: Ra mắt ly cam bưởi sả mới, giá 35k, thanh mát giải nhiệt mùa hè. Hoặc: Video khai trương tiệm, hãy viết caption chào mừng nhé!" style="min-height:100px; width:100%"></textarea>
@@ -392,15 +541,38 @@
 
   <!-- Loading -->
   <div class="loading-bar" id="loadingBar">
-    <div class="spinner"></div>
-    <div>
-      <div class="loading-text" id="loadingText">AI đang phân tích ngành hàng...</div>
-      <div class="ai-steps" id="aiSteps">
-        <div class="ai-step" id="step1"><span class="step-dot"></span>Phân tích ngành hàng và tone giọng</div>
-        <div class="ai-step" id="step2"><span class="step-dot"></span>Tạo hook thu hút đầu bài</div>
-        <div class="ai-step" id="step3"><span class="step-dot"></span>Viết nội dung + CTA chuyển đổi</div>
-        <div class="ai-step" id="step4"><span class="step-dot"></span>Thêm hashtag và emoji phù hợp</div>
-        <div class="ai-step" id="step5"><span class="step-dot"></span>Tạo 3 biến thể caption...</div>
+    <div class="loading-icon-wrap">
+      <i class="ti ti-brain"></i>
+      <div class="loading-ring"></div>
+      <div class="loading-ring-2"></div>
+    </div>
+    <div class="loading-headline">AI đang viết caption cho bạn...</div>
+    <div class="loading-sub">Thường mất 3–6 giây</div>
+    <div class="ai-steps" id="aiSteps">
+      <div class="ai-step" id="step1">
+        <span class="step-status-wrap"><span class="step-dot-idle"></span><i class="ti ti-check step-check"></i></span>
+        <span class="step-text">Phân tích ngành &amp; tone giọng</span>
+        <span class="step-cursor"></span>
+      </div>
+      <div class="ai-step" id="step2">
+        <span class="step-status-wrap"><span class="step-dot-idle"></span><i class="ti ti-check step-check"></i></span>
+        <span class="step-text">Tìm góc bán hàng độc đáo</span>
+        <span class="step-cursor"></span>
+      </div>
+      <div class="ai-step" id="step3">
+        <span class="step-status-wrap"><span class="step-dot-idle"></span><i class="ti ti-check step-check"></i></span>
+        <span class="step-text">Viết hook + nội dung chính</span>
+        <span class="step-cursor"></span>
+      </div>
+      <div class="ai-step" id="step4">
+        <span class="step-status-wrap"><span class="step-dot-idle"></span><i class="ti ti-check step-check"></i></span>
+        <span class="step-text">Thêm CTA, emoji &amp; hashtag</span>
+        <span class="step-cursor"></span>
+      </div>
+      <div class="ai-step" id="step5">
+        <span class="step-status-wrap"><span class="step-dot-idle"></span><i class="ti ti-check step-check"></i></span>
+        <span class="step-text">Tạo 3 biến thể caption...</span>
+        <span class="step-cursor"></span>
       </div>
     </div>
   </div>
@@ -533,26 +705,39 @@ const topicDescriptions = {
 };
 
 
-// Animated loading steps
+// Animated loading steps — step5 giữ active đến khi API respond
+let _stepTimers = [];
 function animateSteps() {
   const steps = ['step1','step2','step3','step4','step5'];
-  const delays = [0, 700, 1400, 2100, 2800];
+  // steps 1-4 mỗi 1000ms, step5 giữ active (không tự done)
+  const delays = [0, 1000, 2000, 3000, 4000];
   const stepsEl = document.getElementById('aiSteps');
   if (stepsEl) stepsEl.classList.add('show');
+  _stepTimers = [];
   steps.forEach((id, i) => {
-    setTimeout(() => {
-      // Đánh dấu bước trước là done
+    const t = setTimeout(() => {
       if (i > 0) {
         const prev = document.getElementById(steps[i-1]);
-        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+        if (prev && i < steps.length) { // step trước (bước 1-4) → done
+          prev.classList.remove('active'); prev.classList.add('done');
+        }
       }
       const el = document.getElementById(id);
       if (el) el.classList.add('active');
     }, delays[i]);
+    _stepTimers.push(t);
   });
 }
 
+// Gọi khi API respond xong — đánh dấu step5 done
+function completeSteps() {
+  const el = document.getElementById('step5');
+  if (el) { el.classList.remove('active'); el.classList.add('done'); }
+}
+
 function resetSteps() {
+  _stepTimers.forEach(t => clearTimeout(t));
+  _stepTimers = [];
   ['step1','step2','step3','step4','step5'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.classList.remove('active','done'); }
@@ -560,6 +745,96 @@ function resetSteps() {
   const stepsEl = document.getElementById('aiSteps');
   if (stepsEl) stepsEl.classList.remove('show');
 }
+// ===== TEMPLATE GALLERY =====
+const TEMPLATES = [
+  {
+    icon:'🎉', name:'Khai trương',
+    tone:'fun', topic:'checkin',
+    hint:'Shop mình chính thức khai trương hôm nay! Địa chỉ: [địa chỉ]. Giờ mở cửa: 8h–21h. Ưu đãi khai trương: [điền ưu đãi]. Ghé thăm ủng hộ shop mình nhé!'
+  },
+  {
+    icon:'🔥', name:'Flash sale',
+    tone:'sale', topic:'sale',
+    hint:'Flash sale [tên sản phẩm] giảm [X]% — chỉ trong hôm nay! Số lượng có hạn, ai nhanh tay người đó được giá tốt. Liên hệ ngay để đặt hàng.'
+  },
+  {
+    icon:'📦', name:'Hàng mới về',
+    tone:'friendly', topic:'product',
+    hint:'Hàng mới về hôm nay: [tên sản phẩm]. Điểm nổi bật: [đặc điểm 1], [đặc điểm 2]. Giá: [giá]. Nhắn tin để xem thêm hình thực tế nhé!'
+  },
+  {
+    icon:'⭐', name:'Review khách',
+    tone:'friendly', topic:'interact',
+    hint:'Khách [tên hoặc địa chỉ] vừa nhận hàng và phản hồi: "[trích lời khen của khách]". Cảm ơn bạn đã tin tưởng shop mình!'
+  },
+  {
+    icon:'📺', name:'Livestream',
+    tone:'fun', topic:'checkin',
+    hint:'Tối nay [giờ] mình live trên Facebook! Sẽ có: [nội dung live]. Đặc biệt: ai vào live sẽ được [ưu đãi]. Nhớ bật thông báo để không bỏ lỡ nhé!'
+  },
+  {
+    icon:'📦', name:'Xả kho',
+    tone:'sale', topic:'sale',
+    hint:'Xả kho cuối [tháng/quý/năm]: [tên sản phẩm] giảm [X]%, chỉ còn [số lượng] cái. Hàng xả kho không đổi trả, giá đã quá tốt rồi nên mình không thể giảm thêm nhé.'
+  },
+  {
+    icon:'🎁', name:'Combo / Tặng quà',
+    tone:'fun', topic:'sale',
+    hint:'Mua [sản phẩm A] tặng kèm [sản phẩm B] trị giá [X]k — áp dụng trong [thời gian]. Số lượng quà có hạn, inbox sớm để được giữ phần nhé!'
+  },
+  {
+    icon:'💡', name:'Mẹo / Tip',
+    tone:'friendly', topic:'quote',
+    hint:'Chia sẻ mẹo về [chủ đề ngành]: [nội dung mẹo ngắn gọn 1-2 câu]. Bạn đã biết điều này chưa? Comment bên dưới nhé!'
+  },
+];
+
+let activeTemplateIdx = -1;
+
+function toggleTemplates() {
+  const grid = document.getElementById('tplGrid');
+  const btn  = document.getElementById('tplToggle');
+  const isOpen = grid.classList.contains('show');
+  grid.classList.toggle('show', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  document.getElementById('tplToggleText').textContent = isOpen
+    ? 'Chọn từ template có sẵn'
+    : 'Ẩn template';
+}
+
+function applyTemplate(idx, el) {
+  const t = TEMPLATES[idx];
+  if (!t) return;
+
+  // Highlight card được chọn
+  document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeTemplateIdx = idx;
+
+  // Set tone
+  const toneEl = document.getElementById('toneSelect');
+  if (toneEl) toneEl.value = t.tone;
+
+  // Set topic + click đúng button
+  const topicBtns = document.querySelectorAll('.topic-btn');
+  topicBtns.forEach(btn => {
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + t.topic + "'")) {
+      btn.click();
+    }
+  });
+
+  // Fill userDesc
+  const desc = document.getElementById('userDesc');
+  if (desc) {
+    desc.value = t.hint;
+    desc.focus();
+    desc.setSelectionRange(0, 0);
+    desc.scrollTop = 0;
+  }
+
+  showToast('Template "' + t.name + '" đã điền — chỉnh thêm rồi bấm Tạo Caption!');
+}
+
 async function generateCaptions() {
   const loading = document.getElementById('loadingBar');
   const results = document.getElementById('resultsSection');
@@ -652,6 +927,8 @@ async function generateCaptions() {
     showToast('⚠️ AI tạm thời lỗi, dùng caption mẫu. ' + (err.message || ''));
   }
 
+  completeSteps();
+  await new Promise(r => setTimeout(r, 350)); // brief pause để user thấy step5 done
   loading.classList.remove('show');
   document.getElementById('result1').textContent = captionResults[0] || '';
   document.getElementById('result2').textContent = captionResults[1] || '';

@@ -267,10 +267,10 @@ body {
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Số điện thoại</label>
+        <label class="form-label">Số điện thoại / Email</label>
         <div class="form-input-wrap">
           <i class="ti ti-phone"></i>
-          <input class="form-input" type="tel" id="regPhone" placeholder="0912 345 678">
+          <input class="form-input" type="text" id="regPhone" placeholder="0912 345 678 hoặc you@gmail.com" autocomplete="username">
         </div>
       </div>
       <div class="form-group">
@@ -365,13 +365,20 @@ async function handleLogin() {
 
 async function handleRegister() {
   const shop = document.getElementById('regShop').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
+  const identifier = document.getElementById('regPhone').value.trim();
   const pass = document.getElementById('regPass').value.trim();
   const err = document.getElementById('regError');
   const btn = document.querySelector('#formRegister .submit-btn');
 
-  if (!shop || !phone || !pass || pass.length < 6) {
+  // Validate: chấp nhận số điện thoại hoặc email
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+  const isPhone = /^0\d{8,9}$/.test(identifier.replace(/\s/g, ''));
+  if (!shop || !identifier || !pass || pass.length < 6) {
     err.textContent = !pass || pass.length < 6 ? 'Mật khẩu tối thiểu 6 ký tự!' : 'Vui lòng điền đầy đủ thông tin!';
+    err.classList.add('show'); return;
+  }
+  if (!isEmail && !isPhone) {
+    err.textContent = 'Nhập số điện thoại (VD: 0912345678) hoặc email hợp lệ.';
     err.classList.add('show'); return;
   }
   err.classList.remove('show');
@@ -380,7 +387,7 @@ async function handleRegister() {
 
   try {
     if (!window.vpostAuth) throw new Error('Supabase chưa load, hãy F5 lại trang.');
-    const { data, error } = await window.vpostAuth.signUp(phone, pass, { shop_name: shop });
+    const { data, error } = await window.vpostAuth.signUp(identifier, pass, { shop_name: shop });
     if (error) {
       err.textContent = mapAuthError(error.message) || 'Đăng ký thất bại: ' + error.message;
       err.classList.add('show');
@@ -397,7 +404,7 @@ async function handleRegister() {
       userObj = await VpostAuth.syncFromSupabase();
     } else {
       // Có thể đang chờ OTP — vẫn lưu tạm vào localStorage để onboarding chạy
-      VpostAuth.saveCurrentUser({ name: shop, shopName: shop, phone, plan: 'trial', loggedIn: true, isNew: true });
+      VpostAuth.saveCurrentUser({ name: shop, shopName: shop, phone: identifier, plan: 'trial', loggedIn: true, isNew: true });
       userObj = VpostAuth.getCurrentUser();
     }
     window.location.href = 'onboarding.html';

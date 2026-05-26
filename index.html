@@ -430,6 +430,122 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
   .btn-ghost { display: none; }
   .btn-primary { padding: 8px 16px; font-size: 13px; white-space: nowrap; }
 }
+/* ===== BEFORE / AFTER HERO ===== */
+.ba-wrap {
+  background: #fff;
+  border: 1.5px solid var(--ink-10);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.10), 0 4px 16px rgba(37,99,235,0.08);
+  max-width: 480px;
+  width: 100%;
+}
+.ba-row-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.ba-row-label.bad  { color: #EF4444; }
+.ba-row-label.good { color: #059669; }
+.ba-input-box {
+  background: #F9FAFB; border: 1.5px solid var(--ink-10);
+  border-radius: 10px; padding: 14px 16px;
+  font-size: 15px; color: var(--ink-50);
+  font-style: italic; line-height: 1.5;
+}
+.ba-arrow-row {
+  display: flex; align-items: center; gap: 10px;
+  margin: 14px 0; padding: 0 4px;
+}
+.ba-ai-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--blue-l); color: var(--blue);
+  border: 1px solid rgba(37,99,235,0.15);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 12.5px; font-weight: 600;
+  animation: ba-pulse 2s ease-in-out infinite;
+}
+@keyframes ba-pulse { 0%,100%{opacity:1;} 50%{opacity:0.65;} }
+.ba-arrow-line { flex:1; height:1px; background: var(--ink-10); }
+.ba-output-box {
+  background: linear-gradient(135deg, #F0F7FF 0%, #F5FFF9 100%);
+  border: 1.5px solid rgba(37,99,235,0.15);
+  border-radius: 10px; padding: 16px;
+}
+.ba-caption-txt {
+  font-size: 13.5px; color: var(--ink); line-height: 1.7;
+  white-space: pre-line; margin-bottom: 12px;
+}
+.ba-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.ba-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #fff; border: 1px solid rgba(5,150,105,0.2);
+  color: #059669; border-radius: 20px;
+  padding: 3px 10px; font-size: 11.5px; font-weight: 600;
+}
+.ba-tag i { font-size: 12px; }
+.ba-btns { display: flex; gap: 8px; }
+.ba-btn-copy {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--ink-08); border: 1px solid var(--ink-10);
+  color: var(--ink-70); border-radius: 8px;
+  padding: 7px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.ba-btn-copy:hover { background: var(--ink-20); }
+.ba-btn-fb {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #1877F2; color: #fff; border: none;
+  border-radius: 8px; padding: 7px 14px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s; flex: 1; justify-content: center;
+}
+.ba-btn-fb:hover { background: #1565C0; }
+
+/* ===== SECTION: DÀNH CHO AI ===== */
+.forwho-section {
+  padding: 80px 5vw;
+  background: #F8FAFF;
+  border-top: 1px solid var(--ink-08);
+}
+.forwho-inner { max-width: 1100px; margin: 0 auto; }
+.forwho-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-top: 48px;
+}
+.forwho-card {
+  background: #fff;
+  border: 1.5px solid var(--ink-08);
+  border-radius: 16px;
+  padding: 22px 20px;
+  transition: all 0.2s;
+  cursor: default;
+}
+.forwho-card:hover {
+  border-color: rgba(37,99,235,0.25);
+  box-shadow: 0 8px 24px rgba(37,99,235,0.08);
+  transform: translateY(-2px);
+}
+.forwho-icon { font-size: 28px; margin-bottom: 10px; }
+.forwho-name {
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  margin-bottom: 10px; letter-spacing: -0.01em;
+}
+.forwho-sample {
+  background: var(--ink-08); border-radius: 8px;
+  padding: 10px 12px; font-size: 12.5px; color: var(--ink-50);
+  line-height: 1.6; font-style: italic;
+  border-left: 3px solid var(--blue);
+}
+@media (max-width: 768px) {
+  .forwho-grid { grid-template-columns: repeat(2, 1fr); }
+  .ba-wrap { max-width: 100%; }
+}
+@media (max-width: 480px) {
+  .forwho-grid { grid-template-columns: 1fr; }
+}
+
 </style>
 </head>
 <body>
@@ -458,20 +574,20 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
     <div class="hero-content">
       <div class="hero-badge reveal"><i class="ti ti-map-pin"></i>Dành riêng cho shop nhỏ Việt Nam</div>
       <h1 class="hero-title reveal reveal-delay-1">
-        Đăng bài mỗi ngày mà
-        <span class="line2"><span class="accent">không cần thuê content.</span></span>
+        Biến 1 ảnh thành
+        <span class="line2"><span class="accent">bài đăng Facebook hoàn chỉnh.</span></span>
       </h1>
       <p class="hero-desc reveal reveal-delay-2">
-        AI viết caption đúng ngành hàng của bạn — nệm, spa, F&B, thời trang, mỹ phẩm. <strong>Xong trong 10 giây, tự đăng lên Facebook lúc 10h sáng.</strong> Không cần biết marketing.
+        Nhập tên sản phẩm → AI viết caption, hashtag, CTA. <strong>Xong trong 10 giây.</strong> Tự động đăng lên Facebook — dù bạn đang bận giao hàng.
       </p>
       <div class="hero-actions reveal reveal-delay-2">
         <a href="login.html" class="btn-hero-primary"><i class="ti ti-rocket"></i>Dùng thử 3 ngày miễn phí</a>
         <a href="#how" class="btn-hero-ghost"><i class="ti ti-play"></i>Xem cách hoạt động</a>
       </div>
       <div class="hero-pills reveal reveal-delay-2">
-        <span class="hero-pill"><i class="ti ti-clock-bolt"></i>Caption xong trong 10 giây</span>
+        <span class="hero-pill"><i class="ti ti-clock-bolt"></i>10 giây là xong</span>
         <span class="hero-pill"><i class="ti ti-calendar-bolt"></i>Tự đăng lúc 10h sáng</span>
-        <span class="hero-pill"><i class="ti ti-building-store"></i>Hiểu ngành: nệm, spa, F&B…</span>
+        <span class="hero-pill"><i class="ti ti-shield-check"></i>Dùng thử 3 ngày miễn phí</span>
       </div>
 
       <div class="hero-social-proof reveal reveal-delay-3">
@@ -487,47 +603,37 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
       </div>
     </div>
 
-    <!-- Mockup -->
+    <!-- Before / After Demo -->
     <div class="hero-visual reveal reveal-delay-2">
-      <div style="position:relative">
-        <div class="mockup-wrap">
-          <div class="mockup-bar">
-            <div class="mockup-dot r"></div>
-            <div class="mockup-dot y"></div>
-            <div class="mockup-dot g"></div>
-            <div class="mockup-url">vpost.vn/app</div>
+      <div class="ba-wrap">
+        <div class="ba-row-label bad"><i class="ti ti-circle-x"></i>Input của bạn</div>
+        <div class="ba-input-box">"Nệm cao su xả kho cuối tháng, giảm 20%"</div>
+
+        <div class="ba-arrow-row">
+          <div class="ba-arrow-line"></div>
+          <div class="ba-ai-chip"><i class="ti ti-sparkles"></i>AI viết trong 3 giây...</div>
+          <div class="ba-arrow-line"></div>
+        </div>
+
+        <div class="ba-row-label good"><i class="ti ti-circle-check"></i>Caption hoàn chỉnh</div>
+        <div class="ba-output-box">
+          <div class="ba-caption-txt">🛏️ Cuối tháng dọn kho — nệm cao su thiên nhiên giảm 20%!
+
+Ai đang có kế hoạch đổi nệm thì đây là thời điểm rồi. Giao trong ngày, đổi trả 30 ngày nếu không ưng.
+
+Nhắn tin hoặc gọi hotline bên dưới nhé 👇
+
+#NemGiaTot #XaKho</div>
+          <div class="ba-tags">
+            <span class="ba-tag"><i class="ti ti-check"></i>Đúng tone</span>
+            <span class="ba-tag"><i class="ti ti-check"></i>Có CTA</span>
+            <span class="ba-tag"><i class="ti ti-check"></i>Hashtag tự động</span>
           </div>
-          <div class="mockup-screen">
-            <div class="mockup-topbar">
-              <div class="m-logo"><i class="ti ti-pencil-star"></i></div>
-              <span class="m-name">Vpost</span>
-            </div>
-            <div class="mockup-body">
-              <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=400&q=70" class="m-hero-img" alt="">
-              <div class="m-card">
-                <div class="m-card-row">
-                  <div class="m-platform">
-                    <div class="m-fb"><i class="ti ti-brand-facebook"></i></div>
-                    <span class="m-pname">Fanpage của bạn</span>
-                  </div>
-                  <span class="m-badge">Chờ duyệt</span>
-                </div>
-                <div class="m-ai-label"><i class="ti ti-sparkles"></i> AI tạo caption</div>
-                <div class="m-caption">☕ Thứ Sáu rồi! Ghé tiệm mình thưởng thức ly bạc xỉu trân châu mới cực ngon nhé 🖤 DM hoặc comment bên dưới! #CaPhê #BạcXỉu</div>
-                <div class="m-btns">
-                  <div class="m-btn-primary">✓ Duyệt & Đăng</div>
-                  <div class="m-btn-outline">Lên lịch</div>
-                </div>
-              </div>
-              <div class="m-stats">
-                <div class="m-stat"><div class="m-stat-val">24</div><div class="m-stat-lbl">Bài đã đăng</div></div>
-                <div class="m-stat"><div class="m-stat-val">1.2k</div><div class="m-stat-lbl">Tương tác</div></div>
-              </div>
-            </div>
+          <div class="ba-btns">
+            <button class="ba-btn-copy" onclick="navigator.clipboard.writeText(document.querySelector('.ba-caption-txt').innerText);this.innerHTML='<i class=\'ti ti-check\'></i>Đã copy'"><i class="ti ti-copy"></i>Sao chép</button>
+            <button class="ba-btn-fb"><i class="ti ti-brand-facebook"></i>Đăng Facebook</button>
           </div>
         </div>
-        <div class="chip chip-1"><i class="ti ti-sparkles" style="color:#2563EB"></i>AI viết caption</div>
-        <div class="chip chip-2"><i class="ti ti-video" style="color:#059669"></i>Tạo video tự động</div>
       </div>
     </div>
   </div>
@@ -546,6 +652,48 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
     <div class="diff-item"><i class="ti ti-circle-check" style="color:#34D399"></i> Vpost <strong>nhớ tên shop, ngành hàng</strong> — viết đúng luôn</div>
   </div>
 </div>
+
+
+<!-- DÀNH CHO AI -->
+<section class="forwho-section">
+  <div class="forwho-inner">
+    <div class="section-tag reveal"><i class="ti ti-users"></i>Dành cho ai?</div>
+    <h2 class="section-title reveal reveal-delay-1">Được build cho<br>business thật ở Việt Nam</h2>
+    <p class="section-sub reveal reveal-delay-2">Vpost hiểu từng ngành — AI viết caption đúng sản phẩm, đúng khách hàng của bạn.</p>
+    <div class="forwho-grid">
+      <div class="forwho-card reveal reveal-delay-1">
+        <div class="forwho-icon">🛏️</div>
+        <div class="forwho-name">Shop nệm / nội thất</div>
+        <div class="forwho-sample">"Cuối tháng xả kho nệm lò xo, giảm 20%. Giao trong ngày, đổi trả 30 ngày."</div>
+      </div>
+      <div class="forwho-card reveal reveal-delay-1">
+        <div class="forwho-icon">✨</div>
+        <div class="forwho-name">Spa / làm đẹp</div>
+        <div class="forwho-sample">"Sau 3 buổi Pico Laser — da sáng hơn rõ rệt, không đau, không cần nghỉ hồi phục."</div>
+      </div>
+      <div class="forwho-card reveal reveal-delay-2">
+        <div class="forwho-icon">☕</div>
+        <div class="forwho-name">Quán café / F&amp;B</div>
+        <div class="forwho-sample">"Thứ Sáu rồi! Ghé mình thưởng thức ly bạc xỉu trân châu mới — ngon mà giá chỉ 35k."</div>
+      </div>
+      <div class="forwho-card reveal reveal-delay-2">
+        <div class="forwho-icon">💄</div>
+        <div class="forwho-name">Mỹ phẩm / skincare</div>
+        <div class="forwho-sample">"Serum vitamin C sau 2 tuần dùng — da sáng, mờ thâm, không bít lỗ chân lông. Review thật từ khách."</div>
+      </div>
+      <div class="forwho-card reveal reveal-delay-3">
+        <div class="forwho-icon">👗</div>
+        <div class="forwho-name">Thời trang / giày dép</div>
+        <div class="forwho-sample">"Mẫu mới về hôm nay — form chuẩn, phối được mọi outfit. Size 36–44, inbox trước khi hết hàng!"</div>
+      </div>
+      <div class="forwho-card reveal reveal-delay-3">
+        <div class="forwho-icon">🏪</div>
+        <div class="forwho-name">Local brand / shop online</div>
+        <div class="forwho-sample">"Tụi mình là shop nhỏ nhưng giao hàng nhanh, đóng gói cẩn thận — inbox để được báo giá liền nhé!"</div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- LOGOS -->
 <div class="logos-section">
