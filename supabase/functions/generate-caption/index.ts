@@ -149,6 +149,8 @@ Deno.serve(async (req) => {
     const tone = String(body.tone ?? "fun");
     const userDesc = String(body.userDesc ?? "").slice(0, 300);
     const topic = String(body.topic ?? "").slice(0, 200);
+    const contentType = String(body.contentType ?? "facebook"); // facebook|shopee|livestream|reply
+    const styleSamples = String(body.styleSamples ?? "").slice(0, 1500);
 
     // ----- Lấy 10 caption gần nhất để anti-repeat -----
     const { data: history } = await supabaseUser
@@ -175,14 +177,53 @@ Deno.serve(async (req) => {
     const toneLabel = TONE_MAP[tone] ?? TONE_MAP.fun;
     const industryExamples = INDUSTRY_EXAMPLES[industryKey] ?? [];
 
-    // Nếu shop đã có lịch sử → dùng làm style guide thay vì ví dụ ngành
-    const referenceBlock = styleGuide
-      ? `PHONG CÁCH VIẾT CỦA SHOP NÀY — bắt chước cách dùng từ, nhịp câu, độ dài, cách đặt emoji (KHÔNG copy nội dung):\n${styleGuide}\n`
-      : industryExamples.length > 0
-        ? `VÍ DỤ THAM KHẢO NGÀNH (học phong cách — KHÔNG copy):\n${industryExamples.map((ex: string, i: number) => `[Ví dụ ${i + 1}]\n${ex}`).join("\n\n")}\n`
-        : "";
+    // Ưu tiên: 1. styleSamples từ user, 2. caption history, 3. ví dụ ngành
+    const referenceBlock = styleSamples
+      ? `PHONG CÁCH VIẾT CỦA SHOP NÀY (chủ shop cung cấp) — học cách dùng từ, nhịp câu, cách đặt emoji (KHÔNG copy nội dung):\n${styleSamples}\n`
+      : styleGuide
+        ? `PHONG CÁCH VIẾT CỦA SHOP NÀY — bắt chước cách dùng từ, nhịp câu, độ dài, cách đặt emoji (KHÔNG copy nội dung):\n${styleGuide}\n`
+        : industryExamples.length > 0
+          ? `VÍ DỤ THAM KHẢO NGÀNH (học phong cách — KHÔNG copy):\n${industryExamples.map((ex: string, i: number) => `[Ví dụ ${i + 1}]\n${ex}`).join("\n\n")}\n`
+          : "";
 
-    const systemPrompt = `Bạn là chuyên gia viết caption Facebook cho shop nhỏ Việt Nam.
+    // ── Prompt theo loại nội dung ──
+    let systemPrompt = "";
+    let userPrompt = "";
+
+    if (contentType === "shopee") {
+      systemPrompt = `Bạn là chuyên gia viết mô tả sản phẩm Shopee cho shop Việt Nam.
+Viết 3 mẫu mô tả sản phẩm theo 3 phong cách khác nhau, tách bằng "---".
+Mỗi mẫu gồm: Tiêu đề (<70 ký tự, có từ khoá), Mô tả ngắn (3-5 bullet điểm), Thông tin giao hàng/đổi trả.
+KHÔNG dùng: "chất lượng cao", "giá tốt nhất", "uy tín", "chuyên nghiệp".
+Viết thực tế, rõ ràng — người mua đọc là biết ngay sản phẩm có gì.`;
+      userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
+Thông tin sản phẩm: ${userDesc || topic || "sản phẩm mới"}
+${referenceBlock}
+Viết 3 mẫu mô tả Shopee khác nhau, tách bằng "---".`;
+
+    } else if (contentType === "livestream") {
+      systemPrompt = `Bạn là chuyên gia viết kịch bản livestream bán hàng Facebook cho shop Việt Nam.
+Viết 1 kịch bản livestream đầy đủ, tự nhiên như người thật nói — không cứng nhắc.
+Cấu trúc: Mở màn (chào, giới thiệu) → Sản phẩm highlight (2-3 sản phẩm với điểm nhấn) → Mini game/voucher → CTA chốt đơn → Lời kết.
+Tone: ${toneLabel}. Ngắn gọn, súc tích — mỗi phần 3-5 câu.`;
+      userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
+Nội dung live: ${userDesc || topic || "giới thiệu sản phẩm mới"}
+${referenceBlock}
+Viết kịch bản livestream hoàn chỉnh.`;
+
+    } else if (contentType === "reply") {
+      systemPrompt = `Bạn là chuyên gia tư vấn bán hàng online cho shop Việt Nam.
+Với comment/câu hỏi của khách, viết 3 mẫu trả lời theo 3 phong cách: [A – Thân thiện ngắn], [B – Chi tiết tư vấn], [C – Chốt đơn khéo].
+Tách bằng "---". Mỗi mẫu 1-3 câu. KHÔNG dùng "dạ em", "bạn ơi" lặp đi lặp lại.
+Viết như chính chủ shop đang nhắn — tự nhiên, không robot.`;
+      userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
+Comment của khách: "${userDesc || "Sản phẩm này có tốt không?"}"
+${referenceBlock}
+Viết 3 mẫu trả lời, tách bằng "---".`;
+
+    } else {
+      // facebook (default)
+      systemPrompt = `Bạn là chuyên gia viết caption Facebook cho shop nhỏ Việt Nam.
 
 MỤC TIÊU: Caption đọc lên phải nghe như CHÍNH CHỦ SHOP đang nhắn với khách quen — không phải AI viết bài marketing.
 
@@ -200,7 +241,7 @@ QUY TẮC ĐỊNH DẠNG:
 - Hashtag: tối đa 2, phải cụ thể (tránh #MuaNgay #Sale quá chung)
 - Tách caption bằng dòng chỉ có "---"`;
 
-    const userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
+      userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
 ${profile.shop_desc ? `Mô tả: ${profile.shop_desc}` : ""}
 Tone: ${toneLabel}
 ${topic ? `Chủ đề / sản phẩm hôm nay: ${topic}` : ""}
@@ -211,6 +252,7 @@ TRÁNH lặp ý với các bài đã đăng:
 ${recentContent}
 
 Viết đúng 3 caption theo thứ tự cấu trúc A → B → C, tách bằng "---".`;
+    }
 
     // ----- Gọi Claude Haiku -----
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");

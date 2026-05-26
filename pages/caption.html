@@ -344,6 +344,49 @@
   .ai-step.active .step-cursor { display: inline-block; }
   @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
 
+
+  /* Content type selector */
+  .ctype-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .ctype-btn {
+    display:flex; align-items:center; gap:6px;
+    padding:8px 16px; border-radius:10px;
+    border:1.5px solid var(--border); background:#fff;
+    font-size:13.5px; font-weight:600; color:var(--text-secondary);
+    cursor:pointer; transition:all 0.15s;
+  }
+  .ctype-btn i { font-size:15px; }
+  .ctype-btn:hover { border-color:var(--primary); color:var(--primary); }
+  .ctype-btn.active { border-color:var(--primary); background:var(--primary); color:#fff; }
+
+  /* Style samples */
+  .style-toggle {
+    display:flex; align-items:center; gap:8px;
+    width:100%; padding:10px 14px; border-radius:10px;
+    border:1.5px dashed var(--border); background:transparent;
+    font-size:13.5px; font-weight:600; color:var(--text-secondary);
+    cursor:pointer; transition:all 0.15s;
+  }
+  .style-toggle:hover { border-color:var(--primary); color:var(--primary); }
+  .style-toggle .style-badge {
+    margin-left:auto; background:var(--primary); color:#fff;
+    border-radius:20px; padding:2px 10px; font-size:12px; display:none;
+  }
+  .style-toggle .style-badge.show { display:inline-block; }
+  .style-body { display:none; margin-top:12px; }
+  .style-body.open { display:block; }
+  .style-textarea {
+    width:100%; min-height:120px; border:1.5px solid var(--border);
+    border-radius:10px; padding:12px 14px; font-size:14px;
+    font-family:inherit; color:var(--text); resize:vertical;
+    box-sizing:border-box; outline:none; transition:border-color 0.15s;
+  }
+  .style-textarea:focus { border-color:var(--primary); }
+  .style-save-btn {
+    margin-top:8px; padding:8px 18px; border-radius:8px;
+    border:none; background:var(--primary); color:#fff;
+    font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  .style-hint { font-size:12px; color:var(--text-hint); margin-top:6px; }
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -406,6 +449,16 @@
 
   <!-- Tone -->
   <div class="section-card">
+  <div class="section-card">
+    <div class="section-label"><i class="ti ti-file-description"></i>Loại nội dung</div>
+    <div class="ctype-row">
+      <button class="ctype-btn active" data-ctype="facebook" onclick="selectCtype(this)"><i class="ti ti-brand-facebook"></i>Bài Facebook</button>
+      <button class="ctype-btn" data-ctype="shopee" onclick="selectCtype(this)"><i class="ti ti-shopping-bag"></i>Mô tả Shopee</button>
+      <button class="ctype-btn" data-ctype="livestream" onclick="selectCtype(this)"><i class="ti ti-live-photo"></i>Kịch bản live</button>
+      <button class="ctype-btn" data-ctype="reply" onclick="selectCtype(this)"><i class="ti ti-message-reply"></i>Trả lời comment</button>
+    </div>
+  </div>
+
     <div class="section-label"><i class="ti ti-adjustments"></i>Tone bài đăng</div>
     <select class="tone-select" id="toneSelect" style="width:100%">
       <option value="fun">😄 Vui vẻ</option>
@@ -531,6 +584,21 @@
         <small>JPG, PNG, MP4</small>
       </div>
       <input type="file" id="captionFile" accept="image/*,video/*" style="display:none" onchange="handleCaptionFile(this)">
+    </div>
+  </div>
+
+  <div class="section-card" id="styleSampleSection">
+    <div class="section-label"><i class="ti ti-brain"></i>AI học theo giọng shop <span style="font-size:11px;color:var(--text-hint);font-weight:400">(tuỳ chọn)</span></div>
+    <button class="style-toggle" id="styleToggle" onclick="toggleStyleSamples()">
+      <i class="ti ti-clipboard-text"></i>
+      <span>Dán 2–3 bài FB cũ của shop để AI học giọng viết</span>
+      <span class="style-badge" id="styleBadge">Đã học</span>
+    </button>
+    <div class="style-body" id="styleBody">
+      <textarea class="style-textarea" id="styleSamplesInput"
+        placeholder="Dán bài đăng Facebook cũ của shop vào đây (cách nhau bằng dòng trống).&#10;&#10;Ví dụ:&#10;Hôm nay mình nhập về lô giày mới...&#10;&#10;---&#10;&#10;Flash sale cuối tuần, ai nhanh tay thì..."></textarea>
+      <button class="style-save-btn" onclick="saveStyleSamples()"><i class="ti ti-device-floppy"></i> Lưu mẫu viết</button>
+      <p class="style-hint">AI sẽ học cách dùng từ, nhịp câu, emoji của shop — không copy nội dung cũ.</p>
     </div>
   </div>
 
@@ -835,6 +903,74 @@ function applyTemplate(idx, el) {
   showToast('Template "' + t.name + '" đã điền — chỉnh thêm rồi bấm Tạo Caption!');
 }
 
+
+// ── Content type & Style samples ──
+let selectedContentType = 'facebook';
+
+function selectCtype(btn) {
+  document.querySelectorAll('.ctype-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedContentType = btn.dataset.ctype;
+
+  // Ẩn/hiện sections theo loại
+  const showTone = selectedContentType !== 'reply';
+  const showTopic = selectedContentType === 'facebook';
+  const showTemplate = selectedContentType === 'facebook';
+  document.querySelectorAll('.section-card')[1].style.display = showTone ? '' : 'none'; // tone
+  const topicCard = document.querySelectorAll('.section-card')[2];
+  if (topicCard) topicCard.style.display = showTopic ? '' : 'none';
+  const tplSection = document.getElementById('templateSection');
+  if (tplSection) tplSection.style.display = showTemplate ? '' : 'none';
+
+  // Cập nhật placeholder gợi ý
+  const descArea = document.getElementById('userDesc');
+  const placeholders = {
+    facebook: 'Ví dụ: Ra mắt ly cam bưởi sả mới, giá 35k, thanh mát giải nhiệt mùa hè.',
+    shopee: 'Mô tả sản phẩm: tên, chất liệu, kích thước, màu sắc, giá, ưu điểm nổi bật...',
+    livestream: 'Chủ đề live: sản phẩm flash sale, thời lượng, voucher sẽ tung, khung giờ...',
+    reply: 'Dán comment của khách vào đây để AI viết 3 mẫu trả lời phù hợp...'
+  };
+  if (descArea) descArea.placeholder = placeholders[selectedContentType] || placeholders.facebook;
+
+  // Cập nhật label nút generate
+  const genBtn = document.querySelector('.generate-btn span') || document.querySelector('.generate-btn');
+  const btnLabels = {
+    facebook: '<i class="ti ti-sparkles"></i> Tạo Caption với AI',
+    shopee: '<i class="ti ti-sparkles"></i> Viết mô tả Shopee',
+    livestream: '<i class="ti ti-sparkles"></i> Tạo kịch bản live',
+    reply: '<i class="ti ti-sparkles"></i> Viết mẫu trả lời'
+  };
+  const generateBtn = document.querySelector('.generate-btn');
+  if (generateBtn && !generateBtn.disabled) generateBtn.innerHTML = btnLabels[selectedContentType];
+}
+
+// Style samples
+function toggleStyleSamples() {
+  const body = document.getElementById('styleBody');
+  body.classList.toggle('open');
+}
+
+function saveStyleSamples() {
+  const val = document.getElementById('styleSamplesInput').value.trim();
+  if (!val) { showToast('Chưa nhập mẫu viết!'); return; }
+  localStorage.setItem('vpost_style_samples', val);
+  const badge = document.getElementById('styleBadge');
+  badge.classList.add('show');
+  badge.textContent = '✓ Đã học';
+  document.getElementById('styleBody').classList.remove('open');
+  showToast('Đã lưu mẫu viết! AI sẽ học theo giọng shop.');
+}
+
+function loadStyleSamples() {
+  const saved = localStorage.getItem('vpost_style_samples');
+  if (saved) {
+    document.getElementById('styleSamplesInput').value = saved;
+    const badge = document.getElementById('styleBadge');
+    badge.classList.add('show');
+    badge.textContent = '✓ Đã học';
+  }
+}
+
 async function generateCaptions() {
   const loading = document.getElementById('loadingBar');
   const results = document.getElementById('resultsSection');
@@ -884,11 +1020,14 @@ async function generateCaptions() {
   }
 
   try {
+    const styleSamples = localStorage.getItem('vpost_style_samples') || '';
     const result = await CaptionEngine.generate({
       tone,
       userDesc,
       topic: topicForApi,
-      enrichedDesc: userDesc, // đảm bảo CaptionEngine không override
+      enrichedDesc: userDesc,
+      contentType: selectedContentType,
+      styleSamples: styleSamples,
     });
     captionResults = result.captions;
 
