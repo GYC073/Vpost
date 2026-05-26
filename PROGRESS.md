@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-25 (session 8)
+**Last updated:** 2026-05-26 (session 11)
 
 ---
 
@@ -208,28 +208,50 @@
   - `caption.html`: publish-grid 2 cols ≤420px, Đăng ngay lên full-width, schedule-row stack
   - `calendar.html`: @media 380px — cal-grid gap 2px, font nhỏ hơn
 
-**Git commit session 8:** `feat: phase 7 - onboarding FB step, FB banner app.html, mobile responsive fixes`
-
-### Session 9 — 2026-05-25 (tiếp theo session 8)
-- [x] **4 ngành hàng mới**: bất động sản (`realestate`), giày dép (`shoes`), hàng authentic (`authentic`), nước hoa (`perfume`)
-  - `pages/settings.html`: thêm 4 option vào `#industrySelect`
-  - `js/app.js`: thêm vào `industryAssets` với Unsplash images q=80
-  - `supabase/functions/generate-caption/index.ts`: thêm `INDUSTRY_LABEL` + `INDUSTRY_EXAMPLES` (3 caption mẫu/ngành) → few-shot prompting
-- [x] **Fix ảnh mẫu trên app.html**: nâng từ q=70 → q=80, thêm box-shadow vào `.sample-img` (80×60px)
-- [x] **Fix stats real data**: `refreshStats()` → query `usage_log` đếm AI calls hôm nay thay vì fake data
-- [x] **Fix shop name từ Supabase**: `loadShopFromSupabase()` query profiles, override localStorage sau 400ms
-- [x] **Fix industry change**: `updateIndustry()` trong settings.html giờ async, upsert vào `profiles` Supabase
-- [x] **Fix login.html**: footer phone color `rgba(255,255,255,0.45)` → `.75` (dễ đọc hơn trên nền tối)
-- [x] **Fix landing mobile**: navbar buttons responsive @media 600px + 400px (ẩn "Đăng nhập" ≤400px)
-- [x] **Fix video.html JS syntax error**: escape backtick `\`` trong template literal → JS vỡ hoàn toàn
-- [x] **Fix video.html không có ô ảnh khi load**: `renderSlots()` + `renderQuota()` + `initDragDrop()` chưa bao giờ được gọi lúc init → thêm `DOMContentLoaded` listener
-- [x] **Add drag-drop thật cho video.html**: `initDragDrop()` với dragover/dragleave/drop events + `.drag-over` CSS state
-
-**Git commits session 9:**
-- `fix(video): init renderSlots+renderQuota on load, add real drag-drop support`
-
-- [x] **Fix video.html upload/drag-drop**: `renderSlots()` + `renderQuota()` + `initDragDrop()` chưa được gọi lúc load → thêm `DOMContentLoaded` listener. Đã deploy + verify OK (5 ô ảnh hiện, drag-drop hoạt động)
-
+**Git commit session 8:** `feat: phase 7 - onboarding FB step, FB banner app.html, mobile respo
 ---
 
-## Git status snapshot (2026-05-22 — sau session 
+### Session 11 — UX & Caption nâng cao (2026-05-26)
+
+**Đã làm:**
+
+**Fix & Deploy:**
+- [x] `login.html` — form đăng ký nhận cả SĐT lẫn email (label "Số điện thoại / Email", validation isEmail/isPhone, `signUp(identifier, ...)`)
+- [x] `js/app.js` — ảnh mẫu nhanh: nâng URL lên 1080px/q=85 trước khi set previewImg (tránh mờ khi đăng Facebook)
+
+**AI Caption cải tiến:**
+- [x] `supabase/functions/generate-caption/index.ts` — rewrite prompt: chống 13 cụm sáo rỗng, 3 cấu trúc A/B/C bắt buộc, học giọng từ caption history
+- [x] **4 loại nội dung** (contentType): Bài Facebook / Mô tả Shopee / Kịch bản livestream / Trả lời comment — mỗi loại prompt riêng, ẩn/hiện section phù hợp
+- [x] **AI học theo mẫu viết của shop** (styleSamples): user dán 2-3 bài FB cũ → lưu localStorage → truyền lên API làm style guide ưu tiên cao nhất
+- [x] `js/caption-engine.js` — truyền `contentType` và `styleSamples` vào API call
+- [x] `pages/caption.html` — thêm content type selector (4 nút), section "AI học theo giọng shop" (collapsible), placeholder thay đổi theo loại, nút generate đổi label
+
+**Loading & Template:**
+- [x] `pages/caption.html` — redesign loading: brain icon + rings quay + 5 bước checklist với cursor blink; step 5 giữ active đến khi API trả về
+- [x] `pages/caption.html` — Template Gallery: 8 tình huống có sẵn (khai trương, flash sale, tuyển dụng...) auto-fill tone/chủ đề/gợi ý
+
+**Landing Page:**
+- [x] `index.html` — hero mới: headline "Biến 1 ảnh thành bài đăng Facebook hoàn chỉnh", Before/After card demo
+- [x] `index.html` — section "Dành cho ai" (6 ngành: nệm, spa, cafe, mỹ phẩm, thời trang, local brand)
+- [x] `index.html` — **Demo miễn phí** không cần đăng nhập: textarea + tone picker + AI generate thật, giới hạn 3 lần/session (localStorage)
+- [x] `supabase/functions/demo-caption/index.ts` — edge function public (--no-verify-jwt), gọi Claude Haiku, 3 tone
+
+**Git commits session 11:**
+- `feat: email+phone register, template gallery, loading redesign, landing hero, hi-res samples, anti-cliche caption`
+- `feat: free demo landing page, email register, template gallery, loading redesign`
+- `feat: content types (shopee/livestream/reply) + AI style learning from user samples`
+- `fix: pass contentType+styleSamples through CaptionEngine to API`
+
+**Deploy cần chạy (nếu chưa):**
+```
+npx supabase functions deploy demo-caption --no-verify-jwt
+npx supabase functions deploy generate-caption
+```
+
+**Còn lại chưa làm (từ UX 12 điểm):**
+- [ ] Social proof thật (testimonial từ user thật)
+- [ ] Dashboard UX nhỏ (quick actions, recent activity)
+- [ ] Colors/branding consistency check
+- [ ] Speed feeling (skeleton loading)
+- [ ] Practical wording audit toàn trang
+

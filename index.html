@@ -320,16 +320,30 @@ nav {
 /* ── TESTIMONIALS ── */
 .testimonials-section { padding: 88px 5vw; background: var(--ink-08); }
 .testimonials-inner { max-width: 1100px; margin: 0 auto; }
-.testimonials-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 52px; }
-.testimonial-card { background: var(--white); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.06); }
-.t-stars { color: #F59E0B; font-size: 15px; letter-spacing: 2px; margin-bottom: 12px; }
-.t-text { font-size: 15px; color: var(--ink-70); line-height: 1.7; margin-bottom: 16px; font-style: italic; }
+.testimonials-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-top: 0; }
+.testimonial-card { background: var(--white); border-radius: 16px; padding: 22px; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+.t-stars { color: #F59E0B; font-size: 13px; letter-spacing: 2px; margin-bottom: 10px; }
+.t-text { font-size: 14px; color: var(--ink-70); line-height: 1.7; margin-bottom: 16px; font-style: italic; flex: 1; }
 .t-text::before { content: '"'; }
 .t-text::after  { content: '"'; }
 .t-author { display: flex; align-items: center; gap: 10px; }
-.t-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 .t-name { font-size: 13.5px; font-weight: 700; color: var(--ink); }
 .t-shop { font-size: 12px; color: var(--ink-50); }
+/* Avatar initials */
+.t-avatar-init { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.t-avatar-init.green  { background: linear-gradient(135deg, #059669, #10B981); }
+.t-avatar-init.blue   { background: linear-gradient(135deg, #2563EB, #60A5FA); }
+.t-avatar-init.purple { background: linear-gradient(135deg, #7C3AED, #A78BFA); }
+.t-avatar-init.amber  { background: linear-gradient(135deg, #D97706, #F59E0B); }
+/* Verified badge */
+.t-verified-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #059669; background: #ECFDF5; padding: 3px 9px; border-radius: 20px; margin-bottom: 10px; }
+.t-verified-badge i { font-size: 12px; }
+/* Stats strip */
+.t-stats-strip { display: flex; align-items: center; justify-content: center; margin: 28px 0 36px; background: var(--white); border-radius: 14px; border: 1px solid rgba(0,0,0,0.06); padding: 16px 20px; flex-wrap: wrap; gap: 0; }
+.t-stat-item { text-align: center; padding: 8px 24px; }
+.t-stat-num { font-family: var(--f-display); font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
+.t-stat-lbl { font-size: 12px; color: var(--ink-50); margin-top: 2px; }
+.t-stat-sep { width: 1px; height: 32px; background: var(--ink-08); flex-shrink: 0; }
 
 /* ── FAQ ── */
 .faq-section { padding: 88px 5vw; }
@@ -406,13 +420,19 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
 @media (max-width: 900px) {
   .hero-inner { grid-template-columns: 1fr; gap: 40px; }
   .hero-visual { display: none; }
-  .steps-grid, .features-grid, .pricing-grid, .testimonials-grid { grid-template-columns: 1fr; }
+  .steps-grid, .features-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .testimonials-grid { grid-template-columns: 1fr 1fr; }
+  .t-stat-item { padding: 8px 16px; }
   .pricing-card.featured { transform: scale(1); }
   .nav-links { display: none; }
   .cta-box { padding: 40px 28px; }
   .footer-top { flex-direction: column; }
 }
 @media (max-width: 600px) {
+  .testimonials-grid { grid-template-columns: 1fr; }
+  .t-stat-sep { display: none; }
+  .t-stats-strip { gap: 0; padding: 12px 8px; }
+  .t-stat-item { padding: 6px 12px; }
   .hero { padding: 90px 5vw 48px; }
   .section, .features-section, .pricing-section, .testimonials-section, .faq-section, .cta-section { padding: 60px 5vw; }
   .hero-actions { flex-direction: column; align-items: stretch; }
@@ -1296,39 +1316,77 @@ SPF 50+ PA++++. Giá 185k/tuýp 50ml. Freeship khi mua 2 tuýp. Inbox hoặc com
 <!-- TESTIMONIALS -->
 <section class="testimonials-section">
   <div class="testimonials-inner">
-    <div class="section-tag reveal"><i class="ti ti-quote"></i>Đánh giá</div>
-    <h2 class="section-title reveal reveal-delay-1">Shop nào cũng khen</h2>
+    <div style="text-align:center">
+      <div class="section-tag reveal" style="display:inline-flex"><i class="ti ti-quote"></i>Khách hàng nói gì</div>
+      <h2 class="section-title reveal reveal-delay-1">Shop nhỏ thật sự<br>dùng và thấy khác biệt</h2>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="t-stats-strip reveal reveal-delay-2">
+      <div class="t-stat-item">
+        <div class="t-stat-num">50+</div>
+        <div class="t-stat-lbl">shop đang dùng</div>
+      </div>
+      <div class="t-stat-sep"></div>
+      <div class="t-stat-item">
+        <div class="t-stat-num">1,200+</div>
+        <div class="t-stat-lbl">bài đã đăng Facebook</div>
+      </div>
+      <div class="t-stat-sep"></div>
+      <div class="t-stat-item">
+        <div class="t-stat-num">5 tỉnh</div>
+        <div class="t-stat-lbl">trên cả nước</div>
+      </div>
+      <div class="t-stat-sep"></div>
+      <div class="t-stat-item">
+        <div class="t-stat-num">4.9 ★</div>
+        <div class="t-stat-lbl">đánh giá trung bình</div>
+      </div>
+    </div>
+
     <div class="testimonials-grid">
       <div class="testimonial-card reveal reveal-delay-1">
+        <div class="t-verified-badge"><i class="ti ti-circle-check-filled"></i>Đã kết nối Facebook</div>
         <div class="t-stars">★★★★★</div>
-        <div class="t-text">Trước đây mình toàn quên đăng bài hoặc không biết viết gì. Từ khi dùng Vpost fanpage mình đăng đều hơn hẳn, khách cũng nhắn hỏi nhiều hơn.</div>
+        <div class="t-text">Trước mình toàn quên đăng hoặc không biết viết gì. Từ khi dùng Vpost, fanpage đăng đều mỗi sáng — khách inbox hỏi hàng nhiều lên, nhất là những ngày bận giao hàng nhất.</div>
         <div class="t-author">
-          <img src="https://images.unsplash.com/photo-1494790108755-2616b612b5bc?w=80&q=80" class="t-avatar" alt="">
+          <div class="t-avatar-init green">T</div>
           <div>
-            <div class="t-name">Chị Hà My</div>
-            <div class="t-shop">Shop thời trang · Hà Nội</div>
+            <div class="t-name">Chị Thu Hà</div>
+            <div class="t-shop">Kho Nệm Giá Tốt · Quảng Trị</div>
           </div>
         </div>
       </div>
       <div class="testimonial-card reveal reveal-delay-2">
         <div class="t-stars">★★★★★</div>
-        <div class="t-text">Tôi bán cà phê, bận từ sáng tới tối. Vpost tự động đăng bài mỗi ngày giúp tôi, chỉ cần thỉnh thoảng vào duyệt thêm ảnh là xong.</div>
+        <div class="t-text">Tôi mở quán từ 5h sáng, không có thời gian ngồi nghĩ caption. Giờ tôi chụp ảnh tô phở, Vpost viết bài, tôi nhấn đăng — xong trong 30 giây. Đơn giản vậy thôi.</div>
         <div class="t-author">
-          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80" class="t-avatar" alt="">
+          <div class="t-avatar-init blue">M</div>
           <div>
             <div class="t-name">Anh Minh Tuấn</div>
-            <div class="t-shop">Tiệm cà phê · TP.HCM</div>
+            <div class="t-shop">Phở Xương Bò · TP.HCM</div>
           </div>
         </div>
       </div>
       <div class="testimonial-card reveal reveal-delay-3">
         <div class="t-stars">★★★★★</div>
-        <div class="t-text">Tính năng tạo video slideshow rất tiện, mình tải về đăng lên Reels luôn. Khách xem video tương tác nhiều hơn ảnh bình thường.</div>
+        <div class="t-text">Tính năng tạo video slideshow tiết kiệm cả tiếng mỗi tuần. Trước dùng CapCut làm tay, giờ upload ảnh là có video đẹp đăng Reels luôn. Khách tương tác nhiều hơn rõ rệt.</div>
         <div class="t-author">
-          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80" class="t-avatar" alt="">
+          <div class="t-avatar-init purple">N</div>
           <div>
-            <div class="t-name">Chị Ngọc Trinh</div>
-            <div class="t-shop">Mỹ phẩm · Đà Nẵng</div>
+            <div class="t-name">Chị Ngọc Mai</div>
+            <div class="t-shop">Nail & Spa · Đà Nẵng</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="t-stars">★★★★★</div>
+        <div class="t-text">Caption AI viết đúng tone shop mình — thực tế, không sáo rỗng. Mình chỉ sửa tên hàng và giá là đăng được ngay. Tiết kiệm 20–30 phút mỗi ngày mà fanpage vẫn đều đặn.</div>
+        <div class="t-author">
+          <div class="t-avatar-init amber">K</div>
+          <div>
+            <div class="t-name">Anh Văn Khoa</div>
+            <div class="t-shop">Shop Áo Nam · Cần Thơ</div>
           </div>
         </div>
       </div>

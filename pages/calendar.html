@@ -75,8 +75,8 @@
   .cal-dot.auto { background: var(--amber); }
   .cal-dot.pending { background: var(--blue); }
   .cal-dot.scheduled { background: var(--purple); }
-  .cal-dot.draft { background: #9CA3AF; }
-  .cal-dot.failed { background: #DC2626; }
+  .cal-dot.draft { background: var(--ink-30); }
+  .cal-dot.failed { background: var(--danger); }
   .cal-dot.posting { background: var(--amber); animation: posting-pulse 1s ease-in-out infinite; }
   @keyframes posting-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
   .cal-day.today .cal-dot { background: rgba(255,255,255,0.85); }
@@ -148,13 +148,13 @@
     padding: 4px 10px; border-radius: 20px;
     white-space: nowrap;
   }
-  .status-posted { background: var(--accent-light); color: #0F6E56; }
-  .status-auto { background: var(--orange-light); color: #9A3412; }
-  .status-pending { background: var(--primary-light); color: var(--primary-dark); }
-  .status-scheduled { background: var(--purple-light); color: var(--purple); }
-  .status-draft { background: #F3F4F6; color: #4B5563; }
-  .status-failed { background: #FEE2E2; color: #991B1B; }
-  .status-posting { background: #FEF3C7; color: #92400E; }
+  .status-posted    { background: var(--accent-light);   color: var(--accent); }
+  .status-auto      { background: var(--accent-light);   color: var(--accent); }
+  .status-pending   { background: var(--primary-light);  color: var(--primary-dark); }
+  .status-scheduled { background: var(--primary-light);  color: var(--primary); }
+  .status-draft     { background: var(--bg);             color: var(--text-secondary); }
+  .status-failed    { background: var(--danger-light);   color: var(--danger); }
+  .status-posting   { background: var(--yellow-light);   color: var(--yellow); }
 
   .post-list-right { display: flex; align-items: center; gap: 8px; }
   .post-actions { display: flex; align-items: center; gap: 4px; }
@@ -166,8 +166,8 @@
     transition: all 0.15s; flex-shrink: 0;
   }
   .post-action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
-  .post-action-btn.danger:hover { border-color: #DC2626; color: #DC2626; background: #FEE2E2; }
-  .post-action-btn.success:hover { border-color: #059669; color: #059669; background: var(--accent-light); }
+  .post-action-btn.danger:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-light); }
+  .post-action-btn.success:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
   .post-action-btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
   .fb-badge {
     display: inline-flex; align-items: center; gap: 4px;

@@ -286,6 +286,59 @@ async function refreshStats() {
 window.submitPost = submitPost;
 window.refreshStats = refreshStats;
 
+// ===== RECENT POSTS =====
+async function loadRecentPosts() {
+  const container = document.getElementById('recentPostsList');
+  if (!container || !window.vpostPosts) return;
+  try {
+    const { data } = await window.vpostPosts.list({ limit: 5 });
+    if (!data || !data.length) {
+      container.innerHTML = '<div class="rp-empty"><i class="ti ti-pencil-plus" style="font-size:20px;margin-bottom:6px;display:block"></i>Chưa có bài nào. Tạo bài đầu tiên nhé!</div>';
+      return;
+    }
+    const STATUS = {
+      draft:       { label: 'Nháp',         color: '#6B7280', bg: '#F3F4F6' },
+      scheduled:   { label: 'Đã lên lịch',  color: '#2563EB', bg: '#EFF6FF' },
+      posted:      { label: 'Đã đăng',      color: '#059669', bg: '#ECFDF5' },
+      auto_posted: { label: 'AI tự đăng',   color: '#059669', bg: '#ECFDF5' },
+      posting:     { label: 'Đang đăng',    color: '#D97706', bg: '#FFFBEB' },
+      failed:      { label: 'Thất bại',     color: '#DC2626', bg: '#FEF2F2' },
+    };
+    container.innerHTML = data.map(p => {
+      const s = STATUS[p.status] || { label: p.status, color: '#6B7280', bg: '#F3F4F6' };
+      const date = new Date(p.scheduled_at || p.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' });
+      const caption = (p.caption || '').replace(/\n/g, ' ').trim() || '(Chưa có caption)';
+      const thumb = p.image_url
+        ? `<div class="rp-item-thumb"><img src="${p.image_url}" alt=""></div>`
+        : `<div class="rp-item-thumb"><i class="ti ti-photo"></i></div>`;
+      return `<div class="rp-item">
+        ${thumb}
+        <div class="rp-item-body">
+          <div class="rp-item-caption">${caption}</div>
+          <div class="rp-item-meta">${date}</div>
+        </div>
+        <span class="rp-item-badge" style="color:${s.color};background:${s.bg}">${s.label}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '';
+  }
+}
+window.loadRecentPosts = loadRecentPosts;
+
+// ===== GREETING ĐỘNG =====
+function setDynamicGreeting() {
+  const el = document.getElementById('heroGreeting') || document.querySelector('.shop-hero-sub');
+  if (!el) return;
+  const h = new Date().getHours();
+  let greet = '🌙 Chào buổi tối! Lên lịch bài cho ngày mai nhé';
+  if (h >= 5 && h < 11)  greet = '☀️ Chào buổi sáng! Bài đăng hôm nay đã sẵn sàng';
+  else if (h >= 11 && h < 13) greet = '🍜 Giờ nghỉ trưa! Tranh thủ duyệt bài nhanh nhé';
+  else if (h >= 13 && h < 18) greet = '⚡ Buổi chiều! Đăng bài bây giờ đúng giờ cao điểm';
+  else if (h >= 18 && h < 22) greet = '🌆 Buổi tối! Lên lịch cho ngày mai đi nào';
+  el.textContent = greet;
+}
+
 // ===== UI =====
 function showToast(msg) {
   const toast = document.getElementById('toast'); if (!toast) return;
@@ -300,6 +353,9 @@ function toggleSidebar() {
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.location.href.includes('login') && !window.location.href.includes('onboarding')) {
     loadShopInfo();
+    setDynamicGreeting();
+    // Tải recent posts sau khi auth init xong (delay nhỏ)
+    setTimeout(loadRecentPosts, 600);
   }
 });
 

@@ -80,7 +80,7 @@
       </div>
       <div class="shop-hero-info">
         <h1 class="shop-hero-name"><span id="heroShopName">Shop của bạn</span></h1>
-        <p class="shop-hero-sub">☀️ Chào buổi sáng! Bài đăng hôm nay đã sẵn sàng</p>
+        <p class="shop-hero-sub" id="heroGreeting">👋 Xin chào! Bài đăng hôm nay đã sẵn sàng</p>
       </div>
       <button class="icon-btn glass"><i class="ti ti-bell"></i></button>
     </div>
@@ -104,7 +104,30 @@
   <!-- Alert tự động -->
   <div class="auto-alert">
     <i class="ti ti-clock"></i>
-    <span>Nếu chưa duyệt trước <strong>10:00 sáng</strong>, AI sẽ tự động đăng bài cho bạn.</span>
+    <span>Bài sẽ được AI tự đăng lúc <strong>10:00</strong> nếu bạn chưa vào duyệt.</span>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <div class="quick-actions-label"><i class="ti ti-bolt"></i>Thao tác nhanh</div>
+    <div class="quick-actions-grid">
+      <a href="pages/caption.html" class="qa-btn">
+        <div class="qa-icon blue"><i class="ti ti-sparkles"></i></div>
+        <span>Tạo caption AI</span>
+      </a>
+      <a href="pages/calendar.html" class="qa-btn">
+        <div class="qa-icon green"><i class="ti ti-calendar"></i></div>
+        <span>Lịch đăng</span>
+      </a>
+      <a href="pages/video.html" class="qa-btn">
+        <div class="qa-icon amber"><i class="ti ti-video"></i></div>
+        <span>Tạo video</span>
+      </a>
+      <a href="pages/settings.html" class="qa-btn">
+        <div class="qa-icon purple"><i class="ti ti-settings"></i></div>
+        <span>Cài đặt</span>
+      </a>
+    </div>
   </div>
 
   <!-- Post card -->
@@ -166,7 +189,7 @@
         </div>
         <div class="upload-placeholder" id="uploadPlaceholder">
           <i class="ti ti-cloud-upload"></i>
-          <span>Kéo thả hoặc bấm để tải ảnh / video của bạn</span>
+          <span>Kéo thả hoặc bấm để chọn ảnh / video</span>
           <small>JPG, PNG, MP4 — tối đa 50MB</small>
         </div>
         <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" onchange="handleFile(this)">
@@ -210,8 +233,8 @@
       <div class="stat-icon purple"><i class="ti ti-robot"></i></div>
       <div class="stat-info">
         <div class="stat-value" id="statInteract">0</div>
-        <div class="stat-label">AI hôm nay</div>
-        <div class="stat-sub">Lượt tạo caption</div>
+        <div class="stat-label">Caption hôm nay</div>
+        <div class="stat-sub">Lượt tạo AI</div>
       </div>
     </div>
     <div class="stat-card">
@@ -229,6 +252,19 @@
         <div class="stat-label">Ngày liên tiếp</div>
         <div class="stat-sub">Chuỗi đăng bài</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Recent Posts -->
+  <div class="recent-posts-section">
+    <div class="rp-header">
+      <div class="rp-header-title"><i class="ti ti-history"></i>Bài đăng gần đây</div>
+      <a href="pages/calendar.html" class="rp-header-link">Xem tất cả →</a>
+    </div>
+    <div class="recent-posts-list" id="recentPostsList">
+      <div class="rp-skeleton"></div>
+      <div class="rp-skeleton"></div>
+      <div class="rp-skeleton"></div>
     </div>
   </div>
 
