@@ -502,6 +502,165 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
 }
 .ba-btn-fb:hover { background: #1565C0; }
 
+
+/* ===== SECTION: DEMO MIỄN PHÍ ===== */
+.demo-live-section {
+  padding: 88px 5vw;
+  background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%);
+  border-top: 1px solid var(--ink-08);
+}
+.demo-live-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+.demo-headline {
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+.demo-headline .accent { color: var(--blue); }
+.demo-sub {
+  font-size: 16px;
+  color: var(--ink-50);
+  margin-bottom: 36px;
+}
+.demo-box {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 32px rgba(37,99,235,0.10);
+  padding: 32px;
+  text-align: left;
+}
+.demo-tone-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.demo-tone-btn {
+  padding: 7px 18px;
+  border-radius: 20px;
+  border: 1.5px solid var(--ink-20);
+  background: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-50);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.demo-tone-btn.active {
+  border-color: var(--blue);
+  background: var(--blue-l);
+  color: var(--blue);
+}
+.demo-textarea {
+  width: 100%;
+  border: 1.5px solid var(--ink-20);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  resize: none;
+  min-height: 90px;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.demo-textarea:focus { border-color: var(--blue); }
+.demo-generate-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 15px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.demo-generate-btn:hover { background: var(--blue-d); transform: translateY(-1px); }
+.demo-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.demo-output {
+  display: none;
+  margin-top: 24px;
+  border-top: 1px solid var(--ink-08);
+  padding-top: 20px;
+}
+.demo-output.show { display: block; }
+.demo-output-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+.demo-output-text {
+  background: #F8FAFF;
+  border: 1.5px solid #DBEAFE;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.demo-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.demo-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--ink-20);
+  background: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-70);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.demo-copy-btn:hover { border-color: var(--blue); color: var(--blue); }
+.demo-signup-cta {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.demo-signup-cta:hover { background: var(--blue-d); }
+.demo-limit-note {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ink-50);
+  margin-top: 18px;
+}
+.demo-limit-note span { color: var(--blue); font-weight: 600; }
+
 /* ===== SECTION: DÀNH CHO AI ===== */
 .forwho-section {
   padding: 80px 5vw;
@@ -735,6 +894,115 @@ Nhắn tin hoặc gọi hotline bên dưới nhé 👇
     </div>
   </div>
 </section>
+
+
+<!-- DEMO MIỄN PHÍ -->
+<section class="demo-live-section" id="try-demo">
+  <div class="demo-live-inner">
+    <div class="section-tag reveal"><i class="ti ti-wand"></i>Thử ngay</div>
+    <h2 class="demo-headline reveal">Nhập thông tin shop — <span class="accent">AI viết ngay</span></h2>
+    <p class="demo-sub reveal">Không cần đăng nhập. Thử xem AI viết caption cho shop bạn thế nào.</p>
+
+    <div class="demo-box reveal">
+      <!-- Tone picker -->
+      <div class="demo-tone-row" id="demoToneRow">
+        <button class="demo-tone-btn active" data-tone="friendly" onclick="setDemoTone(this)">😊 Thân thiện</button>
+        <button class="demo-tone-btn" data-tone="sale" onclick="setDemoTone(this)">🔥 Kêu gọi mua</button>
+        <button class="demo-tone-btn" data-tone="luxury" onclick="setDemoTone(this)">✨ Sang trọng</button>
+      </div>
+
+      <!-- Input -->
+      <textarea class="demo-textarea" id="demoDesc" placeholder="VD: Shop giày nữ, mẫu mới về hôm nay, form ôm chân, size 36–40, giá 350k..." maxlength="300"></textarea>
+
+      <button class="demo-generate-btn" id="demoBtn" onclick="runDemo()">
+        <i class="ti ti-sparkles"></i> Tạo caption miễn phí
+      </button>
+
+      <!-- Output -->
+      <div class="demo-output" id="demoOutput">
+        <div class="demo-output-label"><i class="ti ti-check"></i> Caption AI viết cho bạn</div>
+        <div class="demo-output-text" id="demoResult"></div>
+        <div class="demo-actions-row">
+          <button class="demo-copy-btn" onclick="copyDemoCaption()"><i class="ti ti-copy"></i> Sao chép</button>
+          <a href="/login.html" class="demo-signup-cta"><i class="ti ti-rocket"></i> Đăng ký để dùng đầy đủ →</a>
+        </div>
+      </div>
+
+      <p class="demo-limit-note">Thử miễn phí <span id="demoRemain">3</span> lần • Đăng ký để dùng không giới hạn</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  // Demo state
+  let demoTone = 'friendly';
+  let demoCount = parseInt(localStorage.getItem('vpost_demo_count') || '0');
+  const DEMO_LIMIT = 3;
+
+  function updateRemain() {
+    const el = document.getElementById('demoRemain');
+    if (el) el.textContent = Math.max(0, DEMO_LIMIT - demoCount);
+  }
+  updateRemain();
+
+  window.setDemoTone = function(btn) {
+    document.querySelectorAll('.demo-tone-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    demoTone = btn.dataset.tone;
+  };
+
+  window.runDemo = async function() {
+    const desc = document.getElementById('demoDesc').value.trim();
+    if (!desc || desc.length < 5) {
+      document.getElementById('demoDesc').focus();
+      return;
+    }
+    if (demoCount >= DEMO_LIMIT) {
+      document.getElementById('demoOutput').classList.add('show');
+      document.getElementById('demoResult').textContent = 'Bạn đã dùng hết lượt thử miễn phí. Đăng ký để dùng không giới hạn nhé! 🚀';
+      return;
+    }
+
+    const btn = document.getElementById('demoBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Đang viết...';
+
+    try {
+      const res = await fetch('https://elfswkmautcyrrkecrns.supabase.co/functions/v1/demo-caption', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': 'sb_publishable_btXlJDohdiGYxJc66qudKA_aHmNg7aB' },
+        body: JSON.stringify({ desc, tone: demoTone })
+      });
+      const data = await res.json();
+      if (data.caption) {
+        demoCount++;
+        localStorage.setItem('vpost_demo_count', demoCount);
+        updateRemain();
+        document.getElementById('demoResult').textContent = data.caption;
+        document.getElementById('demoOutput').classList.add('show');
+        document.getElementById('demoOutput').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        alert(data.error || 'Có lỗi xảy ra, thử lại nhé!');
+      }
+    } catch (e) {
+      alert('Không kết nối được, thử lại nhé!');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-sparkles"></i> Tạo lại';
+    }
+  };
+
+  window.copyDemoCaption = function() {
+    const text = document.getElementById('demoResult').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.demo-copy-btn');
+      btn.innerHTML = '<i class="ti ti-check"></i> Đã sao chép!';
+      setTimeout(() => { btn.innerHTML = '<i class="ti ti-copy"></i> Sao chép'; }, 2000);
+    });
+  };
+})();
+</script>
 
 <!-- FEATURES -->
 <section class="features-section" id="features">
