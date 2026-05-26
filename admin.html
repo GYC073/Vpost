@@ -296,7 +296,7 @@ tr:hover td { background: var(--bg); }
           <div class="stat-icon blue"><i class="ti ti-users"></i></div>
           <span class="stat-trend up">+3 tháng này</span>
         </div>
-        <div class="stat-value" id="statTotal">12</div>
+        <div class="stat-value" id="statTotal">—</div>
         <div class="stat-label">Tổng khách hàng</div>
       </div>
       <div class="stat-card">
@@ -304,7 +304,7 @@ tr:hover td { background: var(--bg); }
           <div class="stat-icon green"><i class="ti ti-circle-check"></i></div>
           <span class="stat-trend up">Đang hoạt động</span>
         </div>
-        <div class="stat-value" id="statActive">8</div>
+        <div class="stat-value" id="statActive">—</div>
         <div class="stat-label">Đang dùng</div>
       </div>
       <div class="stat-card">
@@ -312,7 +312,7 @@ tr:hover td { background: var(--bg); }
           <div class="stat-icon orange"><i class="ti ti-clock"></i></div>
           <span class="stat-trend warn">Cần theo dõi</span>
         </div>
-        <div class="stat-value" id="statTrial">3</div>
+        <div class="stat-value" id="statTrial">—</div>
         <div class="stat-label">Đang dùng thử</div>
       </div>
       <div class="stat-card">
@@ -320,7 +320,7 @@ tr:hover td { background: var(--bg); }
           <div class="stat-icon red"><i class="ti ti-alert-circle"></i></div>
           <span class="stat-trend warn">Cần liên hệ</span>
         </div>
-        <div class="stat-value" id="statExpired">2</div>
+        <div class="stat-value" id="statExpired">—</div>
         <div class="stat-label">Hết hạn</div>
       </div>
     </div>
@@ -772,7 +772,7 @@ function daysLeft(dateStr) {
 
 // ── Suy trạng thái từ profile Supabase ──────────────────────
 function getStatus(p) {
-  if (p.is_locked) return 'locked';
+  if (p.enabled === false) return 'locked';
   const days = daysLeft(p.plan_expires_at);
   if (days === null) return 'active';
   if (days < 0)  return 'expired';
@@ -793,7 +793,7 @@ async function loadCustomers() {
 
   const { data, error } = await supa
     .from('profiles')
-    .select('id, shop_name, phone, plan, plan_expires_at, is_locked, role, created_at')
+    .select('id, shop_name, phone, plan, plan_expires_at, enabled, role, created_at')
     .neq('role', 'admin')        // Ẩn admin khỏi danh sách
     .order('created_at', { ascending: false });
 
@@ -828,7 +828,7 @@ function renderTable(data) {
       : days <= 5 ? `<div class="expire-chip"><i class="ti ti-clock"></i>Còn ${days} ngày</div>`
       : `<div class="expire-ok">${new Date(p.plan_expires_at).toLocaleDateString('vi-VN')}</div>`;
 
-    const isActive = !p.is_locked;
+    const isActive = p.enabled !== false;
     tbody.innerHTML += `
       <tr>
         <td>
@@ -893,11 +893,11 @@ function filterByPlan(val)    { currentPlanFilter = val;   renderTable(getFilter
 async function toggleCustomer(id, enabled, shopName) {
   const supa = window.vpostSupabase;
   const { error } = await supa.from('profiles')
-    .update({ is_locked: !enabled })
+    .update({ enabled: enabled })
     .eq('id', id);
   if (error) { showToast('Lỗi: ' + error.message); return; }
   const p = allProfiles.find(x => x.id === id);
-  if (p) p.is_locked = !enabled;
+  if (p) p.enabled = enabled;
   showToast(enabled ? `✅ Đã mở khoá ${shopName}!` : `🔒 Đã khoá ${shopName}`);
   renderTable(getFiltered());
 }
@@ -1061,7 +1061,7 @@ async function loadAdminStats() {
   const supa = window.vpostSupabase;
 
   // Đếm users theo gói
-  const { data: profiles } = await supa.from('profiles').select('plan, is_locked').neq('role', 'admin');
+  const { data: profiles } = await supa.from('profiles').select('plan, enabled').neq('role', 'admin');
   const total   = (profiles || []).length;
   const trial   = (profiles || []).filter(p => p.plan === 'trial').length;
   const paid    = (profiles || []).filter(p => ['basic','standard','pro'].includes(p.plan)).length;
@@ -1114,7 +1114,7 @@ async function loadPayments() {
   document.getElementById('paymentsTable').style.display   = 'none';
 
   let query = supa.from('payments')
-    .select('id, user_id, plan, amount_vnd, transfer_note, admin_note, status, created_at, profiles(shop_name, phone)')
+    .select('id, user_id, plan, amount_vnd, transfer_note, admin_note, status, created_at, profiles!payments_user_id_fkey(shop_name, phone)')
     .order('created_at', { ascending: false });
   if (status) query = query.eq('status', status);
 
@@ -1438,7 +1438,7 @@ async function loadFbLogs() {
   document.getElementById('fbLogsTable').style.display   = 'none';
 
   let query = supa.from('fb_api_log')
-    .select('id, user_id, post_id, endpoint, status_code, error, created_at, profiles(shop_name)')
+    .select('id, user_id, post_id, endpoint, status_code, error, created_at, profiles!fb_api_log_user_id_fkey(shop_name)')
     .order('created_at', { ascending: false })
     .limit(200);
 
@@ -1522,7 +1522,44 @@ function escapeHtml(str) {
 }
 
 // ── Init ────────────────────────────────────────────────────
-loadCustomers();
+(async function initAdmin() {
+  const supa = window.vpostSupabase;
+  if (!supa) {
+    console.error('[Admin] Supabase client not initialized');
+    return;
+  }
+
+  // CRITICAL: Đợi session restore từ localStorage (async trong Supabase v2)
+  const { data: { session }, error: sessionErr } = await supa.auth.getSession();
+  console.log('[Admin] Session check:', session ? 'OK (' + session.user.email + ')' : 'null', sessionErr);
+
+  if (!session) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Kiểm tra admin role trực tiếp từ DB
+  const { data: profile, error: profileErr } = await supa
+    .from('profiles')
+    .select('role, shop_name')
+    .eq('id', session.user.id)
+    .single();
+
+  console.log('[Admin] Profile role:', profile?.role, profileErr?.message);
+
+  if (profileErr || !profile || profile.role !== 'admin') {
+    alert('Tài khoản này không có quyền admin.\nRole hiện tại: ' + (profile?.role || 'unknown'));
+    window.location.href = 'app.html';
+    return;
+  }
+
+  // Hiển thị tên admin trên topbar nếu có element
+  const adminNameEl = document.getElementById('adminName');
+  if (adminNameEl) adminNameEl.textContent = profile.shop_name || 'Admin';
+
+  // Load data (session đã sẵn sàng)
+  loadCustomers();
+})();
 </script>
 </body>
 </html>
