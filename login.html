@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đăng nhập — Vpost</title>
-
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -18,17 +19,18 @@
   --text: #0D0F14;
   --text-secondary: #6B7280;
   --text-hint: #9CA3AF;
-  --border: #F0F1F3;
+  --border: #E5E7EB;
   --bg: #F9FAFB;
   --surface: #ffffff;
   --radius: 14px;
-  --radius-sm: 8px;
+  --radius-sm: 10px;
   --shadow: 0 2px 12px rgba(0,0,0,0.07);
   --shadow-lg: 0 8px 30px rgba(0,0,0,0.15);
 }
+
 body {
   font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
+  background: #0d1117;
   color: var(--text);
   min-height: 100vh;
   display: flex;
@@ -39,60 +41,104 @@ body {
   overflow: hidden;
 }
 
-/* Background */
-.bg-cover {
-  position: fixed; inset: 0;
-  background: url('https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=1200&q=80') center/cover no-repeat;
-  z-index: 0;
+/* ── Animated background ── */
+.bg-mesh {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 40%, rgba(37,99,235,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 20%, rgba(124,58,237,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 90%, rgba(5,150,105,0.1) 0%, transparent 60%),
+    #0d1117;
 }
-.bg-overlay {
-  position: fixed; inset: 0;
-  background: linear-gradient(135deg, rgba(26,29,46,0.92) 0%, rgba(45,107,228,0.85) 100%);
-  z-index: 1;
+.particle {
+  position: fixed; border-radius: 50%; opacity: 0.12; z-index: 0;
+  animation: float linear infinite;
+}
+@keyframes float {
+  0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.12; }
+  90%  { opacity: 0.12; }
+  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
 }
 
-.login-wrap {
+/* ── Split layout ── */
+.login-split {
   position: relative; z-index: 2;
-  width: 100%; max-width: 400px;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 940px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 32px 100px rgba(0,0,0,0.55);
+}
+
+/* ══════════════════════════════════════
+   LEFT: Form panel
+══════════════════════════════════════ */
+.login-left {
+  background: var(--surface);
+  width: 430px;
+  flex-shrink: 0;
+  padding: 38px 34px 32px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Logo */
 .login-logo {
-  text-align: center; margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
 }
 .login-logo-icon {
-  width: 60px; height: 60px;
+  width: 42px; height: 42px;
   background: linear-gradient(135deg, var(--primary), var(--purple));
-  border-radius: 18px;
-  display: inline-flex; align-items: center; justify-content: center;
-  margin-bottom: 12px;
-  box-shadow: 0 8px 24px rgba(45,107,228,0.4);
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.38);
+  flex-shrink: 0;
 }
-.login-logo-icon i { color: #fff; font-size: 28px; }
-.login-logo-name { font-family: 'Sora', sans-serif; color: #fff; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
-.login-logo-sub { color: rgba(255,255,255,0.6); font-size: 13px; }
+.login-logo-icon i { color: #fff; font-size: 21px; }
+.login-logo-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 21px; font-weight: 800;
+  color: var(--text); line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+.login-logo-sub { font-size: 11px; color: var(--text-hint); letter-spacing: 0.4px; margin-top: 1px; }
 
-/* Card */
-.login-card {
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 28px 24px;
-  box-shadow: var(--shadow-lg);
+/* Headline */
+.login-headline { margin-bottom: 26px; }
+.login-headline h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 24px; font-weight: 800;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 7px;
+  letter-spacing: -0.4px;
+}
+.login-headline p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.65;
 }
 
 /* Tabs */
 .login-tabs {
   display: flex;
   background: var(--bg);
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   padding: 4px;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
+  border: 1px solid var(--border);
 }
 .login-tab {
   flex: 1; text-align: center;
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 13px; font-weight: 600;
+  padding: 9px;
+  border-radius: 7px;
+  font-size: 13.5px; font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   color: var(--text-secondary);
@@ -102,21 +148,22 @@ body {
 .login-tab.active {
   background: var(--surface);
   color: var(--primary);
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
 }
 
 /* Form */
-.form-group { margin-bottom: 16px; }
+.form-group { margin-bottom: 14px; }
 .form-label {
   display: block;
-  font-size: 13px; font-weight: 500;
+  font-size: 12.5px; font-weight: 600;
   color: var(--text);
   margin-bottom: 6px;
+  letter-spacing: 0.1px;
 }
 .form-input-wrap { position: relative; }
-.form-input-wrap i {
+.form-input-wrap > i:first-child {
   position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  font-size: 17px; color: var(--text-hint);
+  font-size: 16px; color: var(--text-hint);
 }
 .form-input {
   width: 100%;
@@ -128,109 +175,422 @@ body {
   background: var(--bg);
   outline: none; transition: all 0.2s;
 }
-.form-input:focus { border-color: var(--primary); background: #fff; }
+.form-input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.09);
+}
 .form-input::placeholder { color: var(--text-hint); }
-
-.form-input-wrap .toggle-pw {
+.toggle-pw {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
   background: none; border: none; cursor: pointer;
-  color: var(--text-hint); font-size: 17px; padding: 0;
+  color: var(--text-hint); font-size: 16px; padding: 0;
 }
 
-.submit-btn {
-  width: 100%;
-  padding: 13px;
-  background: linear-gradient(135deg, var(--primary), var(--purple));
-  color: #fff; border: none;
-  border-radius: var(--radius-sm);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px; font-weight: 600;
-  cursor: pointer; transition: all 0.2s;
-  margin-top: 4px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.submit-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,107,228,0.35); }
-.submit-btn i { font-size: 18px; }
-
-.divider {
-  display: flex; align-items: center; gap: 10px;
-  margin: 20px 0;
-}
-.divider-line { flex: 1; height: 1px; background: var(--border); }
-.divider-text { font-size: 12px; color: var(--text-hint); }
-
-.trial-info {
-  background: linear-gradient(135deg, rgba(72,207,173,0.1), rgba(45,107,228,0.1));
-  border: 1px solid rgba(72,207,173,0.3);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  display: flex; align-items: flex-start; gap: 10px;
-  margin-top: 16px;
-}
-.trial-info i { color: var(--accent); font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-.trial-info-text { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
-.trial-info-text strong { color: var(--text); }
-
-.forgot-link {
-  text-align: right; margin-bottom: 4px;
-}
+/* Forgot */
+.forgot-link { text-align: right; margin-bottom: 6px; }
 .forgot-link a {
   font-size: 12px; color: var(--primary);
-  text-decoration: none;
+  text-decoration: none; font-weight: 500;
 }
 .forgot-link a:hover { text-decoration: underline; }
 
-/* Loading state */
+/* Submit button */
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  color: #fff; border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15.5px; font-weight: 700;
+  cursor: pointer; transition: all 0.25s;
+  margin-top: 4px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: 0.1px;
+  box-shadow: 0 4px 18px rgba(37,99,235,0.32);
+}
+.submit-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px rgba(37,99,235,0.42);
+}
+.submit-btn i { font-size: 18px; }
+
+/* Trust signals */
+.trust-signals {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11.5px; color: var(--text-hint);
+}
+.trust-item i { font-size: 13px; color: var(--accent); }
+
+/* Error */
+.form-error { font-size: 12px; color: #E24B4A; margin-top: 5px; display: none; }
+.form-error.show { display: block; }
+
+/* Trial info box */
+.trial-info {
+  background: linear-gradient(135deg, rgba(72,207,173,0.07), rgba(37,99,235,0.07));
+  border: 1px solid rgba(5,150,105,0.2);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-top: 14px;
+}
+.trial-info i { color: var(--accent); font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.trial-info-text { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.trial-info-text strong { color: var(--text); }
+
+/* Loading */
 .btn-loading { pointer-events: none; opacity: 0.8; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .spin { animation: spin 0.8s linear infinite; display: inline-block; }
 
-/* Error */
-.form-error {
-  font-size: 12px; color: #E24B4A;
-  margin-top: 5px; display: none;
-}
-.form-error.show { display: block; }
-
-/* Footer note */
+/* Footer */
 .login-footer {
+  margin-top: auto;
+  padding-top: 20px;
   text-align: center;
-  margin-top: 20px;
-  color: rgba(255,255,255,0.75);
-  font-size: 12px;
-}
-.login-footer-links { margin-top: 6px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-.login-footer-links a {
-  color: rgba(255,255,255,0.55);
-  text-decoration: none;
+  color: var(--text-hint);
   font-size: 11.5px;
-  transition: color 0.18s;
 }
-.login-footer-links a:hover { color: rgba(255,255,255,0.9); text-decoration: underline; }
+.login-footer-links {
+  margin-top: 5px;
+  display: flex; gap: 12px;
+  justify-content: center; flex-wrap: wrap;
+}
+.login-footer-links a {
+  color: var(--text-hint); text-decoration: none; font-size: 11px;
+}
+.login-footer-links a:hover { color: var(--text-secondary); }
+
+/* ══════════════════════════════════════
+   RIGHT: Preview panel
+══════════════════════════════════════ */
+.login-right {
+  flex: 1;
+  background: linear-gradient(145deg, #0f1523 0%, #131b30 50%, #0c1220 100%);
+  padding: 38px 34px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glow orbs */
+.login-right::before {
+  content: '';
+  position: absolute; top: -100px; right: -80px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+}
+.login-right::after {
+  content: '';
+  position: absolute; bottom: -80px; left: -50px;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+}
+
+/* Badge */
+.preview-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(37,99,235,0.18);
+  border: 1px solid rgba(96,165,250,0.35);
+  color: #93c5fd;
+  font-size: 10.5px; font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+.preview-badge i { font-size: 12px; }
+.preview-badge .dot {
+  width: 6px; height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Headline */
+.preview-headline { }
+.preview-headline h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: #fff;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+.preview-headline h2 .grad {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.preview-headline p {
+  font-size: 13px; color: rgba(255,255,255,0.45);
+  line-height: 1.65;
+}
+
+/* ── Before/After card ── */
+.ba-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+.ba-header {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.ba-tab {
+  flex: 1;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11.5px; font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  position: relative;
+}
+.ba-tab.active { color: rgba(255,255,255,0.85); }
+.ba-tab.active::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 14px; right: 14px;
+  height: 2px;
+  background: linear-gradient(90deg, #60a5fa, #a78bfa);
+  border-radius: 2px;
+}
+.ba-tab i { font-size: 14px; }
+.ba-tab-sep {
+  width: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 8px 0;
+}
+
+.ba-body { padding: 16px 18px; }
+
+/* Input side */
+.ba-input-row {
+  display: flex; gap: 10px;
+  margin-bottom: 10px;
+  align-items: flex-start;
+}
+.ba-img-placeholder {
+  width: 54px; height: 54px; flex-shrink: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(37,99,235,0.3), rgba(124,58,237,0.25));
+  border: 1px solid rgba(96,165,250,0.2);
+  display: flex; align-items: center; justify-content: center;
+}
+.ba-img-placeholder i { font-size: 22px; color: rgba(96,165,250,0.7); }
+.ba-input-text {
+  flex: 1;
+}
+.ba-input-label {
+  font-size: 10px; font-weight: 700;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.7px; text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.ba-input-desc {
+  font-size: 12px; color: rgba(255,255,255,0.5);
+  line-height: 1.55;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+/* Arrow indicator */
+.ba-arrow {
+  display: flex; align-items: center;
+  gap: 8px; margin-bottom: 10px;
+}
+.ba-arrow-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(96,165,250,0.4), transparent);
+}
+.ba-arrow-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, rgba(37,99,235,0.3), rgba(124,58,237,0.25));
+  border: 1px solid rgba(96,165,250,0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 10.5px; font-weight: 700;
+  color: #93c5fd;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.ba-arrow-badge i { font-size: 12px; }
+
+/* Output side */
+.ba-output-label {
+  font-size: 10px; font-weight: 700;
+  color: rgba(96,165,250,0.6);
+  letter-spacing: 0.7px; text-transform: uppercase;
+  margin-bottom: 7px;
+  display: flex; align-items: center; gap: 6px;
+}
+.ba-output-label::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: blink 2s ease-in-out infinite;
+}
+.ba-output-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.75;
+  min-height: 72px;
+  white-space: pre-wrap;
+}
+.caption-cursor {
+  display: inline-block;
+  width: 2px; height: 13px;
+  background: #60a5fa;
+  margin-left: 1px;
+  vertical-align: middle;
+  animation: blink 0.8s step-end infinite;
+}
+
+/* Topic pills row */
+.ba-pills {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-top: 10px;
+}
+.ba-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(96,165,250,0.12);
+  border: 1px solid rgba(96,165,250,0.2);
+  color: #93c5fd;
+  font-size: 10.5px; font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.ba-pill i { font-size: 11px; }
+
+/* ── Testimonial ── */
+.testimonial-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.testimonial-top {
+  display: flex; align-items: center; gap: 11px;
+  margin-bottom: 10px;
+}
+.testimonial-avatar {
+  width: 38px; height: 38px; flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563EB, #7C3AED);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px; font-weight: 700; color: #fff;
+  border: 2px solid rgba(96,165,250,0.3);
+}
+.testimonial-info {}
+.testimonial-name {
+  font-size: 13px; font-weight: 700; color: #fff;
+  line-height: 1.3;
+}
+.testimonial-shop {
+  font-size: 11px; color: rgba(255,255,255,0.4);
+}
+.testimonial-stars {
+  margin-left: auto;
+  color: #fbbf24;
+  font-size: 12px; letter-spacing: 1px;
+}
+.testimonial-text {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.65;
+  font-style: italic;
+}
+.testimonial-text::before { content: '"'; }
+.testimonial-text::after  { content: '"'; }
+
+/* ── Stats strip ── */
+.stats-strip {
+  display: flex;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-top: auto;
+}
+.stat-item {
+  flex: 1;
+  padding: 12px 8px;
+  text-align: center;
+  background: rgba(255,255,255,0.03);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s;
+}
+.stat-item:last-child { border-right: none; }
+.stat-item:hover { background: rgba(255,255,255,0.06); }
+.stat-value {
+  font-family: 'Sora', sans-serif;
+  font-size: 17px; font-weight: 700; color: #fff;
+  line-height: 1.2; margin-bottom: 3px;
+}
+.stat-value span {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-label { font-size: 10px; color: rgba(255,255,255,0.35); }
+
+/* ── Responsive ── */
+@media (max-width: 720px) {
+  .login-split { flex-direction: column; border-radius: 16px; max-width: 430px; }
+  .login-left { width: 100%; padding: 28px 22px; }
+  .login-right { display: none; }
+}
 </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div class="bg-cover"></div>
-<div class="bg-overlay"></div>
+<div class="bg-mesh"></div>
+<div class="particle" style="width:6px;height:6px;background:#3b82f6;left:15%;animation-duration:18s;animation-delay:0s;"></div>
+<div class="particle" style="width:4px;height:4px;background:#7c3aed;left:40%;animation-duration:22s;animation-delay:4s;"></div>
+<div class="particle" style="width:5px;height:5px;background:#059669;left:70%;animation-duration:16s;animation-delay:8s;"></div>
+<div class="particle" style="width:3px;height:3px;background:#f59e0b;left:85%;animation-duration:20s;animation-delay:2s;"></div>
+<div class="particle" style="width:4px;height:4px;background:#60a5fa;left:55%;animation-duration:24s;animation-delay:12s;"></div>
 
-<div class="login-wrap">
-  <!-- Logo -->
-  <div class="login-logo">
-    <div class="login-logo-icon"><i class="ti ti-pencil-star"></i></div>
-    <div class="login-logo-name">Vpost</div>
-    <div class="login-logo-sub">Tự động đăng bài — Tăng tương tác mỗi ngày</div>
-  </div>
+<div class="login-split">
 
-  <!-- Card -->
-  <div class="login-card">
-    <!-- Tabs -->
+  <!-- ══ LEFT: Form ══ -->
+  <div class="login-left">
+
+    <div class="login-logo">
+      <div class="login-logo-icon"><i class="ti ti-pencil-star"></i></div>
+      <div class="login-logo-text">
+        <div class="login-logo-name">Vpost</div>
+        <div class="login-logo-sub">AI Content Studio</div>
+      </div>
+    </div>
+
+    <div class="login-headline">
+      <h1 id="loginTitle">Chào mừng trở lại 👋</h1>
+      <p id="loginSubtitle">Đăng nhập để tiếp tục tạo content bán hàng với AI.</p>
+    </div>
+
     <div class="login-tabs">
       <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">Đăng nhập</button>
-      <button class="login-tab" id="tabRegister" onclick="switchTab('register')">Đăng ký</button>
+      <button class="login-tab" id="tabRegister" onclick="switchTab('register')">Đăng ký miễn phí</button>
     </div>
 
     <!-- Form đăng nhập -->
@@ -239,22 +599,27 @@ body {
         <label class="form-label">Số điện thoại / Email</label>
         <div class="form-input-wrap">
           <i class="ti ti-user"></i>
-          <input class="form-input" type="text" id="loginPhone" placeholder="vd: 0901234567 hoặc you@gmail.com">
+          <input class="form-input" type="text" id="loginPhone" placeholder="0901234567 hoặc you@gmail.com" autocomplete="username">
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Mật khẩu</label>
         <div class="form-input-wrap">
           <i class="ti ti-lock"></i>
-          <input class="form-input" type="password" id="loginPass" placeholder="Nhập mật khẩu">
-          <button class="toggle-pw" onclick="togglePassword('loginPass', this)"><i class="ti ti-eye"></i></button>
+          <input class="form-input" type="password" id="loginPass" placeholder="Nhập mật khẩu" autocomplete="current-password">
+          <button class="toggle-pw" onclick="togglePassword('loginPass', this)" type="button"><i class="ti ti-eye"></i></button>
         </div>
         <div class="form-error" id="loginError">Số điện thoại hoặc mật khẩu không đúng!</div>
       </div>
-      <div class="forgot-link"><a href="https://zalo.me/0789434345" target="_blank">Quên mật khẩu? Nhắn Zalo admin</a></div>
+      <div class="forgot-link"><a href="https://zalo.me/0789434345" target="_blank">Quên mật khẩu? Nhắn Zalo admin →</a></div>
       <button class="submit-btn" onclick="handleLogin()">
         <i class="ti ti-login"></i> Đăng nhập
       </button>
+      <div class="trust-signals">
+        <span class="trust-item"><i class="ti ti-shield-check"></i> Bảo mật SSL</span>
+        <span class="trust-item"><i class="ti ti-brand-supabase"></i> Dữ liệu mã hóa</span>
+        <span class="trust-item"><i class="ti ti-lock-access"></i> Riêng tư tuyệt đối</span>
+      </div>
     </div>
 
     <!-- Form đăng ký -->
@@ -263,7 +628,7 @@ body {
         <label class="form-label">Tên shop / Cơ sở kinh doanh</label>
         <div class="form-input-wrap">
           <i class="ti ti-store"></i>
-          <input class="form-input" type="text" id="regShop" placeholder="Ví dụ: Tiệm bánh ABC">
+          <input class="form-input" type="text" id="regShop" placeholder="VD: Tiệm bánh ABC, Shop thời trang XYZ">
         </div>
       </div>
       <div class="form-group">
@@ -277,43 +642,260 @@ body {
         <label class="form-label">Mật khẩu</label>
         <div class="form-input-wrap">
           <i class="ti ti-lock"></i>
-          <input class="form-input" type="password" id="regPass" placeholder="Tối thiểu 6 ký tự">
-          <button class="toggle-pw" onclick="togglePassword('regPass', this)"><i class="ti ti-eye"></i></button>
+          <input class="form-input" type="password" id="regPass" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password">
+          <button class="toggle-pw" onclick="togglePassword('regPass', this)" type="button"><i class="ti ti-eye"></i></button>
         </div>
         <div class="form-error" id="regError">Vui lòng điền đầy đủ thông tin!</div>
       </div>
       <button class="submit-btn" onclick="handleRegister()">
-        <i class="ti ti-user-plus"></i> Đăng ký dùng thử miễn phí
+        <i class="ti ti-rocket"></i> Bắt đầu dùng thử miễn phí
       </button>
+      <div class="trust-signals">
+        <span class="trust-item"><i class="ti ti-gift"></i> Miễn phí 3 ngày</span>
+        <span class="trust-item"><i class="ti ti-credit-card-off"></i> Không cần thẻ</span>
+        <span class="trust-item"><i class="ti ti-x"></i> Hủy bất cứ lúc nào</span>
+      </div>
       <div class="trial-info">
-        <i class="ti ti-gift"></i>
+        <i class="ti ti-sparkles"></i>
         <div class="trial-info-text">
-          <strong>🎉 Dùng thử miễn phí 3 ngày!</strong><br>
-          Không cần thẻ tín dụng. Sau 3 ngày liên hệ admin để tiếp tục sử dụng.
+          <strong>🎉 Dùng thử 3 ngày miễn phí!</strong><br>
+          Không cần thẻ tín dụng. Sau 3 ngày liên hệ admin để tiếp tục — thanh toán qua Zalo.
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="login-footer">
-    © 2026 Vpost · Hỗ trợ: Zalo 0789 434 345
-    <div class="login-footer-links">
-      <a href="terms.html">Điều khoản</a>
-      <a href="privacy.html">Bảo mật</a>
-      <a href="data-deletion.html">Xóa dữ liệu</a>
+    <div class="login-footer">
+      © 2026 Vpost · Hỗ trợ: Zalo 0789 434 345
+      <div class="login-footer-links">
+        <a href="terms.html">Điều khoản</a>
+        <a href="privacy.html">Bảo mật</a>
+        <a href="data-deletion.html">Xóa dữ liệu</a>
+        <a href="index.html">← Trang chủ</a>
+      </div>
     </div>
-  </div>
+
+  </div><!-- /login-left -->
+
+  <!-- ══ RIGHT: Preview ══ -->
+  <div class="login-right">
+
+    <!-- Badge + headline -->
+    <div>
+      <div class="preview-badge">
+        <span class="dot"></span>
+        AI đang hoạt động
+      </div>
+      <div style="height:14px"></div>
+      <div class="preview-headline">
+        <h2>Biến 1 ảnh sản phẩm<br>thành <span class="grad">bài đăng bán hàng</span><br>chuyên nghiệp</h2>
+        <p>Không cần biết viết lách — AI phân tích ảnh,<br>hiểu ngành hàng, tạo caption chuẩn tone shop bạn.</p>
+      </div>
+    </div>
+
+    <!-- Before/After card -->
+    <div class="ba-card">
+      <div class="ba-header">
+        <div class="ba-tab active">
+          <i class="ti ti-photo"></i> Ảnh + mô tả
+        </div>
+        <div class="ba-tab-sep"></div>
+        <div class="ba-tab active" style="color:rgba(96,165,250,0.9)">
+          <i class="ti ti-sparkles"></i> Caption AI
+        </div>
+      </div>
+      <div class="ba-body">
+        <!-- Input row -->
+        <div class="ba-input-row">
+          <div class="ba-img-placeholder">
+            <i class="ti ti-shirt"></i>
+          </div>
+          <div class="ba-input-text">
+            <div class="ba-input-label">Mô tả ngắn</div>
+            <div class="ba-input-desc" id="inputDesc">Áo thun nữ form rộng, vải cotton 100%, màu be/trắng/đen, size S-XL, giá 159k, sale -20% hôm nay</div>
+          </div>
+        </div>
+        <!-- Arrow -->
+        <div class="ba-arrow">
+          <div class="ba-arrow-line"></div>
+          <div class="ba-arrow-badge"><i class="ti ti-cpu"></i> Vpost AI</div>
+          <div class="ba-arrow-line"></div>
+        </div>
+        <!-- Output -->
+        <div class="ba-output-label">Caption đã tạo</div>
+        <div class="ba-output-text" id="captionOutput"></div>
+        <div class="ba-pills" id="topicPills"></div>
+      </div>
+    </div>
+
+    <!-- Testimonial -->
+    <div class="testimonial-card">
+      <div class="testimonial-top">
+        <div class="testimonial-avatar">K</div>
+        <div class="testimonial-info">
+          <div class="testimonial-name">Kho Nệm Giá Tốt</div>
+          <div class="testimonial-shop">Quảng Trị · Đồ nội thất</div>
+        </div>
+        <div class="testimonial-stars">★★★★★</div>
+      </div>
+      <div class="testimonial-text">Mình dùng Vpost mỗi ngày để đăng bài lên Facebook. AI hiểu đúng tone shop, không cần chỉnh nhiều, tiết kiệm cả tiếng đồng hồ mỗi ngày.</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip">
+      <div class="stat-item">
+        <div class="stat-value"><span>1,200+</span></div>
+        <div class="stat-label">Caption đã tạo</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value"><span>50+</span></div>
+        <div class="stat-label">Shop đang dùng</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value"><span>5 tỉnh</span></div>
+        <div class="stat-label">Phủ sóng</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value"><span>4.9★</span></div>
+        <div class="stat-label">Đánh giá</div>
+      </div>
+    </div>
+
+  </div><!-- /login-right -->
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
 <script>
+// ─── Demo data ───────────────────────────────────────────────
+const DEMOS = [
+  {
+    icon: 'ti-shirt',
+    input: 'Áo thun nữ form rộng, vải cotton 100%, màu be/trắng/đen, size S-XL, giá 159k, sale -20% hôm nay',
+    output: '👕 Sale cuối tuần — Áo thun form rộng giảm 20%!\n\nVải cotton 100% mềm mát, mặc cả ngày không bí. Form rộng dễ mix đồ, phù hợp mọi dáng người.\n\n🎨 Sẵn màu: be / trắng / đen\n📦 Size S → XL · Giao toàn quốc\n💰 Chỉ còn 159k → 127k HÔM NAY\n\nInbox mình để chốt đơn nha! 🛍️\n\n#AoThunNu #Sale20 #OutfitOfTheDay',
+    pills: ['Flash sale', 'Thời trang nữ']
+  },
+  {
+    icon: 'ti-bed',
+    input: 'Nệm lò xo túi 1m6, bảo hành 5 năm, giá 3.2 triệu, giao miễn phí nội thành',
+    output: '🛏️ Ngủ ngon từ hôm nay — Nệm lò xo túi 1m6!\n\nLò xo túi độc lập không rung, nâng đỡ cột sống chuẩn tư thế. Mình đang bán giá thật, không thêm phụ phí.\n\n✅ Bảo hành chính hãng 5 năm\n✅ Giao miễn phí nội thành\n✅ Đổi trả 30 ngày nếu không ưng\n\n📞 Nhắn tin để đặt ngay · Giá 3.200.000đ\n\n#NemLoXoTui #NemGiaTot #QuangTri',
+    pills: ['Nội thất', 'Miễn phí giao hàng']
+  },
+  {
+    icon: 'ti-coffee',
+    input: 'Cà phê rang xay nguyên chất, 500g, giá 120k, mua 2 tặng 100g, giao 2h nội thành',
+    output: '☕ Cà phê rang tươi — Thơm từ hạt đến tách!\n\nRang ngay khi bạn đặt, không tồn kho, không chất bảo quản. Mỗi ly là cả một buổi sáng đáng giá.\n\n🎁 Mua 2 túi 500g → TẶNG thêm 100g\n⚡ Giao trong 2 giờ nội thành\n💰 Chỉ 120k/500g\n\n→ Inbox để order ngay nhé!\n\n#CaPheThuocDam #RangXayTuoi #CoffeeLover',
+    pills: ['Ăn uống', 'Khuyến mãi']
+  },
+  {
+    icon: 'ti-bottle',
+    input: 'Son lì mịn 30 màu hot trend, bền 8 tiếng, giá 85k, phù hợp da ngăm và da sáng',
+    output: '💄 Son lì mịn mới về — 30 màu hot trend 2026!\n\nLên màu chuẩn ngay lần đầu, bền suốt 8 tiếng không cần retour. Da ngăm hay da sáng đều đẹp.\n\n✨ 30 màu đủ tone\n⏱️ Bền 8 tiếng không lem môi\n🌸 Thử trực tiếp tại shop\n📦 Ship toàn quốc · Đóng gói xinh\n\nTag bạn thân muốn mua cùng nha! 💕\n\n#SonLiMin #MakeupVietnam #SonMoiTrendies',
+    pills: ['Làm đẹp', 'Sản phẩm mới']
+  }
+];
+
+let demoIdx = 0;
+let typeTimer = null;
+let pauseTimer = null;
+
+function updateInputSection(demo) {
+  const imgEl = document.querySelector('.ba-img-placeholder');
+  const descEl = document.getElementById('inputDesc');
+  if (imgEl) imgEl.innerHTML = `<i class="ti ${demo.icon}" style="font-size:22px;color:rgba(96,165,250,0.7)"></i>`;
+  if (descEl) descEl.textContent = demo.input;
+}
+
+function updatePills(pills) {
+  const el = document.getElementById('topicPills');
+  if (!el) return;
+  el.innerHTML = pills.map(p =>
+    `<span class="ba-pill"><i class="ti ti-tag"></i>${p}</span>`
+  ).join('');
+}
+
+function typeOutput(text, callback) {
+  const el = document.getElementById('captionOutput');
+  if (!el) return;
+  el.innerHTML = '';
+
+  const cursor = document.createElement('span');
+  cursor.className = 'caption-cursor';
+  el.appendChild(cursor);
+
+  let i = 0;
+  const speed = 18;
+
+  function type() {
+    if (i < text.length) {
+      const textNode = el.childNodes[0];
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+        textNode.textContent += text[i];
+      } else {
+        const t = document.createTextNode(text[i]);
+        el.insertBefore(t, cursor);
+      }
+      i++;
+      typeTimer = setTimeout(type, speed);
+    } else {
+      pauseTimer = setTimeout(() => {
+        cursor.remove();
+        if (callback) callback();
+      }, 3200);
+    }
+  }
+  type();
+}
+
+function cycleDemo() {
+  clearTimeout(typeTimer);
+  clearTimeout(pauseTimer);
+
+  const demo = DEMOS[demoIdx % DEMOS.length];
+  demoIdx++;
+
+  updateInputSection(demo);
+  updatePills([]);
+
+  const outputEl = document.getElementById('captionOutput');
+  if (outputEl) { outputEl.style.opacity = '0'; outputEl.style.transition = 'opacity 0.4s'; }
+  setTimeout(() => {
+    if (outputEl) { outputEl.style.opacity = '1'; }
+    typeOutput(demo.output, () => {
+      updatePills(demo.pills);
+      // Fade out then next
+      setTimeout(() => {
+        if (outputEl) {
+          outputEl.style.transition = 'opacity 0.5s';
+          outputEl.style.opacity = '0';
+        }
+        setTimeout(() => {
+          if (outputEl) { outputEl.style.opacity = '1'; outputEl.style.transition = ''; }
+          cycleDemo();
+        }, 600);
+      }, 3500);
+    });
+  }, 400);
+}
+
+window.addEventListener('load', () => {
+  setTimeout(cycleDemo, 900);
+});
+
+// ─── Tab switch ───
 function switchTab(tab) {
   document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
   document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
   document.getElementById('formLogin').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('formRegister').style.display = tab === 'register' ? 'block' : 'none';
+
+  document.getElementById('loginTitle').textContent = tab === 'register'
+    ? 'Tạo tài khoản miễn phí 🚀'
+    : 'Chào mừng trở lại 👋';
+  document.getElementById('loginSubtitle').textContent = tab === 'register'
+    ? 'Dùng thử 3 ngày không cần thẻ tín dụng. Bắt đầu tạo content ngay hôm nay.'
+    : 'Đăng nhập để tiếp tục tạo content bán hàng với AI.';
 }
 
 function togglePassword(inputId, btn) {
@@ -323,7 +905,7 @@ function togglePassword(inputId, btn) {
   btn.querySelector('i').className = isText ? 'ti ti-eye' : 'ti ti-eye-off';
 }
 
-// ===== Hỗ trợ cả email và phone (Supabase Auth) =====
+// ─── Auth handlers ───
 async function handleLogin() {
   const identifier = document.getElementById('loginPhone').value.trim();
   const pass = document.getElementById('loginPass').value.trim();
@@ -347,7 +929,6 @@ async function handleLogin() {
       resetBtn(btn, 'login');
       return;
     }
-    // Sync profile từ Supabase về localStorage
     const user = await VpostAuth.syncFromSupabase();
     if (!user) { window.location.href = 'app.html'; return; }
     if (!user.enabled) { window.location.href = 'locked.html'; return; }
@@ -370,7 +951,6 @@ async function handleRegister() {
   const err = document.getElementById('regError');
   const btn = document.querySelector('#formRegister .submit-btn');
 
-  // Validate: chấp nhận số điện thoại hoặc email
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
   const isPhone = /^0\d{8,9}$/.test(identifier.replace(/\s/g, ''));
   if (!shop || !identifier || !pass || pass.length < 6) {
@@ -394,18 +974,13 @@ async function handleRegister() {
       resetBtn(btn, 'register');
       return;
     }
-    // Đăng nhập luôn (vì Supabase sign-up phone không tự login nếu phải confirm OTP)
-    let userObj = null;
-    if (data?.session) {
-      // Đã có session ngay → cập nhật shop_name vào profile
-      if (window.vpostProfile) {
-        await window.vpostProfile.update({ shop_name: shop });
-      }
-      userObj = await VpostAuth.syncFromSupabase();
-    } else {
-      // Có thể đang chờ OTP — vẫn lưu tạm vào localStorage để onboarding chạy
+    if (data?.session && window.vpostProfile) {
+      await window.vpostProfile.update({ shop_name: shop });
+    }
+    if (!data?.session) {
       VpostAuth.saveCurrentUser({ name: shop, shopName: shop, phone: identifier, plan: 'trial', loggedIn: true, isNew: true });
-      userObj = VpostAuth.getCurrentUser();
+    } else {
+      await VpostAuth.syncFromSupabase();
     }
     window.location.href = 'onboarding.html';
   } catch (e) {
@@ -417,9 +992,11 @@ async function handleRegister() {
 
 function resetBtn(btn, type) {
   btn.classList.remove('btn-loading');
-  btn.innerHTML = type === 'login'
-    ? '<i class="ti ti-login"></i> Đăng nhập'
-    : '<i class="ti ti-user-plus"></i> Đăng ký dùng thử miễn phí';
+  if (type === 'login') {
+    btn.innerHTML = '<i class="ti ti-login"></i> Đăng nhập';
+  } else {
+    btn.innerHTML = '<i class="ti ti-rocket"></i> Bắt đầu dùng thử miễn phí';
+  }
 }
 
 function mapAuthError(msg) {
@@ -429,21 +1006,17 @@ function mapAuthError(msg) {
   if (m.includes('user already')) return 'Tài khoản này đã tồn tại. Hãy đăng nhập thay vì đăng ký.';
   if (m.includes('email rate')) return 'Đăng ký nhiều quá, hãy đợi 1 phút rồi thử lại.';
   if (m.includes('password should be')) return 'Mật khẩu quá yếu (tối thiểu 6 ký tự).';
-  if (m.includes('phone'))    return 'Số điện thoại không hợp lệ.';
+  if (m.includes('phone')) return 'Số điện thoại không hợp lệ.';
   return null;
 }
 
-// ===== Tự động đăng nhập nếu Supabase còn session =====
+// ─── Auto login if session exists ───
 (async function autoLogin() {
-  // Đợi Supabase load xong (thường < 100ms)
   let tries = 0;
   while (!window.vpostAuth && tries < 30) { await new Promise(r => setTimeout(r, 100)); tries++; }
   if (!window.vpostAuth) return;
-
   const session = await window.vpostAuth.getSession();
   if (!session) return;
-
-  // Có session → fetch profile và redirect
   const user = await VpostAuth.syncFromSupabase();
   if (!user) return;
   if (!user.enabled) { window.location.href = 'locked.html'; return; }
