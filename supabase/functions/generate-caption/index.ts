@@ -28,6 +28,17 @@ const TONE_MAP: Record<string, string> = {
   genz: "trẻ trung, dùng tiếng lóng Gen Z, slang Việt như 'cháy', 'gút chóp', 'real'",
 };
 
+const STYLE_INSTRUCTIONS: Record<string, string> = {
+  fb_real:  "Viết như người thật đang đăng Facebook cá nhân — câu ngắn dài xen kẽ, đôi khi thiếu chủ ngữ, lời lẽ đời thường tự nhiên. KHÔNG nghe như quảng cáo.",
+  sales:    "Tạo urgency, nhấn mạnh lợi ích ngay từ đầu, CTA rõ ràng. Có FOMO nhẹ — nhưng vẫn nghe như người thật nói, không sỗ sàng.",
+  luxury:   "Tone sang trọng, lịch lãm. Chọn từ tinh tế, câu có nhịp điệu. Emoji ít hoặc không dùng. Không dùng từ bình dân.",
+  gen_z:    "Dùng từ ngữ Gen Z VN: 'ib', 'thả tim', 'cháy', 'gút chóp', 'real nha'. Câu cực ngắn, xuống dòng nhiều, vibe nhẹ nhàng trendy.",
+  mom:      "Tone ấm áp như chị em bạn dì chia sẻ. Đề cập gia đình, con cái, cuộc sống hằng ngày nếu phù hợp. Gần gũi, thật lòng.",
+  live:     "Mở bằng CTA mạnh hoặc câu hook ngay. Nhiều dòng ngắn. Urgency cao — 'còn ít lắm', 'giá chỉ tối nay'. Có câu hỏi để kéo tương tác.",
+  viral:    "Mở đầu câu hook gây tò mò hoặc relatable mạnh. Có yếu tố bất ngờ hoặc gây tranh luận nhẹ — đọc xong phải share hoặc tag bạn.",
+  short:    "Tối đa 35 chữ/caption. Mỗi từ đều cần thiết — không chữ thừa. Emoji 0–1 cái. Ngắn nhưng đủ ý.",
+};
+
 const INDUSTRY_LABEL: Record<string, string> = {
   coffee:     "cà phê / đồ uống",
   fashion:    "thời trang",
@@ -151,6 +162,7 @@ Deno.serve(async (req) => {
     const topic = String(body.topic ?? "").slice(0, 200);
     const contentType = String(body.contentType ?? "facebook"); // facebook|shopee|livestream|reply
     const styleSamples = String(body.styleSamples ?? "").slice(0, 1500);
+    const stylePreset  = String(body.stylePreset ?? "fb_real"); // fb_real|sales|luxury|gen_z|mom|live|viral|short
 
     // ----- Lấy 10 caption gần nhất để anti-repeat -----
     const { data: history } = await supabaseUser
@@ -273,6 +285,21 @@ ${recentContent}
 
 Viết đúng 3 caption theo thứ tự cấu trúc A → B → C, tách bằng "---".`;
     }
+
+    // ----- Ghép Style Preset + Humanize Layer vào systemPrompt -----
+    const styleInstruction = STYLE_INSTRUCTIONS[stylePreset] ?? STYLE_INSTRUCTIONS.fb_real;
+    systemPrompt += `
+
+PHONG CÁCH BÀI ĐĂNG (ưu tiên cao — áp dụng cho cả 3 mẫu):
+${styleInstruction}
+
+HUMANIZE — BẮT BUỘC:
+- Câu ngắn dài xen kẽ, không đều nhau
+- Xuống dòng sau 1–2 câu (kiểu Facebook thật)
+- Đôi khi bắt đầu câu không có chủ ngữ
+- Tránh tuyệt đối: "chất lượng vượt trội", "sản phẩm tuyệt vời", "đừng bỏ lỡ"
+- Dùng từ đời thường: "shop vừa về", "hàng ngon nha", "ai cần nhắn mình"
+- Không có câu nào nghe như quảng cáo trên TV`;
 
     // ----- Gọi Claude Haiku -----
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");

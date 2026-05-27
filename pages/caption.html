@@ -38,6 +38,22 @@
   .hiring-input:focus { border-color:#2563EB; background:#fff; }
   .hiring-input::placeholder { color:#9CA3AF; }
   @media(max-width:480px){.hiring-grid{grid-template-columns:1fr}}
+  /* Style Preset chips */
+  .style-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .style-chip {
+    padding: 7px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 12.5px; font-weight: 500;
+    cursor: pointer; transition: all 0.18s;
+    line-height: 1;
+  }
+  .style-chip:hover { border-color: #7C5CFC; color: #7C5CFC; background: #F5F3FF; }
+  .style-chip.active { border-color: #7C5CFC; background: #7C5CFC; color: #fff; }
+
   .topic-btn {    display: flex; align-items: center; gap: 8px;
     padding: 10px 14px;
     border: 1.5px solid var(--border);
@@ -628,6 +644,21 @@
     </div>
   </div>
 
+  <!-- Style Preset -->
+  <div class="section-card">
+    <div class="section-label"><i class="ti ti-brush"></i>Phong cách viết <span style="font-size:11px;color:var(--text-hint);font-weight:400">(tuỳ chọn)</span></div>
+    <div class="style-chip-row">
+      <button class="style-chip active" onclick="selectStyle(this,'fb_real')">😊 Giống FB thật</button>
+      <button class="style-chip" onclick="selectStyle(this,'sales')">🔥 Bán hàng mạnh</button>
+      <button class="style-chip" onclick="selectStyle(this,'luxury')">✨ Sang trọng</button>
+      <button class="style-chip" onclick="selectStyle(this,'gen_z')">🤙 Gen Z</button>
+      <button class="style-chip" onclick="selectStyle(this,'mom')">👩‍👧 Mẹ bỉm</button>
+      <button class="style-chip" onclick="selectStyle(this,'live')">📡 Livestream</button>
+      <button class="style-chip" onclick="selectStyle(this,'viral')">🚀 Viral</button>
+      <button class="style-chip" onclick="selectStyle(this,'short')">⚡ Ngắn gọn</button>
+    </div>
+  </div>
+
   <!-- Generate button -->
   <button class="generate-btn" onclick="generateCaptions()">
     <i class="ti ti-sparkles"></i> Tạo Caption với AI
@@ -759,6 +790,7 @@
 <script src="../js/fb-client.js"></script>
 <script>
 let selectedTopic = 'product';
+let selectedStyle = 'fb_real';
 let captionResults = [];
 
 function selectTopic(btn, topic) {
@@ -769,6 +801,12 @@ function selectTopic(btn, topic) {
   const isHiring = topic === 'hiring';
   document.getElementById('hiringSection').style.display = isHiring ? 'block' : 'none';
   document.getElementById('normalDescSection').style.display = isHiring ? 'none' : 'block';
+}
+
+function selectStyle(el, style) {
+  document.querySelectorAll('.style-chip').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  selectedStyle = style;
 }
 
 function selectResult(card) {
@@ -1056,6 +1094,7 @@ async function generateCaptions() {
       enrichedDesc: userDesc,
       contentType: contentTypeForApi,
       styleSamples: styleSamples,
+      stylePreset: selectedStyle,
     });
     captionResults = result.captions;
 

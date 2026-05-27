@@ -168,6 +168,7 @@ Trả lời ĐÚNG JSON sau, không thêm gì khác:
       topic,
       contentType: options.contentType || 'facebook',
       styleSamples: options.styleSamples || '',
+      stylePreset: options.stylePreset || 'fb_real',
     });
 
     // Map error sang exception để caption.html bắt được
