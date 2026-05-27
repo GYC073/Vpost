@@ -227,7 +227,7 @@ body {
       <label class="form-label">Tên shop</label>
       <div class="form-input-wrap">
         <i class="ti ti-store"></i>
-        <input class="form-input" id="shopName" type="text" placeholder="Ví dụ: Tiệm bánh ABC">
+        <input class="form-input" id="shopName" type="text" placeholder="Ví dụ: Tiệm bánh ABC" oninput="autoDetectIndustry(this.value)">
       </div>
     </div>
     <div class="form-group">
@@ -240,6 +240,9 @@ body {
     <div class="form-group">
       <label class="form-label">Mô tả ngắn về shop</label>
       <textarea class="form-textarea" id="shopDesc" placeholder="Ví dụ: Tiệm cà phê phong cách hoài cổ, chuyên cà phê truyền thống và thức uống sáng tạo. Không gian yên tĩnh, giá bình dân..."></textarea>
+      <button type="button" id="btnSuggestDesc" onclick="suggestDescription()" style="display:none;margin-top:8px;background:none;border:1.5px solid var(--primary);color:var(--primary);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.2s">
+        <i class="ti ti-sparkles" style="font-size:13px"></i> Gợi ý mô tả
+      </button>
     </div>
     <div class="ob-actions">
       <button class="btn-next" onclick="goStep(2)">
@@ -397,6 +400,94 @@ function showObToast(msg) {
 let selectedTone = 'fun';
 let currentStep = 1;
 
+// ── Auto-detect ngành từ tên shop ──────────────────────────────
+const INDUSTRY_KEYWORDS = {
+  coffee:     ['cà phê', 'cafe', 'trà sữa', 'đồ uống', 'nước ép', 'juice', 'trà chanh', 'boba', 'milk tea'],
+  fashion:    ['thời trang', 'quần áo', 'áo quần', 'boutique', 'clothing', 'outfit'],
+  beauty:     ['mỹ phẩm', 'làm đẹp', 'spa', 'nail', 'tóc', 'skincare', 'beauty', 'cosmetic', 'thẩm mỹ'],
+  food:       ['bánh', 'cơm', 'nhà hàng', 'quán ăn', 'bếp', 'pizza', 'burger', 'bún', 'phở', 'chè', 'kem'],
+  tech:       ['điện thoại', 'laptop', 'công nghệ', 'điện tử', 'máy tính', 'tech', 'phone'],
+  home:       ['nội thất', 'gia dụng', 'đèn', 'sofa', 'bàn ghế', 'decor', 'trang trí'],
+  health:     ['sức khoẻ', 'thuốc', 'dược', 'clinic', 'health', 'yoga', 'gym', 'thảo mộc'],
+  education:  ['đào tạo', 'giáo dục', 'trung tâm', 'lớp học', 'dạy học', 'khoá học'],
+  furniture:  ['nệm', 'giường', 'tủ', 'kệ', 'chăn'],
+  sport:      ['thể thao', 'bóng đá', 'tennis', 'swimming', 'fitness', 'sport'],
+  realestate: ['bất động sản', 'nhà đất', 'căn hộ', 'cho thuê nhà', 'bán nhà'],
+  shoes:      ['giày', 'dép', 'sneaker', 'boots', 'sandal'],
+  authentic:  ['auth', 'authentic', 'hàng hiệu', 'luxury', 'chính hãng', 'hàng xịn'],
+  perfume:    ['nước hoa', 'perfume', 'fragrance', 'mùi hương'],
+};
+
+function autoDetectIndustry(shopNameVal) {
+  const name = (shopNameVal || '').toLowerCase().normalize('NFC');
+  if (!name) return;
+  for (const [industry, keywords] of Object.entries(INDUSTRY_KEYWORDS)) {
+    if (keywords.some(kw => name.includes(kw))) {
+      selectedIndustry = industry;
+      // Highlight nút nếu đang ở step 2
+      document.querySelectorAll('.industry-btn').forEach(b => {
+        const match = b.getAttribute('onclick')?.includes(`'${industry}'`);
+        b.classList.toggle('active', !!match);
+      });
+      // Hiện gợi ý mô tả
+      document.getElementById('btnSuggestDesc').style.display = '';
+      return;
+    }
+  }
+}
+
+// ── Gợi ý mô tả theo ngành ────────────────────────────────────
+const DESC_TEMPLATES = {
+  coffee:     (n) => `${n} chuyên cà phê rang xay và thức uống sáng tạo. Không gian thoáng, phù hợp làm việc hoặc gặp gỡ bạn bè. Giá bình dân, phục vụ tận tình.`,
+  fashion:    (n) => `${n} chuyên thời trang nữ/nam phong cách hiện đại. Cập nhật mẫu mới mỗi tuần, size đầy đủ, giao hàng toàn quốc.`,
+  beauty:     (n) => `${n} cung cấp mỹ phẩm chính hãng và dịch vụ làm đẹp chuyên nghiệp. Tư vấn skincare miễn phí, sản phẩm phù hợp từng loại da.`,
+  food:       (n) => `${n} phục vụ món ăn ngon, nguyên liệu tươi, chế biến tại chỗ. Phù hợp ăn trưa, ăn tối, mang về. Giá hợp lý, phục vụ nhanh.`,
+  tech:       (n) => `${n} chuyên điện thoại, laptop và phụ kiện công nghệ chính hãng. Bảo hành uy tín, hỗ trợ kỹ thuật tận nơi.`,
+  home:       (n) => `${n} cung cấp nội thất và gia dụng chất lượng cao. Đa dạng mẫu mã, giao hàng và lắp đặt tận nhà.`,
+  health:     (n) => `${n} chuyên sản phẩm sức khoẻ tự nhiên, thực phẩm chức năng và dịch vụ chăm sóc sức khoẻ. Tư vấn chuyên nghiệp, an toàn cho cả gia đình.`,
+  education:  (n) => `${n} đào tạo kỹ năng thực tiễn, lộ trình học rõ ràng, giảng viên kinh nghiệm. Học online và offline linh hoạt.`,
+  furniture:  (n) => `${n} chuyên nệm, sofa và nội thất phòng ngủ cao cấp. Chất liệu tốt, bảo hành dài hạn, giao hàng miễn phí nội thành.`,
+  sport:      (n) => `${n} cung cấp dụng cụ thể thao và trang phục tập luyện chất lượng. Đa dạng bộ môn, phù hợp mọi lứa tuổi.`,
+  realestate: (n) => `${n} môi giới bất động sản uy tín — nhà phố, căn hộ, đất nền. Tư vấn miễn phí, thủ tục pháp lý nhanh gọn.`,
+  shoes:      (n) => `${n} chuyên giày dép thời trang nam nữ — form chuẩn, đế êm, phối được mọi outfit. Size đầy đủ, giao hàng toàn quốc.`,
+  authentic:  (n) => `${n} chuyên hàng hiệu chính hãng — cam kết AUTH 100%, có bill, hộp, tem đầy đủ. Check auth thoải mái trước khi nhận hàng.`,
+  perfume:    (n) => `${n} chuyên nước hoa chính hãng đa dạng mùi hương. Tư vấn mùi phù hợp từng người, cho test thử trước khi mua.`,
+  other:      (n) => `${n} cung cấp sản phẩm/dịch vụ chất lượng, phục vụ tận tâm. Liên hệ để được tư vấn miễn phí.`,
+};
+
+function suggestDescription() {
+  const name = document.getElementById('shopName').value.trim() || 'Shop của bạn';
+  const industry = selectedIndustry || 'other';
+  const template = DESC_TEMPLATES[industry] || DESC_TEMPLATES.other;
+  document.getElementById('shopDesc').value = template(name);
+  document.getElementById('shopDesc').focus();
+}
+
+// ── Pre-fill từ Supabase profile ──────────────────────────────
+(async function prefillProfile() {
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
+    const { data: p } = await supa.from('profiles')
+      .select('shop_name, industry, shop_desc')
+      .eq('id', session.user.id).single();
+    if (!p) return;
+    if (p.shop_name) document.getElementById('shopName').value = p.shop_name;
+    if (p.shop_desc) document.getElementById('shopDesc').value = p.shop_desc;
+    if (p.industry)  {
+      selectedIndustry = p.industry;
+      document.querySelectorAll('.industry-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${p.industry}'`));
+      });
+    }
+    if (p.shop_name || p.industry) {
+      document.getElementById('btnSuggestDesc').style.display = '';
+    }
+  } catch(e) { console.warn('[prefill]', e); }
+})();
+
 function goStep(step) {
   // Validation
   if (step === 2 && currentStep === 1) {
@@ -475,6 +566,7 @@ async function finishOnboarding() {
       if (session?.user?.id) {
         await window.vpostSupabase.from('profiles').update({
           shop_name: shopName || user.name,
+          shop_desc: shopDesc,
           industry:  selectedIndustry,
           full_name: shopName || user.name,
         }).eq('id', session.user.id);
