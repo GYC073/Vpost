@@ -140,6 +140,24 @@
   .fb-connect-btn i { font-size: 16px; }
   .fb-connect-btn.connected { background: var(--accent-light); color: #0F6E56; border: 1px solid rgba(72,207,173,0.4); }
 
+  .fb-token-warning {
+    display: none; align-items: flex-start; gap: 10px;
+    padding: 12px 14px; border-radius: 10px; margin: 10px 0 4px;
+    font-size: 13px; line-height: 1.5;
+  }
+  .fb-token-warning.warn  { background: #FFFBEB; border: 1.5px solid #F59E0B; color: #92400E; }
+  .fb-token-warning.error { background: #FEF2F2; border: 1.5px solid #EF4444; color: #991B1B; }
+  .fb-token-warning i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .fb-token-reconnect {
+    display: inline-block; margin-top: 6px;
+    padding: 5px 12px; border-radius: 6px; border: none;
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .warn  .fb-token-reconnect { background: #F59E0B; color: #fff; }
+  .error .fb-token-reconnect { background: #EF4444; color: #fff; }
+  .fb-token-reconnect:hover { opacity: 0.85; }
+
   .plan-card {
     background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
     border-radius: var(--radius);
@@ -325,6 +343,17 @@
         <i class="ti ti-brand-facebook"></i> Kết nối Facebook
       </button>
     </div>
+    <!-- Token expiry warning -->
+    <div class="fb-token-warning" id="fbTokenWarning">
+      <i class="ti ti-alert-triangle" id="fbTokenWarningIcon"></i>
+      <div>
+        <span id="fbTokenWarningText"></span><br>
+        <button class="fb-token-reconnect" onclick="vpostFB && vpostFB.startConnect()">
+          <i class="ti ti-refresh" style="font-size:12px"></i> Kết nối lại ngay
+        </button>
+      </div>
+    </div>
+
     <div class="settings-row" id="fbPagePickerRow" style="display:none">
       <div class="settings-row-left" style="width:100%">
         <div class="settings-row-label" style="margin-bottom:8px">Chọn Fanpage Vpost sẽ tự đăng</div>
@@ -566,6 +595,31 @@ async function vpostSettings_renderFB() {
     btn.classList.add('connected');
     btn.disabled = true;
     disconnect.style.display = '';
+
+    // Kiểm tra token hết hạn
+    const warning = document.getElementById('fbTokenWarning');
+    const warningText = document.getElementById('fbTokenWarningText');
+    if (warning && warningText && status.fb_user?.token_expires_at) {
+      const expiresAt = new Date(status.fb_user.token_expires_at);
+      const daysLeft = Math.floor((expiresAt - new Date()) / 86400000);
+      if (daysLeft < 0) {
+        warningText.textContent = 'Token Facebook đã hết hạn. Bài đã lên lịch sẽ đăng thất bại — vui lòng kết nối lại.';
+        warning.className = 'fb-token-warning error';
+        warning.style.display = 'flex';
+        // Đổi nút connect lại màu đỏ + enable
+        btn.innerHTML = '<i class="ti ti-refresh"></i> Kết nối lại';
+        btn.classList.remove('connected');
+        btn.classList.add('reconnect');
+        btn.style.background = '#EF4444';
+        btn.disabled = false;
+      } else if (daysLeft < 7) {
+        warningText.textContent = `Token Facebook còn ${daysLeft} ngày là hết hạn. Kết nối lại để tránh gián đoạn đăng bài.`;
+        warning.className = 'fb-token-warning warn';
+        warning.style.display = 'flex';
+      } else {
+        warning.style.display = 'none';
+      }
+    }
 
     if (status.allPages && status.allPages.length > 0) {
       picker.style.display = '';

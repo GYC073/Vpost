@@ -315,13 +315,46 @@ async function doLogout() {
     const { data: { session } } = await supa.auth.getSession();
     if (!session?.user?.id) return;
 
-    // Kiểm tra fb_connections
+    // Kiểm tra fb_connections (lấy cả token_expires_at để check hết hạn)
     const { data, error } = await supa
       .from('fb_connections')
-      .select('id, is_active')
+      .select('id, is_active, token_expires_at')
       .eq('user_id', session.user.id)
       .eq('is_active', true)
       .maybeSingle();
+
+    // Kiểm tra token sắp/đã hết hạn
+    if (data?.token_expires_at) {
+      const expiresAt = new Date(data.token_expires_at);
+      const daysLeft = Math.floor((expiresAt - new Date()) / 86400000);
+      if (daysLeft < 7) {
+        const expired = daysLeft < 0;
+        const tokenBanner = document.createElement('div');
+        tokenBanner.id = 'fbTokenBanner';
+        tokenBanner.style.cssText = [
+          'display:flex;align-items:center;gap:12px;',
+          expired
+            ? 'background:#FEF2F2;border:1.5px solid #EF4444;color:#991B1B;'
+            : 'background:#FFFBEB;border:1.5px solid #F59E0B;color:#92400E;',
+          'border-radius:12px;padding:13px 16px;margin-bottom:16px;'
+        ].join('');
+        tokenBanner.innerHTML = `
+          <i class="ti ti-alert-triangle" style="font-size:22px;flex-shrink:0"></i>
+          <div style="flex:1;font-size:13px;line-height:1.5">
+            ${expired
+              ? '<strong>Token Facebook đã hết hạn</strong> — bài lên lịch sẽ đăng thất bại.'
+              : `<strong>Token Facebook còn ${daysLeft} ngày</strong> là hết hạn — kết nối lại để tránh gián đoạn.`
+            }
+          </div>
+          <a href="pages/settings.html" style="flex-shrink:0;background:${expired ? '#EF4444' : '#F59E0B'};color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">
+            Kết nối lại
+          </a>
+          <button onclick="this.parentElement.remove()" style="background:none;border:none;color:currentColor;opacity:0.5;font-size:20px;cursor:pointer;padding:0 0 0 4px;flex-shrink:0;line-height:1" title="Đóng">×</button>
+        `;
+        const planBanner = document.getElementById('planExpiryBanner');
+        planBanner ? planBanner.after(tokenBanner) : document.querySelector('.main').prepend(tokenBanner);
+      }
+    }
 
     // Nếu chưa kết nối → hiện banner
     if (!data) {
