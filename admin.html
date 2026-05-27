@@ -254,9 +254,9 @@ tr:hover td { background: var(--bg); }
   </div>
 
   <div class="sidebar-section">Quản lý</div>
-  <button class="nav-item active" onclick="showSection('customers', event)"><i class="ti ti-users"></i>Khách hàng<span class="nav-badge" id="expireBadge">2</span></button>
+  <button class="nav-item active" onclick="showSection('customers', event)"><i class="ti ti-users"></i>Khách hàng<span class="nav-badge" id="expireBadge" style="display:none">0</span></button>
   <button class="nav-item" onclick="showSection('stats', event)"><i class="ti ti-chart-bar"></i>Thống kê</button>
-  <button class="nav-item" onclick="showSection('payments', event)"><i class="ti ti-cash"></i>Thanh toán<span class="nav-badge yellow" id="pendingBadge">3</span></button>
+  <button class="nav-item" onclick="showSection('payments', event)"><i class="ti ti-cash"></i>Thanh toán<span class="nav-badge yellow" id="pendingBadge" style="display:none">0</span></button>
 
   <div class="sidebar-section">Hệ thống</div>
   <button class="nav-item" onclick="showSection('settings', event)"><i class="ti ti-settings"></i>Cài đặt hệ thống</button>
@@ -1559,7 +1559,60 @@ function escapeHtml(str) {
 
   // Load data (session đã sẵn sàng)
   loadCustomers();
+  loadNavBadges();
 })();
+
+// ── Dynamic nav badges ────────────────────────────────────────
+async function loadNavBadges() {
+  const supa = window.vpostSupabase;
+  if (!supa) return;
+  try {
+    // 1. Pending payments badge
+    const { count: pendingCount } = await supa
+      .from('payments')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending');
+    const pb = document.getElementById('pendingBadge');
+    if (pb) {
+      pb.textContent = pendingCount || 0;
+      pb.style.display = (pendingCount || 0) > 0 ? '' : 'none';
+    }
+
+    // 2. FB error badge — errors trong 24h qua
+    const since24h = new Date();
+    since24h.setHours(since24h.getHours() - 24);
+    const { count: errCount } = await supa
+      .from('fb_api_log')
+      .select('id', { count: 'exact', head: true })
+      .or('status_code.gte.400,status_code.is.null')
+      .gte('created_at', since24h.toISOString());
+    const fb = document.getElementById('fbErrBadge');
+    if (fb) {
+      if (errCount > 0) {
+        fb.textContent = errCount > 9 ? '9+' : errCount;
+        fb.style.display = '';
+        fb.className = 'nav-badge';  // đỏ nếu có lỗi
+      } else {
+        fb.style.display = 'none';
+      }
+    }
+
+    // 3. Stat card trend — user mới tháng này
+    const monthStart = new Date();
+    monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+    const { count: newCount } = await supa
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .neq('role', 'admin')
+      .gte('created_at', monthStart.toISOString());
+    const trendEl = document.querySelector('#sectionCustomers .stat-trend.up');
+    if (trendEl && newCount !== null) {
+      trendEl.textContent = newCount > 0 ? `+${newCount} tháng này` : 'Tháng này';
+    }
+  } catch(e) {
+    console.warn('[loadNavBadges]', e);
+  }
+}
 </script>
 </body>
 </html>
