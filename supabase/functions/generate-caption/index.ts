@@ -221,6 +221,26 @@ Comment của khách: "${userDesc || "Sản phẩm này có tốt không?"}"
 ${referenceBlock}
 Viết 3 mẫu trả lời, tách bằng "---".`;
 
+    } else if (contentType === "hiring") {
+      // ── Tuyển dụng: prompt riêng, không dùng rule Facebook generic ──
+      systemPrompt = `Bạn là chuyên gia viết bài tuyển dụng Facebook cho shop nhỏ Việt Nam.
+Viết 3 mẫu bài tuyển dụng theo 3 phong cách, tách bằng "---":
+[A – Rõ ràng & trực tiếp] Thông tin ngắn gọn, cấu trúc rõ, dễ đọc — ai lướt qua cũng nắm được ngay
+[B – Thân thiện & mời gọi] Tone ấm áp, nhấn vào môi trường làm việc vui, đồng nghiệp thân thiện
+[C – Nhấn vào thu nhập] Highlight mức lương + phúc lợi lên đầu để thu hút người cần việc gấp
+
+QUY TẮC:
+- Mỗi bài 70–130 chữ (đủ thông tin, không dài dòng)
+- PHẢI có đủ: vị trí, số lượng, lương, giờ làm, yêu cầu, cách liên hệ — nếu thiếu thì ghi "liên hệ để biết thêm"
+- Được phép dùng "inbox" hoặc "nhắn tin" để ứng tuyển
+- 2–4 hashtag tuyển dụng cụ thể (VD: #TuyenNhanVien #[TinhThanh] #ViTriCuThe)
+- Emoji vừa đủ: 2–4 cái, đặt tự nhiên
+Tone: ${toneLabel}`;
+
+      userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
+${userDesc}
+Viết 3 mẫu bài tuyển dụng Facebook, tách bằng "---".`;
+
     } else {
       // facebook (default)
       systemPrompt = `Bạn là chuyên gia viết caption Facebook cho shop nhỏ Việt Nam.

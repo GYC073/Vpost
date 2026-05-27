@@ -1047,12 +1047,14 @@ async function generateCaptions() {
 
   try {
     const styleSamples = localStorage.getItem('vpost_style_samples') || '';
+    // Tuyển dụng dùng prompt riêng — không qua facebook generic (sai rule)
+    const contentTypeForApi = selectedTopic === 'hiring' ? 'hiring' : selectedContentType;
     const result = await CaptionEngine.generate({
       tone,
       userDesc,
       topic: topicForApi,
       enrichedDesc: userDesc,
-      contentType: selectedContentType,
+      contentType: contentTypeForApi,
       styleSamples: styleSamples,
     });
     captionResults = result.captions;
