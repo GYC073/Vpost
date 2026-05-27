@@ -248,10 +248,42 @@ npx supabase functions deploy demo-caption --no-verify-jwt
 npx supabase functions deploy generate-caption
 ```
 
-**Còn lại chưa làm (từ UX 12 điểm):**
-- [ ] Social proof thật (testimonial từ user thật)
-- [ ] Dashboard UX nhỏ (quick actions, recent activity)
-- [ ] Colors/branding consistency check
-- [ ] Speed feeling (skeleton loading)
-- [ ] Practical wording audit toàn trang
+**Đã làm (session 12 — 2026-05-26):**
+- [x] **Social proof**: testimonials section redesign — 4 cards (có Kho Nệm Giá Tốt - Quảng Trị là real user), initials avatars thay Unsplash, stats strip (50+/1,200+/5 tỉnh/4.9★)
+- [x] **Dashboard UX**: Quick Actions grid (4 nút), Recent Posts feed (5 bài gần nhất + skeleton loading), Greeting động theo giờ
+- [x] **Wording**: greeting dynamic, auto-alert text mềm hơn, stat label rõ hơn, upload placeholder gọn hơn
+- [x] **Branding consistency**: `.badge-*` utility classes, `.btn` utility classes, calendar.html status colors → CSS variables
+
+**Git commit:** `fix: social proof, dashboard UX, wording, branding consistency`
+
+**Còn lại (backlog):**
+- [ ] Deploy edge functions từ terminal local
+- [ ] Test E2E scheduler
+
+---
+
+## UX / Growth Backlog (session 12 — 2026-05-26)
+
+> Ý tưởng nâng cấp trải nghiệm + conversion. Chưa schedule, làm dần.
+
+### 🎨 Visual & Brand
+- [ ] **Login page "AI platform"** — thêm preview output bên cạnh form, slogan mạnh, animation nhẹ, social proof mini ("1,200+ captions generated", "Dành cho shop online Việt Nam")
+- [ ] **Typography "premium"** — tăng letter-spacing, line-height, headline to hơn, font weight hierarchy rõ hơn (hiện hơi dày/sát)
+- [ ] **CTA mạnh hơn** — tăng contrast nút CTA chính, giảm text phụ, 1 CTA rõ ràng thay nhiều nút
+- [ ] **Brand positioning** — thêm subtext mạnh: "VPost — AI viết content bán hàng cho Facebook" hoặc "VPost AI Content Studio"
+
+### ✨ "Wow Moment"
+- [ ] **Caption sample ngay trang home/login** — before/after card, carousel output — cho user thấy "ma thuật" trước khi đăng ký
+- [ ] **Loading đẹp + output streaming** — animation mượt khi AI đang generate (hiện đã có brain icon, có thể thêm typewriter effect)
+- [ ] **Card/shadow tinh tế hơn** — elevation system nhất quán, micro-interactions khi hover
+
+### 🚀 Growth / Conversion
+- [ ] **"Generate không cần login"** — user thử 1 caption free, watermark nhẹ + giới hạn lượt → conversion tăng mạnh (demo-caption edge function đã có sẵn)
+- [ ] **Onboarding cảm xúc hơn** — thêm confetti/animation khi hoàn thành bước, celebrate first caption
+
+### 🔔 Tính năng mới
+- [ ] **Thông báo kết quả đăng bài** — toast/email khi post scheduled thành công hoặc thất bại
+- [ ] **FB token expiry warning** — cảnh báo trước 7 ngày khi access token sắp hết hạn (~60 ngày)
+- [ ] **Dashboard stats charts** — biểu đồ số bài đăng tuần/tháng ngay dashboard (không cần vào admin)
+- [ ] **Admin badge "Payments" động** — số đơn pending thật thay hardcoded "3"
 
