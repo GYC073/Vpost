@@ -338,12 +338,23 @@ HUMANIZE — BẮT BUỘC:
       cost_usd: costUsd,
     });
 
-    await supabaseAdmin.from("caption_history").insert(
-      captions.map((c) => ({ user_id: user.id, caption: c, tone, topic: topic || null }))
-    );
+    const { data: historyRows } = await supabaseAdmin
+      .from("caption_history")
+      .insert(captions.map((c) => ({
+        user_id: user.id,
+        caption: c,
+        tone,
+        topic: topic || null,
+        style_preset: stylePreset,
+        content_type: contentType,
+      })))
+      .select("id");
+
+    const captionIds = (historyRows ?? []).map((r: { id: number }) => r.id);
 
     return json({
       captions,
+      caption_ids: captionIds,
       quota: { limit: quota, used: used + 1, remaining: Math.max(0, quota - used - 1) },
       tokens: { input: inputTokens, output: outputTokens, cost_usd: costUsd },
     });

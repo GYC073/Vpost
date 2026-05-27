@@ -792,6 +792,7 @@
 let selectedTopic = 'product';
 let selectedStyle = 'fb_real';
 let captionResults = [];
+let captionIds     = []; // IDs từ caption_history để track feedback
 
 function selectTopic(btn, topic) {
   document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
@@ -1096,7 +1097,12 @@ async function generateCaptions() {
       styleSamples: styleSamples,
       stylePreset: selectedStyle,
     });
+    // Mark batch cũ là 'regenerated' nếu có (user bấm tạo lại)
+    if (captionIds.length > 0) {
+      trackCaptionAction(captionIds, 'regenerated');
+    }
     captionResults = result.captions;
+    captionIds     = result.caption_ids || [];
 
     // Hiển thị toast theo cấu trúc + quota còn lại
     const structureLabels = {
@@ -1212,14 +1218,34 @@ function copyCaption(e, idx) {
   e.stopPropagation();
   if (captionResults[idx]) {
     navigator.clipboard.writeText(captionResults[idx]).then(() => showToast('Đã sao chép caption! 📋'));
+    // Track feedback: caption được copy
+    if (captionIds[idx]) trackCaptionAction([captionIds[idx]], 'copied');
+  }
+}
+
+// ── Ghi feedback vào caption_history ───────────────────────────
+async function trackCaptionAction(ids, action) {
+  try {
+    if (!ids?.length) return;
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    // Update từng ID (RLS: chỉ update được row của chính mình)
+    await Promise.all(ids.map(id =>
+      supa.from('caption_history').update({ user_action: action }).eq('id', id)
+    ));
+  } catch(e) {
+    console.warn('[trackCaptionAction]', e);
   }
 }
 
 // ── Lấy caption đang được chọn ──────────────────────────────────
-function getSelectedCaptionText() {
+function getSelectedCaptionIndex() {
   const selected = document.querySelector('.result-card.selected');
-  if (!selected) return captionResults[0] || '';
-  const idx = [...document.querySelectorAll('.result-card')].indexOf(selected);
+  if (!selected) return 0;
+  return [...document.querySelectorAll('.result-card')].indexOf(selected);
+}
+function getSelectedCaptionText() {
+  const idx = getSelectedCaptionIndex();
   return captionResults[idx] || captionResults[0] || '';
 }
 
@@ -1283,6 +1309,9 @@ async function vpostPostNow() {
     if (createErr) throw new Error(createErr.message || createErr);
     // Gọi Edge Function fb-post
     await window.vpostFB.postToFB(post.id);
+    // Track: caption được dùng thực sự
+    const usedIdx = getSelectedCaptionIndex();
+    if (captionIds[usedIdx] != null) trackCaptionAction([captionIds[usedIdx]], 'used');
     showToast('🎉 Đã đăng lên Facebook!');
   } catch (err) {
     showToast('❌ Đăng thất bại: ' + err.message);
@@ -1321,6 +1350,9 @@ async function vpostConfirmSchedule() {
       scheduled_at: new Date(scheduledAt).toISOString(),
     });
     if (error) throw new Error(error.message || error);
+    // Track: caption được lên lịch = 'used'
+    const usedIdx = getSelectedCaptionIndex();
+    if (captionIds[usedIdx] != null) trackCaptionAction([captionIds[usedIdx]], 'used');
     showToast('📅 Đã lên lịch đăng!');
     document.getElementById('scheduleRow').classList.remove('show');
   } catch (err) {
