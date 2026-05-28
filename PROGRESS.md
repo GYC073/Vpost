@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-28 (session 16)
+**Last updated:** 2026-05-28 (session 16) — Phase 7 scheduler HOÀN THÀNH
 
 ---
 
@@ -39,7 +39,7 @@
 | 4.6 | UI integration: `pages/caption.html` 3 nút "Lưu nháp / Đăng ngay / Lên lịch" + banner FB; calendar highlight posts có `fb_post_id` + badge | ✅ Code xong |
 | 4.7 | Edge Function `fb-scheduler` (cron 5 phút) + migration 004 (status='posting' + updated_at + recover_stuck_posts) | ✅ Code xong, **chờ deploy + setup pg_cron** |
 | 4.8 | Test end-to-end với 1 page thật, fix bug | ✅ **OAuth kết nối thành công** — "Kho Nệm Giá Tốt - Quảng Trị" đã connect (session 2026-05-23) |
-| 4.9 | Submit Meta App Review để xin permissions production (`pages_manage_posts`...) | 🔨 **Đang làm** — form điền xong, chờ API counter cập nhật (tối đa 24h) rồi submit |
+| 4.9 | Submit Meta App Review để xin permissions production (`pages_manage_posts`...) | ⏳ **Đang xác minh** — Thang sẽ chủ động báo khi xong, KHÔNG nhắc lại |
 
 ### Blocker hiện tại
 - **4.2 + 4.4 + 4.7**: cần deploy edge functions từ terminal local.
@@ -183,13 +183,26 @@
   - `fb-scheduler --no-verify-jwt` ✅
   - `demo-caption --no-verify-jwt` ✅ (tested: AI generate OK)
   - `generate-caption` ✅ (tested: 3 caption versions OK)
-- [ ] Test end-to-end: tạo bài → lên lịch → chờ cron → verify đăng thành công
-- [ ] Verify pg_cron đang chạy đúng: Supabase Dashboard → Database → Cron Jobs
+- [x] Test end-to-end: tạo bài → lên lịch → chờ cron → verify đăng thành công ✅ (2026-05-28)
+- [x] Verify pg_cron đang chạy đúng: active ✅
 
-**Ghi chú kỹ thuật:**
-- `postNow` từ calendar gọi trực tiếp `fb-post` edge function với user JWT (không qua scheduler)
+**Session 16 — Deploy + E2E fix (2026-05-28):**
+- [x] Fix "Dùng lại" prefill trong `caption.html`: IDs sai (`captionResult`→`result1`, `topicInput`→`userDesc`, thêm tone + show resultsSection)
+- [x] Deploy tất cả 5 edge functions thành công
+- [x] Fix SCHEDULER_SECRET missing → `npx supabase secrets set SCHEDULER_SECRET=...`
+- [x] Fix fb-post auth khi scheduler gọi — 3 vòng debug:
+  - Attempt 1: `authHeader.includes(serviceKey)` — Supabase middleware chặn → "fb-post failed" (data.error null)
+  - Attempt 2: decode JWT base64url → jwtRole — base64url decode fail → "unauthorized"  
+  - **Final fix**: truyền `scheduler_secret` trong body, fb-post check `body.scheduler_secret === SCHEDULER_SECRET`
+- [x] fb-post deploy với `--no-verify-jwt` (Supabase middleware không block service_role call)
+- [x] E2E PASS: scheduler pick up post → gọi fb-post → bài lên Facebook ✅
+
+**Ghi chú kỹ thuật quan trọng:**
+- `fb-post` phải deploy với `--no-verify-jwt` (Supabase middleware block service_role JWT nếu không)
+- Scheduler→fb-post auth: `scheduler_secret` trong request body (KHÔNG dùng header để tránh CORS)
+- `postNow` từ calendar gọi trực tiếp `fb-post` với user JWT (không qua scheduler)
 - `retryPost` reset `scheduled_at = now()` và `fb_retry_count = 0` → cron 5 phút sau sẽ pick up
-- `SCHEDULER_SECRET` đã set, pg_cron đã tạo (*/5 và */30) — chỉ thiếu deploy function
+- pg_cron jobs: `vpost-fb-scheduler` (*/5) + `vpost-recover-stuck` (*/30) — đều active
 
 ---
 
