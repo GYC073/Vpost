@@ -1406,17 +1406,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (new URLSearchParams(location.search).get('from') === 'history') {
     const prefillCaption = sessionStorage.getItem('vpost_prefill_caption');
     const prefillTopic   = sessionStorage.getItem('vpost_prefill_topic');
+    const prefillTone = sessionStorage.getItem('vpost_prefill_tone');
     if (prefillCaption) {
-      // Điền vào textarea result nếu có
-      const resultArea = document.getElementById('captionResult') || document.getElementById('resultTextarea');
-      if (resultArea) {
-        resultArea.value = prefillCaption;
-        const wrap = document.getElementById('resultSection') || resultArea.closest('.result-wrap');
-        if (wrap) wrap.style.display = '';
-      }
+      // Điền caption vào result1 và hiện resultsSection
+      const r1 = document.getElementById('result1');
+      if (r1) r1.textContent = prefillCaption;
+      const rs = document.getElementById('resultsSection');
+      if (rs) rs.style.display = '';
+      // Điền topic vào userDesc
       if (prefillTopic) {
-        const ti = document.getElementById('topicInput') || document.getElementById('topic');
+        const ti = document.getElementById('userDesc');
         if (ti) ti.value = prefillTopic;
+      }
+      // Set tone
+      if (prefillTone) {
+        const ts = document.getElementById('toneSelect');
+        if (ts) ts.value = prefillTone;
       }
       sessionStorage.removeItem('vpost_prefill_caption');
       sessionStorage.removeItem('vpost_prefill_topic');
@@ -1481,10 +1486,4 @@ function showUpgradePrompt(type) {
         Để sau
       </button>
     </div>`;
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-  document.body.appendChild(modal);
-}
-
-</script>
-</body>
-</html>
+  modal.addEventListener('click', e => { if (e.tar
