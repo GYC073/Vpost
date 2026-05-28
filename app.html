@@ -556,8 +556,8 @@ renderActivityChart(7);
       }
     }
 
-    // Nếu chưa kết nối → hiện banner
-    if (!data) {
+    // Nếu chưa kết nối → hiện banner (chỉ khi query thành công và thật sự chưa có row)
+    if (!error && !data) {
       const banner = document.createElement('div');
       banner.id = 'fbConnectBanner';
       banner.style.cssText = [

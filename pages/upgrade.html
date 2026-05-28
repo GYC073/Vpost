@@ -46,8 +46,9 @@
   cursor: pointer; transition: all 0.18s;
 }
 .plan-card.selected .plan-select-btn { background: var(--primary); color: #fff; }
-.plan-card.recommended .plan-select-btn { border-color: #7C5CFC; color: #7C5CFC; }
+.plan-card.recommended .plan-select-btn { background: #7C5CFC; color: #fff; border-color: #7C5CFC; }
 .plan-card.recommended.selected .plan-select-btn { background: #7C5CFC; color: #fff; }
+.plan-select-btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 .plan-card.pro-card .plan-select-btn { border-color: #F59E0B; color: #F59E0B; }
 .plan-card.pro-card.selected .plan-select-btn { background: #F59E0B; color: #fff; }
 
@@ -582,6 +583,19 @@ function renderCurrentPlan(profile) {
       ? `⏳ Còn ${daysLeft} ngày (hết hạn ${d.toLocaleDateString('vi-VN')})`
       : `Hết hạn ${d.toLocaleDateString('vi-VN')}`;
   }
+
+  // Disable nút của plan đang dùng (trừ trial → không map sang nút nào)
+  const planBtnMap = { basic: 'basic', standard: 'standard', pro: 'pro' };
+  const currentKey = planBtnMap[profile.plan];
+  if (currentKey && !isExpired) {
+    const btn = document.getElementById('btn-' + currentKey);
+    const card = document.getElementById('card-' + currentKey);
+    if (btn) {
+      btn.textContent = '✓ Gói đang dùng';
+      btn.disabled = true;
+    }
+    if (card) card.style.pointerEvents = 'none';
+  }
 }
 
 // ===== STEP NAVIGATION =====
@@ -597,7 +611,7 @@ function selectPlan(plan) {
   selectedPlan = plan;
   // Visual
   document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-  document.querySelectorAll('.plan-select-btn').forEach(b => b.textContent = 'Chọn gói này');
+  document.querySelectorAll('.plan-select-btn').forEach(b => { if (!b.disabled) b.textContent = 'Chọn gói này'; });
   document.getElementById('card-' + plan).classList.add('selected');
   document.getElementById('btn-' + plan).textContent = '✓ Đã chọn';
 
