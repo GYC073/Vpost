@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-28 (session 15)
+**Last updated:** 2026-05-28 (session 16)
 
 ---
 
@@ -177,12 +177,12 @@
 **Git commit session 10:** `feat(phase7): calendar post actions - cancel/postNow/retry/delete + posting status`
 
 **Còn lại để Phase 7 hoàn chỉnh:**
-- [ ] **Deploy edge functions** (cần chạy từ terminal local):
-  ```
-  npx supabase functions deploy fb-oauth-exchange
-  npx supabase functions deploy fb-post
-  npx supabase functions deploy fb-scheduler --no-verify-jwt
-  ```
+- [x] **Deploy edge functions** (2026-05-28 session 16):
+  - `fb-oauth-exchange` ✅
+  - `fb-post` ✅
+  - `fb-scheduler --no-verify-jwt` ✅
+  - `demo-caption --no-verify-jwt` ✅ (tested: AI generate OK)
+  - `generate-caption` ✅ (tested: 3 caption versions OK)
 - [ ] Test end-to-end: tạo bài → lên lịch → chờ cron → verify đăng thành công
 - [ ] Verify pg_cron đang chạy đúng: Supabase Dashboard → Database → Cron Jobs
 
@@ -242,11 +242,7 @@
 - `feat: content types (shopee/livestream/reply) + AI style learning from user samples`
 - `fix: pass contentType+styleSamples through CaptionEngine to API`
 
-**Deploy cần chạy (nếu chưa):**
-```
-npx supabase functions deploy demo-caption --no-verify-jwt
-npx supabase functions deploy generate-caption
-```
+**Deploy:** ✅ Tất cả đã deploy 2026-05-28
 
 **Đã làm (session 12 — 2026-05-26):**
 - [x] **Social proof**: testimonials section redesign — 4 cards (có Kho Nệm Giá Tốt - Quảng Trị là real user), initials avatars thay Unsplash, stats strip (50+/1,200+/5 tỉnh/4.9★)
