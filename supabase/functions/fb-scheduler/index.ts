@@ -95,7 +95,8 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Gọi fb-post HTTP với service_role + user_id
+      // Gọi fb-post HTTP với service_role + scheduler_secret trong body
+      const schedulerSecret = Deno.env.get("SCHEDULER_SECRET") ?? "";
       try {
         const res = await fetch(`${supabaseUrl}/functions/v1/fb-post`, {
           method: "POST",
@@ -103,7 +104,7 @@ Deno.serve(async (req) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${serviceKey}`,
           },
-          body: JSON.stringify({ post_id: p.id, user_id: p.user_id }),
+          body: JSON.stringify({ post_id: p.id, user_id: p.user_id, scheduler_secret: schedulerSecret }),
         });
         const data = await res.json();
 

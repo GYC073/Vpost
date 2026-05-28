@@ -20,7 +20,8 @@ const FB_GRAPH = "https://graph.facebook.com/v21.0";
 
 interface PostBody {
   post_id: string;
-  user_id?: string; // chỉ dùng khi scheduler gọi (service_role)
+  user_id?: string;         // chỉ dùng khi scheduler gọi
+  scheduler_secret?: string; // xác thực nội bộ scheduler → fb-post
 }
 
 Deno.serve(async (req) => {
@@ -40,8 +41,9 @@ Deno.serve(async (req) => {
     // ===== 1) Xác định user_id =====
     let userId: string | null = null;
 
-    // Trường hợp scheduler gọi với service_role + user_id explicit
-    if (body.user_id && authHeader.includes(serviceKey)) {
+    // Trường hợp scheduler gọi: user_id + scheduler_secret trong body
+    const schedulerSecret = Deno.env.get("SCHEDULER_SECRET") ?? "";
+    if (body.user_id && schedulerSecret && (body as any).scheduler_secret === schedulerSecret) {
       userId = body.user_id;
     } else if (authHeader.startsWith("Bearer ")) {
       const userClient = createClient(
