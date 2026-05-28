@@ -261,11 +261,17 @@
   <!-- Activity Chart -->
   <div class="chart-section">
     <div class="chart-header">
-      <div class="chart-title"><i class="ti ti-chart-bar"></i>Hoạt động 7 ngày qua</div>
-      <div class="chart-legend">
-        <span><span class="legend-dot posted"></span>Đã đăng</span>
-        <span><span class="legend-dot scheduled"></span>Lên lịch</span>
-        <span><span class="legend-dot draft"></span>Bản nháp</span>
+      <div class="chart-title"><i class="ti ti-chart-bar"></i><span id="chartTitleText">Hoạt động 7 ngày qua</span></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="chart-filter-group">
+          <button class="chart-filter-btn active" id="cfBtn7" onclick="switchChartRange(7)">7 ngày</button>
+          <button class="chart-filter-btn" id="cfBtn30" onclick="switchChartRange(30)">30 ngày</button>
+        </div>
+        <div class="chart-legend">
+          <span><span class="legend-dot posted"></span>Đã đăng</span>
+          <span><span class="legend-dot scheduled"></span>Lên lịch</span>
+          <span><span class="legend-dot draft"></span>Bản nháp</span>
+        </div>
       </div>
     </div>
     <div class="chart-wrap" id="weekChartWrap">
@@ -326,17 +332,20 @@ async function doLogout() {
   window.location.href = 'login.html';
 }
 
-// --- Biểu đồ hoạt động 7 ngày ---
-(async function renderWeekChart() {
+// --- Biểu đồ hoạt động (7 / 30 ngày) ---
+let _activityChartInstance = null;
+let _activityChartRange = 7;
+
+async function renderActivityChart(rangeDays) {
   try {
     const supa = window.vpostSupabase;
     if (!supa || typeof Chart === 'undefined') return;
     const { data: { session } } = await supa.auth.getSession();
     if (!session?.user?.id) return;
 
-    // Lấy bài trong 7 ngày gần nhất
+    const N = rangeDays || 7;
     const since = new Date();
-    since.setDate(since.getDate() - 6);
+    since.setDate(since.getDate() - (N - 1));
     since.setHours(0, 0, 0, 0);
 
     const { data: posts } = await supa
@@ -345,22 +354,28 @@ async function doLogout() {
       .eq('user_id', session.user.id)
       .gte('created_at', since.toISOString());
 
-    // Build mảng 7 ngày
+    // Build mảng N ngày
     const days = [];
     const labels = [];
     const dayNames = ['CN','T2','T3','T4','T5','T6','T7'];
-    for (let i = 6; i >= 0; i--) {
+    for (let i = N - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       d.setHours(0, 0, 0, 0);
       days.push(d.toDateString());
-      labels.push(i === 0 ? 'Hôm nay' : dayNames[d.getDay()]);
+      if (N <= 7) {
+        labels.push(i === 0 ? 'Hôm nay' : dayNames[d.getDay()]);
+      } else {
+        // 30 ngày: hiện ngày/tháng, bỏ trống để tránh chật
+        const show = (i % 5 === 0 || i === 0);
+        labels.push(show ? `${d.getDate()}/${d.getMonth()+1}` : '');
+      }
     }
 
     // Đếm theo ngày + status
-    const posted    = new Array(7).fill(0);
-    const scheduled = new Array(7).fill(0);
-    const draft     = new Array(7).fill(0);
+    const posted    = new Array(N).fill(0);
+    const scheduled = new Array(N).fill(0);
+    const draft     = new Array(N).fill(0);
 
     (posts || []).forEach(p => {
       const dStr = new Date(p.created_at).toDateString();
@@ -371,43 +386,64 @@ async function doLogout() {
       else draft[idx]++;
     });
 
-    // Nếu tất cả = 0 → hiện empty state
-    const total = posted.concat(scheduled, draft).reduce((a,b) => a+b, 0);
     const wrap = document.getElementById('weekChartWrap');
+    const total = posted.concat(scheduled, draft).reduce((a,b) => a+b, 0);
     if (total === 0) {
-      wrap.innerHTML = '<div class="chart-empty"><i class="ti ti-chart-bar"></i>Chưa có bài đăng nào trong 7 ngày qua</div>';
+      wrap.innerHTML = `<div class="chart-empty"><i class="ti ti-chart-bar"></i>Chưa có bài đăng nào trong ${N} ngày qua</div>`;
       return;
     }
 
+    // Reset canvas nếu đã có chart
+    if (_activityChartInstance) {
+      _activityChartInstance.destroy();
+      _activityChartInstance = null;
+    }
+    wrap.innerHTML = '<canvas id="weekChart"></canvas>';
+
     const ctx = document.getElementById('weekChart').getContext('2d');
-    new Chart(ctx, {
+    _activityChartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
         labels,
         datasets: [
-          { label: 'Đã đăng',  data: posted,    backgroundColor: '#10B981', borderRadius: 5, borderSkipped: false },
-          { label: 'Lên lịch', data: scheduled, backgroundColor: '#3B82F6', borderRadius: 5, borderSkipped: false },
-          { label: 'Bản nháp', data: draft,     backgroundColor: '#E5E7EB', borderRadius: 5, borderSkipped: false },
+          { label: 'Đã đăng',  data: posted,    backgroundColor: '#10B981', borderRadius: N <= 7 ? 5 : 3, borderSkipped: false },
+          { label: 'Lên lịch', data: scheduled, backgroundColor: '#3B82F6', borderRadius: N <= 7 ? 5 : 3, borderSkipped: false },
+          { label: 'Bản nháp', data: draft,     backgroundColor: '#E5E7EB', borderRadius: N <= 7 ? 5 : 3, borderSkipped: false },
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: {
           callbacks: {
-            title: (items) => items[0].label,
+            title: (items) => {
+              const idx = items[0].dataIndex;
+              const d = new Date();
+              d.setDate(d.getDate() - (N - 1 - idx));
+              return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+            },
             label: (item) => ` ${item.dataset.label}: ${item.raw} bài`,
           }
         }},
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 }, color: '#9CA3AF' } },
+          x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 }, color: '#9CA3AF', maxRotation: 0 } },
           y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 }, color: '#9CA3AF' }, grid: { color: '#F3F4F6' } }
         }
       }
     });
   } catch(e) {
-    console.warn('[WeekChart]', e);
+    console.warn('[ActivityChart]', e);
   }
-})();
+}
+
+function switchChartRange(days) {
+  _activityChartRange = days;
+  document.getElementById('cfBtn7').classList.toggle('active', days === 7);
+  document.getElementById('cfBtn30').classList.toggle('active', days === 30);
+  document.getElementById('chartTitleText').textContent = `Hoạt động ${days} ngày qua`;
+  renderActivityChart(days);
+}
+
+renderActivityChart(7);
 
 // --- Banner nhắc kết nối Facebook ---
 (async function checkFbConnection() {

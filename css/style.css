@@ -521,6 +521,21 @@ button, input, select, textarea { font-family: inherit; }
 .legend-dot.scheduled { background: #3B82F6; }
 .legend-dot.draft    { background: #D1D5DB; }
 .chart-wrap { position: relative; height: 140px; }
+.chart-filter-group {
+  display: flex; gap: 2px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 2px;
+}
+.chart-filter-btn {
+  border: none; background: transparent; cursor: pointer;
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  padding: 4px 10px; border-radius: 6px; transition: all 0.15s;
+  white-space: nowrap;
+}
+.chart-filter-btn.active {
+  background: var(--surface); color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.chart-filter-btn:hover:not(.active) { color: var(--text); }
 .chart-empty {
   text-align: center; padding: 28px 0; color: var(--text-secondary);
   font-size: 13px;

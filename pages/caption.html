@@ -1486,4 +1486,10 @@ function showUpgradePrompt(type) {
         Để sau
       </button>
     </div>`;
-  modal.addEventListener('click', e => { if (e.tar
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+</script>
+</body>
+</html>
