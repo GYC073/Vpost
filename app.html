@@ -72,6 +72,9 @@
   <!-- Banner cảnh báo hết hạn gói (hiện bởi sidebar.js khi còn ≤5 ngày) -->
   <div id="planExpiryBanner" style="display:none"></div>
 
+  <!-- Banner kết quả đăng bài (hiện khi có bài posted/failed trong 24h) -->
+  <div id="postResultsBanner"></div>
+
   <!-- Shop hero banner -->
   <div class="shop-hero">
     <img class="shop-hero-cover" src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80" alt="Coffee shop cover">
@@ -444,6 +447,65 @@ function switchChartRange(days) {
 }
 
 renderActivityChart(7);
+
+// --- Thông báo kết quả đăng bài (24h gần nhất) ---
+(async function checkPostResults() {
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
+
+    // Bỏ qua nếu user đã dismiss trong session này
+    const dismissKey = 'vpost_postnotif_dismissed';
+    if (sessionStorage.getItem(dismissKey)) return;
+
+    const since24h = new Date(Date.now() - 86400000).toISOString();
+    const { data: posts } = await supa
+      .from('posts')
+      .select('id, status, caption, updated_at')
+      .eq('user_id', session.user.id)
+      .in('status', ['posted', 'auto_posted', 'failed'])
+      .gte('updated_at', since24h)
+      .order('updated_at', { ascending: false });
+
+    if (!posts || posts.length === 0) return;
+
+    const failed   = posts.filter(p => p.status === 'failed');
+    const success  = posts.filter(p => p.status === 'posted' || p.status === 'auto_posted');
+
+    const wrap = document.getElementById('postResultsBanner');
+    if (!wrap) return;
+
+    let html = '';
+    if (failed.length > 0) {
+      html += `
+        <div style="display:flex;align-items:center;gap:12px;background:#FEF2F2;border:1.5px solid #FECACA;border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#991B1B;">
+          <i class="ti ti-alert-circle" style="font-size:20px;flex-shrink:0;color:#DC2626"></i>
+          <div style="flex:1;line-height:1.5">
+            <strong>${failed.length} bài lên lịch đăng thất bại</strong> trong 24h qua —
+            <span style="color:#991B1B;opacity:0.8">kiểm tra và thử lại trong lịch đăng.</span>
+          </div>
+          <a href="pages/calendar.html" style="flex-shrink:0;background:#DC2626;color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">Xem lịch →</a>
+          <button onclick="sessionStorage.setItem('${dismissKey}','1');this.closest('div[style]').remove()" style="background:none;border:none;color:#DC2626;opacity:0.5;font-size:20px;cursor:pointer;padding:0 0 0 4px;flex-shrink:0;line-height:1" title="Đóng">×</button>
+        </div>`;
+    }
+    if (success.length > 0) {
+      html += `
+        <div style="display:flex;align-items:center;gap:12px;background:#ECFDF5;border:1.5px solid #A7F3D0;border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#065F46;">
+          <i class="ti ti-circle-check" style="font-size:20px;flex-shrink:0;color:#059669"></i>
+          <div style="flex:1;line-height:1.5">
+            <strong>${success.length} bài đã đăng Facebook thành công</strong> trong 24h qua 🎉
+          </div>
+          <a href="pages/calendar.html" style="flex-shrink:0;background:#059669;color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">Xem lịch →</a>
+          <button onclick="sessionStorage.setItem('${dismissKey}','1');this.closest('div[style]').remove()" style="background:none;border:none;color:#065F46;opacity:0.5;font-size:20px;cursor:pointer;padding:0 0 0 4px;flex-shrink:0;line-height:1" title="Đóng">×</button>
+        </div>`;
+    }
+    wrap.innerHTML = html;
+  } catch(e) {
+    console.warn('[PostResults]', e);
+  }
+})();
 
 // --- Banner nhắc kết nối Facebook ---
 (async function checkFbConnection() {

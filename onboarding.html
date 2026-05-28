@@ -530,6 +530,65 @@ function goStep(step) {
     }
   }
   currentStep = step;
+  if (step === 5) launchConfetti();
+}
+
+// ── Confetti celebration ─────────────────────────────────────
+function launchConfetti() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999';
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+
+  const COLORS = ['#2563EB','#7C3AED','#059669','#F59E0B','#EC4899','#60A5FA','#34D399'];
+  const pieces = Array.from({ length: 120 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * -canvas.height * 0.5,
+    r: Math.random() * 7 + 3,
+    d: Math.random() * 90,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    tilt: Math.random() * 10 - 10,
+    tiltAngle: 0,
+    tiltSpeed: Math.random() * 0.07 + 0.05,
+    vx: Math.random() * 2 - 1,
+    vy: Math.random() * 3 + 2,
+    shape: Math.random() > 0.5 ? 'rect' : 'circle',
+  }));
+
+  let frame, start = null, DURATION = 3000;
+
+  function draw(ts) {
+    if (!start) start = ts;
+    const elapsed = ts - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const fade = elapsed > DURATION - 800 ? 1 - (elapsed - (DURATION - 800)) / 800 : 1;
+    ctx.globalAlpha = fade;
+
+    pieces.forEach(p => {
+      p.tiltAngle += p.tiltSpeed;
+      p.x += p.vx + Math.sin(p.d) * 0.5;
+      p.y += p.vy;
+      p.tilt = Math.sin(p.tiltAngle) * 12;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      if (p.shape === 'circle') {
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      } else {
+        ctx.rect(p.x + p.tilt, p.y, p.r * 2, p.r * 0.7);
+      }
+      ctx.fill();
+      if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+    });
+
+    if (elapsed < DURATION) {
+      frame = requestAnimationFrame(draw);
+    } else {
+      canvas.remove();
+    }
+  }
+  frame = requestAnimationFrame(draw);
 }
 
 function selectIndustry(btn, industry) {

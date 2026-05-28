@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-28 (session 16) — Phase 7 scheduler HOÀN THÀNH
+**Last updated:** 2026-05-28 (session 18) — Typography polish, confetti onboarding, post result notifications
 
 ---
 
@@ -327,23 +327,24 @@
 > Ý tưởng nâng cấp trải nghiệm + conversion. Chưa schedule, làm dần.
 
 ### 🎨 Visual & Brand
-- [ ] **Login page "AI platform"** — thêm preview output bên cạnh form, slogan mạnh, animation nhẹ, social proof mini ("1,200+ captions generated", "Dành cho shop online Việt Nam")
-- [ ] **Typography "premium"** — tăng letter-spacing, line-height, headline to hơn, font weight hierarchy rõ hơn (hiện hơi dày/sát)
+- [x] **Login page "AI platform"** — ✅ split layout + ba-card + testimonial + stats (session 15)
+- [x] **Typography "premium"** — ✅ line-height 1.6, heading 1.32, page-title 24px/800, stat-value 28px/800, rp-item hover lift (session 18)
 - [ ] **CTA mạnh hơn** — tăng contrast nút CTA chính, giảm text phụ, 1 CTA rõ ràng thay nhiều nút
-- [ ] **Brand positioning** — thêm subtext mạnh: "VPost — AI viết content bán hàng cho Facebook" hoặc "VPost AI Content Studio"
+- [x] **Brand positioning** — ✅ "AI Content Studio" subtext trên logo login (session 15)
 
 ### ✨ "Wow Moment"
-- [ ] **Caption sample ngay trang home/login** — before/after card, carousel output — cho user thấy "ma thuật" trước khi đăng ký
-- [ ] **Loading đẹp + output streaming** — animation mượt khi AI đang generate (hiện đã có brain icon, có thể thêm typewriter effect)
-- [ ] **Card/shadow tinh tế hơn** — elevation system nhất quán, micro-interactions khi hover
+- [x] **Caption sample ngay trang home/login** — ✅ before/after card đã có (session 15)
+- [x] **Loading đẹp + output streaming** — ✅ brain icon + typewriter cursor (session 11/14)
+- [x] **Card/shadow tinh tế hơn** — ✅ hover elevation nhất quán (session 18)
 
 ### 🚀 Growth / Conversion
-- [ ] **"Generate không cần login"** — user thử 1 caption free, watermark nhẹ + giới hạn lượt → conversion tăng mạnh (demo-caption edge function đã có sẵn)
-- [ ] **Onboarding cảm xúc hơn** — thêm confetti/animation khi hoàn thành bước, celebrate first caption
+- [x] **"Generate không cần login"** — ✅ demo landing page (session 11)
+- [x] **Onboarding cảm xúc hơn** — ✅ confetti canvas khi hoàn thành bước 5 (session 18)
 
 ### 🔔 Tính năng mới
 - [ ] **Thông báo kết quả đăng bài** — toast/email khi post scheduled thành công hoặc thất bại
-- [ ] **FB token expiry warning** — cảnh báo trước 7 ngày khi access token sắp hết hạn (~60 ngày)
-- [ ] **Dashboard stats charts** — biểu đồ số bài đăng tuần/tháng ngay dashboard (không cần vào admin)
-- [ ] **Admin badge "Payments" động** — số đơn pending thật thay hardcoded "3"
+- [x] **FB token expiry warning** — ✅ đã có (settings.html + app.html)
+- [x] **Dashboard stats charts** — ✅ đã có filter 7/30 ngày (session 17)
+- [x] **Admin badge "Payments" động** — ✅ đã có loadNavBadges() query Supabase thật
+- [x] **Typewriter effect** — ✅ đã có trong caption.html
 
