@@ -184,6 +184,17 @@
     margin-bottom: 12px;
   }
   .list-title { font-size: 15px; font-weight: 700; color: var(--text); }
+
+  /* Mobile: bigger touch targets for action buttons */
+  @media (max-width: 480px) {
+    .post-action-btn { width: 34px; height: 34px; font-size: 15px; }
+    .post-list-item { padding: 12px; gap: 10px; }
+    .post-date-badge { min-width: 36px; }
+    .post-date-num { font-size: 18px; }
+    .post-caption { font-size: 12.5px; -webkit-line-clamp: 1; }
+    .fb-badge { font-size: 10px; padding: 2px 6px; }
+    .post-list-right { gap: 5px; }
+  }
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -200,6 +211,7 @@
     <a href="../app.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
     <a href="calendar.html" class="nav-item active"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
     <a href="caption.html" class="nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+    <a href="history.html" class="nav-item"><i class="ti ti-history"></i><span>Lịch sử</span></a>
     <a href="video.html" class="nav-item"><i class="ti ti-video"></i><span>Tạo Video</span></a>
     <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
   </nav>

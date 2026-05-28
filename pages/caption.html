@@ -445,6 +445,7 @@
     <a href="../app.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
     <a href="calendar.html" class="nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
     <a href="caption.html" class="nav-item active"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+    <a href="history.html" class="nav-item"><i class="ti ti-history"></i><span>Lịch sử</span></a>
     <a href="video.html" class="nav-item"><i class="ti ti-video"></i><span>Tạo Video</span></a>
     <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
   </nav>
@@ -1401,6 +1402,31 @@ function removeCaptionImg(e) {
 
 document.addEventListener('DOMContentLoaded', () => {
   initFbStatus();
+  // Prefill từ lịch sử (khi user bấm "Dùng lại" ở history.html)
+  if (new URLSearchParams(location.search).get('from') === 'history') {
+    const prefillCaption = sessionStorage.getItem('vpost_prefill_caption');
+    const prefillTopic   = sessionStorage.getItem('vpost_prefill_topic');
+    if (prefillCaption) {
+      // Điền vào textarea result nếu có
+      const resultArea = document.getElementById('captionResult') || document.getElementById('resultTextarea');
+      if (resultArea) {
+        resultArea.value = prefillCaption;
+        const wrap = document.getElementById('resultSection') || resultArea.closest('.result-wrap');
+        if (wrap) wrap.style.display = '';
+      }
+      if (prefillTopic) {
+        const ti = document.getElementById('topicInput') || document.getElementById('topic');
+        if (ti) ti.value = prefillTopic;
+      }
+      sessionStorage.removeItem('vpost_prefill_caption');
+      sessionStorage.removeItem('vpost_prefill_topic');
+      sessionStorage.removeItem('vpost_prefill_tone');
+      setTimeout(() => {
+        const t = document.getElementById('toast');
+        if (t) { t.textContent = '♻️ Đã tải caption từ lịch sử'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+      }, 600);
+    }
+  }
 });
 </script>
 

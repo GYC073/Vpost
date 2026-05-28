@@ -128,6 +128,47 @@
 .success-value { font-weight: 600; }
 .back-home-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; }
 
+
+/* ===== COMPARISON TABLE ===== */
+.compare-section { margin-bottom: 28px; }
+.compare-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.compare-title i { color: var(--primary); font-size: 16px; }
+.compare-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.compare-table th { padding: 10px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; color: var(--text-secondary); border-bottom: 2px solid var(--border); }
+.compare-table th:first-child { text-align: left; width: 38%; }
+.compare-table td { padding: 9px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; text-align: center; color: var(--text-secondary); }
+.compare-table td:first-child { text-align: left; color: var(--text); font-weight: 500; }
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table tr:hover td { background: var(--bg); }
+.cmp-check { color: #22c55e; font-size: 17px; }
+.cmp-cross { color: #d1d5db; font-size: 17px; }
+.cmp-basic    { color: #2D6BE4; font-weight: 700; }
+.cmp-standard { color: #7C5CFC; font-weight: 700; }
+.cmp-pro      { color: #F59E0B; font-weight: 700; }
+.compare-table .plan-header-basic    { background: rgba(45,107,228,0.06); border-radius: 8px 8px 0 0; }
+.compare-table .plan-header-standard { background: rgba(124,92,252,0.06); border-radius: 8px 8px 0 0; }
+.compare-table .plan-header-pro      { background: rgba(245,158,11,0.06); border-radius: 8px 8px 0 0; }
+
+/* ===== FAQ ===== */
+.faq-section { margin-top: 32px; margin-bottom: 8px; }
+.faq-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.faq-title i { color: var(--primary); }
+.faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.faq-q {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; font-size: 13.5px; font-weight: 600; color: var(--text);
+  background: var(--surface); border: none; cursor: pointer; font-family: inherit;
+  text-align: left; transition: background 0.15s;
+}
+.faq-q:hover { background: var(--bg); }
+.faq-q i { font-size: 16px; color: var(--text-secondary); transition: transform 0.2s; flex-shrink: 0; }
+.faq-item.open .faq-q i { transform: rotate(180deg); }
+.faq-a {
+  padding: 0 16px; max-height: 0; overflow: hidden;
+  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+}
+.faq-item.open .faq-a { padding: 0 16px 14px; max-height: 400px; }
 /* Current plan banner */
 .current-plan-box {
   background: var(--surface); border: 1px solid var(--border);
@@ -153,6 +194,7 @@
     <a href="../app.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
     <a href="calendar.html" class="nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
     <a href="caption.html" class="nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+    <a href="history.html" class="nav-item"><i class="ti ti-history"></i><span>Lịch sử</span></a>
     <a href="video.html" class="nav-item"><i class="ti ti-video"></i><span>Tạo Video</span></a>
     <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
     <a href="upgrade.html" class="nav-item active"><i class="ti ti-crown"></i><span>Nâng cấp</span></a>
@@ -177,7 +219,7 @@
 </header>
 
 <!-- Overlay -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <!-- MAIN -->
 <main class="main">
@@ -253,6 +295,125 @@
           <button class="plan-select-btn" id="btn-pro">Chọn gói này</button>
         </div>
 
+      </div>
+
+
+      <!-- ===== BẢNG SO SÁNH ===== -->
+      <div class="compare-section">
+        <div class="compare-title"><i class="ti ti-table"></i> So sánh các gói</div>
+        <div style="overflow-x:auto">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Tính năng</th>
+              <th class="plan-header-basic cmp-basic">🥉 Cơ bản</th>
+              <th class="plan-header-standard cmp-standard">🥈 Tiêu chuẩn</th>
+              <th class="plan-header-pro cmp-pro">🥇 Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Giá / tháng</td>
+              <td class="cmp-basic">100.000 ₫</td>
+              <td class="cmp-standard">200.000 ₫</td>
+              <td class="cmp-pro">400.000 ₫</td>
+            </tr>
+            <tr>
+              <td>AI Caption / ngày</td>
+              <td>1 bài</td>
+              <td>2 bài</td>
+              <td>2 bài</td>
+            </tr>
+            <tr>
+              <td>Video slideshow / ngày</td>
+              <td>1 video</td>
+              <td>2 video</td>
+              <td>5 video</td>
+            </tr>
+            <tr>
+              <td>Tự động đăng Facebook</td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+            </tr>
+            <tr>
+              <td>Lịch đăng bài</td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+            </tr>
+            <tr>
+              <td>4 loại nội dung AI</td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+            </tr>
+            <tr>
+              <td>AI học giọng shop</td>
+              <td><i class="ti ti-minus cmp-cross"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+            </tr>
+            <tr>
+              <td>Tone giọng tuỳ chỉnh</td>
+              <td><i class="ti ti-minus cmp-cross"></i></td>
+              <td><i class="ti ti-minus cmp-cross"></i></td>
+              <td><i class="ti ti-check cmp-check"></i></td>
+            </tr>
+            <tr>
+              <td>Hỗ trợ ưu tiên</td>
+              <td>Zalo</td>
+              <td>Zalo</td>
+              <td>24/7 ưu tiên</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <!-- ===== FAQ ===== -->
+      <div class="faq-section">
+        <div class="faq-title"><i class="ti ti-help-circle"></i> Câu hỏi thường gặp</div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Sau khi chuyển khoản, bao lâu được kích hoạt?
+            <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="faq-a">Admin sẽ xác nhận và kích hoạt gói trong vòng <strong>2–4 giờ</strong> trong giờ hành chính (8h–22h). Nếu cần gấp, bạn có thể nhắn Zalo <a href="https://zalo.me/0789434345" target="_blank" style="color:var(--primary)">0789 434 345</a> để được hỗ trợ nhanh hơn.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Tôi có thể nâng/hạ gói không?
+            <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="faq-a">Có! Bạn có thể nâng gói bất cứ lúc nào. Khi nâng gói, hệ thống sẽ kích hoạt từ ngày admin xác nhận thanh toán, thời gian còn lại của gói cũ sẽ được cộng vào. Vui lòng nhắn Zalo để được hỗ trợ.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Nếu muốn hoàn tiền thì sao?
+            <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="faq-a">Trong vòng 3 ngày đầu nếu không hài lòng, vui lòng nhắn Zalo để được hỗ trợ hoàn tiền (trừ phí chuyển khoản). Sau 3 ngày, chúng tôi không hỗ trợ hoàn tiền do tính chất dịch vụ số.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Gói có tự động gia hạn không?
+            <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="faq-a">Không. Vpost không tự trừ tiền. Khi gần hết hạn (5 ngày trước), hệ thống sẽ nhắc bạn gia hạn. Bạn chủ động chuyển khoản và thông báo để admin gia hạn cho bạn.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Tôi cần kết nối Facebook để sử dụng được không?
+            <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="faq-a">Không bắt buộc. Bạn vẫn có thể dùng AI caption và tạo video mà không cần kết nối Facebook. Tính năng <strong>tự động đăng bài</strong> mới yêu cầu kết nối trang Facebook của shop.</div>
+        </div>
       </div>
 
       <div style="text-align:center;font-size:12px;color:var(--text-secondary)">
@@ -515,6 +676,16 @@ async function submitPayment() {
 }
 
 // ===== HELPERS =====
+
+// ===== FAQ TOGGLE =====
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
 function doLogout() {
   window.vpostSupabase.auth.signOut().then(() => { window.location.href = '../login.html'; });
 }

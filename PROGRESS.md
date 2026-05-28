@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-26 (session 11)
+**Last updated:** 2026-05-28 (session 14)
 
 ---
 
@@ -261,6 +261,44 @@ npx supabase functions deploy generate-caption
 - [ ] Test E2E scheduler
 
 ---
+
+
+---
+
+### Session 14 — Caption History + Pricing nâng cấp + Mobile UX polish (2026-05-28)
+
+**Caption History (`pages/history.html`) — MỚI HOÀN TOÀN:**
+- [x] Trang lịch sử AI caption: load từ `caption_history` table (Supabase RLS)
+- [x] Grid cards: caption text (expandable), topic chip, tone badge (vui/chuyên/cảm xúc/hành động), ngày giờ tạo
+- [x] Actions: Copy, Dùng lại (prefill vào caption.html qua sessionStorage + `?from=history`), Xóa (có animation)
+- [x] Search theo nội dung + filter theo tone (pills)
+- [x] Skeleton loader, empty state, load more (pagination 20/batch)
+- [x] Prefill handler trong `caption.html`: detect `?from=history`, load sessionStorage, show toast
+- [x] Thêm "Lịch sử" vào sidebar nav CỦA TẤT CẢ trang (app, caption, calendar, settings, video, upgrade, history)
+
+**Upgrade/Pricing (`pages/upgrade.html`) — Nâng cấp:**
+- [x] Bảng so sánh tính năng 3 gói (Cơ bản / Tiêu chuẩn / Pro) — full feature matrix
+- [x] FAQ accordion (5 câu): thời gian kích hoạt, nâng hạ gói, hoàn tiền, gia hạn, Facebook bắt buộc?
+- [x] CSS: `.compare-table`, `.faq-item`, `.faq-q`, `.faq-a` (collapse/expand animation)
+- [x] Fix `sidebar-overlay` → `overlay` (nhất quán với CSS toàn app)
+
+**Mobile UX Polish:**
+- [x] `css/style.css` — thêm ~90 dòng mobile CSS (session 14):
+  - Touch targets ≥ 44px cho nav-item, menu-btn
+  - Quick actions: 2×2 grid trên màn hình ≤768px (thay vì 4 cột)
+  - Stats grid: 2 cols responsive thay vì 1 col
+  - Safe area inset cho iPhone X+ (mobile-nav + main padding)
+  - Upgrade: plan-grid 1 col ≤480px, comparison table compact, QR responsive
+  - Caption: ctype-btn 2×2 grid ≤480px
+  - Calendar: post-action-btn 34px (bigger tap target) ≤480px
+  - Settings: settings-row stack + fb-connect-btn full width ≤480px
+  - Plan expiry banner: flex-wrap ≤768px
+- [x] **Bug fix** `pages/video.html` — sidebar nav dùng sai path `../pages/*.html` thay vì `*.html` → fixed TẤT CẢ links
+- [x] **Bug fix** `pages/video.html` — mobile nav cũng dùng sai paths → fixed
+- [x] Tất cả overlay class nhất quán: `class="overlay"` trên mọi trang
+
+**Git commit session 14:**
+- `feat: caption history page, pricing comparison+FAQ, mobile UX polish, video.html nav fix`
 
 ## UX / Growth Backlog (session 12 — 2026-05-26)
 

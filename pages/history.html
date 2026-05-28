@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lịch sử AI Caption — Vpost</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* ===== HISTORY PAGE ===== */
+.page-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.page-header-left { flex: 1; min-width: 0; }
+.page-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.page-sub  { font-size: 13px; color: var(--text-secondary); }
+
+/* Search + Filter bar */
+.history-toolbar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.search-wrap {
+  flex: 1; min-width: 180px; position: relative;
+}
+.search-wrap i {
+  position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  font-size: 16px; color: var(--text-secondary); pointer-events: none;
+}
+.search-wrap input {
+  width: 100%; padding: 9px 12px 9px 36px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--surface); color: var(--text);
+  font-family: inherit; font-size: 13.5px;
+  transition: border-color 0.15s;
+}
+.search-wrap input:focus { outline: none; border-color: var(--primary); }
+.search-wrap input::placeholder { color: var(--text-secondary); opacity: 0.7; }
+
+.filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-pill {
+  padding: 6px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  white-space: nowrap;
+}
+.filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+.filter-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* Stats bar */
+.history-stats {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 18px; font-size: 13px; color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.history-stats strong { color: var(--text); }
+
+/* History grid */
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+@media (max-width: 600px) {
+  .history-grid { grid-template-columns: 1fr; }
+}
+
+/* History card */
+.history-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  transition: box-shadow 0.18s, border-color 0.18s;
+  position: relative;
+}
+.history-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-color: rgba(45,107,228,0.25);
+}
+
+.card-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.card-date {
+  font-size: 11.5px; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 4px;
+}
+.card-date i { font-size: 13px; }
+
+.tone-badge {
+  font-size: 11px; font-weight: 600; padding: 2px 9px;
+  border-radius: 20px; white-space: nowrap;
+}
+.tone-badge.vui       { background: #fef9c3; color: #a16207; }
+.tone-badge.chuyen    { background: #e0f2fe; color: #0369a1; }
+.tone-badge.cam-xuc   { background: #fce7f3; color: #9d174d; }
+.tone-badge.hanh-dong { background: #dcfce7; color: #166534; }
+.tone-badge.default   { background: #f3f4f6; color: #374151; }
+
+.topic-chip {
+  font-size: 11.5px; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 4px;
+  background: var(--bg); padding: 2px 8px; border-radius: 20px;
+}
+.topic-chip i { font-size: 12px; }
+
+/* Caption text */
+.card-caption {
+  font-size: 13.5px; color: var(--text); line-height: 1.55;
+  max-height: 80px; overflow: hidden;
+  position: relative; cursor: pointer;
+  transition: max-height 0.3s ease;
+}
+.card-caption.expanded { max-height: 600px; }
+.card-caption:not(.expanded)::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 30px;
+  background: linear-gradient(transparent, var(--surface));
+}
+.expand-btn {
+  font-size: 11.5px; color: var(--primary); cursor: pointer;
+  display: flex; align-items: center; gap: 3px; font-weight: 600;
+  background: none; border: none; padding: 0; font-family: inherit;
+  margin-top: -4px;
+}
+.expand-btn:hover { opacity: 0.8; }
+
+/* Card actions */
+.card-actions {
+  display: flex; gap: 8px; padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.card-action-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 5px; padding: 7px 8px;
+  border-radius: 8px; border: 1.5px solid var(--border);
+  background: none; color: var(--text-secondary);
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.card-action-btn i { font-size: 14px; }
+.card-action-btn:hover          { border-color: var(--primary); color: var(--primary); background: rgba(45,107,228,0.05); }
+.card-action-btn.use:hover      { border-color: #22c55e; color: #166534; background: #f0fdf4; }
+.card-action-btn.del:hover      { border-color: var(--danger, #ef4444); color: var(--danger, #ef4444); background: #fef2f2; }
+
+/* Content type badge */
+.content-type-badge {
+  font-size: 10.5px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px;
+  background: rgba(45,107,228,0.1); color: var(--primary);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 64px 20px;
+  color: var(--text-secondary);
+}
+.empty-state i { font-size: 56px; opacity: 0.25; display: block; margin-bottom: 16px; }
+.empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.empty-state p  { font-size: 13.5px; margin-bottom: 20px; }
+.empty-state a  {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 22px; border-radius: 10px;
+  background: var(--primary); color: #fff;
+  font-size: 13.5px; font-weight: 600; text-decoration: none;
+  transition: opacity 0.15s;
+}
+.empty-state a:hover { opacity: 0.88; }
+
+/* Skeleton loader */
+.skeleton-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+}
+.skel { background: linear-gradient(90deg, var(--border) 25%, rgba(200,200,200,0.15) 50%, var(--border) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skel-line { height: 12px; }
+.skel-line.short  { width: 40%; }
+.skel-line.medium { width: 65%; }
+.skel-line.full   { width: 100%; }
+
+/* Load more */
+.load-more-wrap { text-align: center; margin-top: 24px; }
+.load-more-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 24px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text-secondary); font-family: inherit;
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s;
+}
+.load-more-btn:hover { border-color: var(--primary); color: var(--primary); }
+.load-more-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* Mobile responsive */
+@media (max-width: 500px) {
+  .history-toolbar { gap: 8px; }
+  .filter-pills { gap: 5px; }
+  .filter-pill { padding: 5px 11px; font-size: 11.5px; }
+  .card-action-btn { font-size: 11px; padding: 6px 5px; }
+  .card-actions { gap: 6px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-pencil-star"></i></div>
+    <span class="logo-text">Vpost</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="../app.html" class="nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+    <a href="calendar.html" class="nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+    <a href="caption.html" class="nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+    <a href="history.html" class="nav-item active"><i class="ti ti-history"></i><span>Lịch sử</span></a>
+    <a href="video.html" class="nav-item"><i class="ti ti-video"></i><span>Tạo Video</span></a>
+    <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+  </nav>
+  <div class="sidebar-plan" id="sidebarPlan">
+    <div class="plan-badge" id="sidebarPlanName">—</div>
+    <div class="plan-expire" id="sidebarPlanExpiry"></div>
+    <div class="plan-days" id="sidebarPlanDays"></div>
+  </div>
+  <button onclick="doLogout()" style="display:flex;align-items:center;gap:9px;margin:0 12px 16px;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:none;color:rgba(255,255,255,0.4);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;width:calc(100% - 24px);transition:all 0.15s" onmouseover="this.style.background='rgba(220,38,38,0.15)';this.style.color='#FCA5A5'" onmouseout="this.style.background='none';this.style.color='rgba(255,255,255,0.4)'">
+    <i class="ti ti-logout" style="font-size:17px"></i><span>Đăng xuất</span>
+  </button>
+</aside>
+<div class="overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- MOBILE TOPBAR -->
+<header class="mobile-topbar">
+  <button class="menu-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+  <div class="mobile-logo"><i class="ti ti-pencil-star"></i> Vpost</div>
+  <div style="width:36px"></div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title"><i class="ti ti-history" style="font-size:20px;vertical-align:-2px;margin-right:6px;color:var(--primary)"></i>Lịch sử AI Caption</h1>
+      <p class="page-sub">Tất cả caption AI đã tạo — dùng lại hoặc lấy cảm hứng cho bài mới</p>
+    </div>
+    <a href="caption.html" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;background:var(--primary);color:#fff;font-size:13px;font-weight:600;text-decoration:none;flex-shrink:0;transition:opacity 0.15s" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+      <i class="ti ti-sparkles"></i> Tạo caption mới
+    </a>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="history-toolbar">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" id="searchInput" placeholder="Tìm trong nội dung caption..." oninput="onSearch()">
+    </div>
+    <div class="filter-pills" id="filterPills">
+      <button class="filter-pill active" data-tone="" onclick="setFilter(this)">Tất cả</button>
+      <button class="filter-pill" data-tone="vui" onclick="setFilter(this)">😄 Vui tươi</button>
+      <button class="filter-pill" data-tone="chuyen" onclick="setFilter(this)">💼 Chuyên nghiệp</button>
+      <button class="filter-pill" data-tone="cam-xuc" onclick="setFilter(this)">💕 Cảm xúc</button>
+      <button class="filter-pill" data-tone="hanh-dong" onclick="setFilter(this)">🔥 Hành động</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="history-stats" id="historyStats" style="display:none">
+    <span>Hiển thị <strong id="statShowing">0</strong> / <strong id="statTotal">0</strong> caption</span>
+    <span style="opacity:0.5">•</span>
+    <span>Tạo bằng AI</span>
+  </div>
+
+  <!-- Content -->
+  <div id="historyContent">
+    <!-- Skeleton loading -->
+    <div class="history-grid" id="skeletonGrid">
+      <div class="skeleton-card"><div class="skel skel-line short"></div><div class="skel skel-line full" style="height:14px;margin-top:4px"></div><div class="skel skel-line medium" style="height:14px"></div><div class="skel skel-line full" style="height:14px"></div></div>
+      <div class="skeleton-card"><div class="skel skel-line short"></div><div class="skel skel-line full" style="height:14px;margin-top:4px"></div><div class="skel skel-line medium" style="height:14px"></div><div class="skel skel-line full" style="height:14px"></div></div>
+      <div class="skeleton-card"><div class="skel skel-line short"></div><div class="skel skel-line full" style="height:14px;margin-top:4px"></div><div class="skel skel-line medium" style="height:14px"></div><div class="skel skel-line full" style="height:14px"></div></div>
+    </div>
+    <div class="history-grid" id="historyGrid" style="display:none"></div>
+    <div class="empty-state" id="emptyState" style="display:none">
+      <i class="ti ti-history"></i>
+      <h3 id="emptyTitle">Chưa có lịch sử caption</h3>
+      <p id="emptyText">Tạo caption AI đầu tiên để lưu lịch sử tại đây.</p>
+      <a href="caption.html"><i class="ti ti-sparkles"></i> Tạo caption ngay</a>
+    </div>
+  </div>
+
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+    <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">
+      <i class="ti ti-refresh"></i> Xem thêm
+    </button>
+  </div>
+</main>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav">
+  <a href="../app.html" class="mobile-nav-item"><i class="ti ti-home"></i><span>Trang chủ</span></a>
+  <a href="calendar.html" class="mobile-nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
+  <a href="caption.html" class="mobile-nav-item"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
+  <a href="history.html" class="mobile-nav-item active"><i class="ti ti-history"></i><span>Lịch sử</span></a>
+  <a href="settings.html" class="mobile-nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
+</nav>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script src="../js/supabase-client.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+const PAGE_SIZE = 20;
+let allItems = [];       // raw from DB
+let filtered = [];       // after search+filter
+let displayed = 0;       // how many rendered
+let currentTone = '';
+let searchQ = '';
+let userId = null;
+
+const TONE_MAP = {
+  'vui':       { label: '😄 Vui tươi',       cls: 'vui'       },
+  'chuyen':    { label: '💼 Chuyên nghiệp',   cls: 'chuyen'    },
+  'cam-xuc':   { label: '💕 Cảm xúc',         cls: 'cam-xuc'   },
+  'hanh-dong': { label: '🔥 Hành động',        cls: 'hanh-dong' },
+};
+
+const TYPE_LABELS = {
+  'facebook':   'Facebook',
+  'shopee':     'Shopee',
+  'livestream': 'Livestream',
+  'reply':      'Trả lời',
+};
+
+// ===== INIT =====
+async function init() {
+  const supa = window.vpostSupabase;
+  const { data: { session } } = await supa.auth.getSession();
+  if (!session) { window.location.href = '../login.html'; return; }
+  userId = session.user.id;
+
+  await loadHistory();
+}
+
+// ===== LOAD FROM SUPABASE =====
+async function loadHistory() {
+  const supa = window.vpostSupabase;
+  const { data, error } = await supa
+    .from('caption_history')
+    .select('id, caption, topic, tone, generated_at')
+    .order('generated_at', { ascending: false })
+    .limit(500);
+
+  document.getElementById('skeletonGrid').style.display = 'none';
+  document.getElementById('historyGrid').style.display = '';
+
+  if (error) {
+    showToast('Lỗi tải lịch sử: ' + error.message);
+    showEmpty('Lỗi tải dữ liệu', 'Vui lòng thử lại sau.');
+    return;
+  }
+
+  allItems = data || [];
+  applyFilter();
+}
+
+// ===== FILTER & SEARCH =====
+function setFilter(btn) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  currentTone = btn.dataset.tone;
+  applyFilter();
+}
+
+function onSearch() {
+  searchQ = document.getElementById('searchInput').value.toLowerCase().trim();
+  applyFilter();
+}
+
+function applyFilter() {
+  filtered = allItems.filter(item => {
+    const toneMatch = !currentTone || item.tone === currentTone;
+    const searchMatch = !searchQ ||
+      (item.caption || '').toLowerCase().includes(searchQ) ||
+      (item.topic || '').toLowerCase().includes(searchQ);
+    return toneMatch && searchMatch;
+  });
+
+  displayed = 0;
+  document.getElementById('historyGrid').innerHTML = '';
+
+  if (filtered.length === 0) {
+    if (allItems.length === 0) {
+      showEmpty('Chưa có lịch sử caption', 'Tạo caption AI đầu tiên để lưu lịch sử tại đây.');
+    } else {
+      showEmpty('Không tìm thấy kết quả', 'Thử thay đổi từ khóa hoặc bộ lọc khác.');
+    }
+    document.getElementById('loadMoreWrap').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('historyStats').style.display = 'flex';
+  document.getElementById('statTotal').textContent = filtered.length;
+
+  renderBatch();
+}
+
+function renderBatch() {
+  const grid = document.getElementById('historyGrid');
+  const chunk = filtered.slice(displayed, displayed + PAGE_SIZE);
+  chunk.forEach(item => grid.appendChild(buildCard(item)));
+  displayed += chunk.length;
+
+  document.getElementById('statShowing').textContent = displayed;
+
+  const hasMore = displayed < filtered.length;
+  document.getElementById('loadMoreWrap').style.display = hasMore ? 'block' : 'none';
+}
+
+function loadMore() {
+  renderBatch();
+}
+
+// ===== BUILD CARD =====
+function buildCard(item) {
+  const card = document.createElement('div');
+  card.className = 'history-card';
+  card.dataset.id = item.id;
+
+  const date = new Date(item.generated_at);
+  const dateStr = date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+  const toneInfo = TONE_MAP[item.tone] || null;
+  const toneBadgeHtml = toneInfo
+    ? `<span class="tone-badge ${toneInfo.cls}">${toneInfo.label}</span>`
+    : (item.tone ? `<span class="tone-badge default">${item.tone}</span>` : '');
+
+  const topicHtml = item.topic
+    ? `<span class="topic-chip"><i class="ti ti-tag"></i>${escapeHtml(item.topic)}</span>`
+    : '';
+
+  const captionId = 'cap-' + item.id;
+
+  card.innerHTML = `
+    <div class="card-meta">
+      <span class="card-date"><i class="ti ti-clock"></i>${dateStr} ${timeStr}</span>
+      ${toneBadgeHtml}
+      ${topicHtml}
+    </div>
+    <div class="card-caption" id="${captionId}">${escapeHtml(item.caption)}</div>
+    <button class="expand-btn" id="exp-${item.id}" onclick="toggleExpand(${item.id})">
+      <i class="ti ti-chevron-down"></i> Xem thêm
+    </button>
+    <div class="card-actions">
+      <button class="card-action-btn copy" onclick="copyCaption(${item.id})" title="Copy">
+        <i class="ti ti-copy"></i> Copy
+      </button>
+      <button class="card-action-btn use" onclick="useCaption(${item.id})" title="Dùng lại">
+        <i class="ti ti-arrow-right"></i> Dùng lại
+      </button>
+      <button class="card-action-btn del" onclick="deleteCaption(${item.id})" title="Xóa">
+        <i class="ti ti-trash"></i>
+      </button>
+    </div>
+  `;
+
+  return card;
+}
+
+// ===== ACTIONS =====
+function toggleExpand(id) {
+  const cap = document.getElementById('cap-' + id);
+  const btn = document.getElementById('exp-' + id);
+  if (!cap) return;
+  const expanded = cap.classList.toggle('expanded');
+  btn.innerHTML = expanded
+    ? '<i class="ti ti-chevron-up"></i> Thu gọn'
+    : '<i class="ti ti-chevron-down"></i> Xem thêm';
+}
+
+function copyCaption(id) {
+  const item = allItems.find(x => x.id === id);
+  if (!item) return;
+  navigator.clipboard.writeText(item.caption).then(() => {
+    showToast('✅ Đã copy caption!');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = item.caption;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ Đã copy caption!');
+  });
+}
+
+function useCaption(id) {
+  const item = allItems.find(x => x.id === id);
+  if (!item) return;
+  // Store in sessionStorage for caption.html to pick up
+  sessionStorage.setItem('vpost_prefill_caption', item.caption);
+  sessionStorage.setItem('vpost_prefill_topic', item.topic || '');
+  sessionStorage.setItem('vpost_prefill_tone', item.tone || '');
+  window.location.href = 'caption.html?from=history';
+}
+
+async function deleteCaption(id) {
+  if (!confirm('Xóa caption này khỏi lịch sử?')) return;
+  const supa = window.vpostSupabase;
+  const { error } = await supa.from('caption_history').delete().eq('id', id).eq('user_id', userId);
+  if (error) { showToast('Lỗi xóa: ' + error.message); return; }
+
+  // Remove from local arrays
+  allItems = allItems.filter(x => x.id !== id);
+  filtered = filtered.filter(x => x.id !== id);
+
+  // Remove card from DOM
+  const card = document.querySelector(`.history-card[data-id="${id}"]`);
+  if (card) {
+    card.style.transition = 'opacity 0.25s, transform 0.25s';
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    setTimeout(() => { card.remove(); displayed = Math.max(0, displayed - 1); updateStats(); }, 260);
+  }
+  showToast('🗑️ Đã xóa caption');
+}
+
+function updateStats() {
+  document.getElementById('statShowing').textContent = displayed;
+  document.getElementById('statTotal').textContent = filtered.length;
+  if (filtered.length === 0) {
+    showEmpty(
+      allItems.length === 0 ? 'Chưa có lịch sử caption' : 'Không tìm thấy kết quả',
+      allItems.length === 0 ? 'Tạo caption AI đầu tiên để lưu lịch sử tại đây.' : 'Thử thay đổi từ khóa hoặc bộ lọc khác.'
+    );
+    document.getElementById('historyStats').style.display = 'none';
+  }
+}
+
+// ===== EMPTY STATE =====
+function showEmpty(title, text) {
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('emptyTitle').textContent = title;
+  document.getElementById('emptyText').textContent = text;
+  document.getElementById('historyGrid').style.display = 'none';
+  document.getElementById('historyStats').style.display = 'none';
+}
+
+// ===== HELPERS =====
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function doLogout() {
+  window.vpostSupabase.auth.signOut().then(() => { window.location.href = '../login.html'; });
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>

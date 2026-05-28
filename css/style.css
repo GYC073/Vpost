@@ -584,3 +584,125 @@ button, input, select, textarea { font-family: inherit; }
 }
 .plan-expiry-banner.danger i { color: #DC2626; }
 .plan-expiry-banner.danger a { background: #DC2626; color: #fff; }
+
+/* =============================================
+   MOBILE UX POLISH (session 14)
+   ============================================= */
+
+/* --- Touch target minimum 44px --- */
+@media (max-width: 768px) {
+  .nav-item, .mobile-nav-item {
+    min-height: 44px;
+  }
+  .menu-btn {
+    width: 44px; height: 44px;
+  }
+
+  /* Quick actions: 2x2 on small screens */
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .qa-btn { padding: 12px 8px; font-size: 12px; }
+  .qa-icon { width: 36px; height: 36px; font-size: 17px; }
+
+  /* Stats grid: 2 cols instead of stacking 1 col per 400px */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 14px; }
+  .stat-value { font-size: 22px; }
+
+  /* Recent posts: tighter on mobile */
+  .rp-item { padding: 10px 12px; gap: 10px; }
+  .rp-item-thumb { width: 38px; height: 38px; }
+  .rp-item-caption { font-size: 12.5px; }
+  .rp-item-badge { font-size: 11px; padding: 2px 8px; }
+
+  /* Plan expiry banner: stack on small screens */
+  .plan-expiry-banner { flex-wrap: wrap; padding: 11px 14px; font-size: 12.5px; }
+  .plan-expiry-banner a { margin-left: 0; }
+
+  /* Page title on all inner pages */
+  .page-title { font-size: 18px; }
+}
+
+/* --- Extra small: ≤ 390px --- */
+@media (max-width: 390px) {
+  .main { padding: 62px 12px 86px; }
+
+  /* Stats: 1 col only when really tiny */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Mobile nav labels smaller */
+  .mobile-nav-item { font-size: 9px; padding: 3px 8px; }
+  .mobile-nav-item i { font-size: 20px; }
+
+  /* Sidebar logo smaller */
+  .mobile-logo { font-size: 14px; }
+
+  /* Toast higher so not hidden behind nav */
+  .toast { bottom: 90px; }
+}
+
+/* --- Upgrade page mobile --- */
+@media (max-width: 480px) {
+  /* Plan cards: always single col below 480 */
+  .plan-grid { grid-template-columns: 1fr !important; }
+
+  /* Comparison table: shrink columns */
+  .compare-table { font-size: 11.5px; }
+  .compare-table th, .compare-table td { padding: 7px 5px; }
+  .compare-table th:first-child, .compare-table td:first-child { width: 44%; }
+
+  /* QR code max width on small screens */
+  .qr-wrap img { width: min(200px, 70vw); height: auto; }
+
+  /* Submit button bigger tap target */
+  .submit-btn { padding: 16px; }
+
+  /* FAQ items */
+  .faq-q { padding: 12px 14px; font-size: 13px; }
+}
+
+/* --- Caption page mobile --- */
+@media (max-width: 480px) {
+  /* Content type buttons: 2x2 grid instead of row */
+  .ctype-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+  .ctype-btn {
+    padding: 8px 10px;
+    font-size: 12.5px;
+    justify-content: center;
+  }
+}
+
+/* --- Calendar mobile --- */
+@media (max-width: 480px) {
+  .cal-month-nav { gap: 6px; }
+  .cal-month-label { font-size: 14px; }
+  .cal-grid { font-size: 11px; }
+  .cal-day-name { font-size: 10px; }
+}
+
+/* --- Video page mobile --- */
+@media (max-width: 480px) {
+  .video-controls, .vc-row { flex-wrap: wrap; gap: 8px; }
+}
+
+/* --- Settings page mobile --- */
+@media (max-width: 480px) {
+  .settings-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .fb-connect-btn { width: 100%; justify-content: center; }
+}
+
+/* --- Safe area for notched phones (iPhone X+) --- */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-nav {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+  @media (max-width: 768px) {
+    .main { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+  }
+}
