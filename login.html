@@ -553,6 +553,74 @@ body {
 }
 .stat-label { font-size: 10px; color: rgba(255,255,255,0.35); }
 
+
+/* ── Industry badges ── */
+.industry-strip {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-top: 14px;
+}
+.industry-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.55);
+  font-size: 11px; font-weight: 500;
+  padding: 4px 10px; border-radius: 20px;
+  transition: all 0.2s;
+}
+.industry-badge:hover {
+  background: rgba(96,165,250,0.14);
+  border-color: rgba(96,165,250,0.3);
+  color: #93c5fd;
+}
+
+/* ── Testimonial rotator ── */
+.testimonial-wrap { position: relative; }
+.testimonial-card { transition: opacity 0.4s ease; }
+.testimonial-dots {
+  display: flex; justify-content: center; gap: 6px;
+  margin-top: 10px;
+}
+.t-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); cursor: pointer;
+  transition: all 0.25s;
+}
+.t-dot.active { background: #60a5fa; width: 18px; border-radius: 3px; }
+
+/* ── Register checklist ── */
+.reg-benefits {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.reg-benefits-title {
+  font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.7px; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.reg-benefit-item {
+  display: flex; align-items: center; gap: 9px;
+  margin-bottom: 8px; font-size: 12.5px;
+  color: rgba(255,255,255,0.72); line-height: 1.4;
+}
+.reg-benefit-item:last-child { margin-bottom: 0; }
+.reg-benefit-icon {
+  width: 24px; height: 24px; flex-shrink: 0;
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.reg-benefit-icon.blue   { background: rgba(37,99,235,0.25); color: #60a5fa; }
+.reg-benefit-icon.green  { background: rgba(5,150,105,0.25); color: #4ade80; }
+.reg-benefit-icon.amber  { background: rgba(245,158,11,0.25); color: #fbbf24; }
+.reg-benefit-icon.purple { background: rgba(124,58,237,0.25); color: #c4b5fd; }
+
+/* ── Stat animated counter ── */
+.stat-value[data-target] { transition: none; }
+
 /* ── Responsive ── */
 @media (max-width: 720px) {
   .login-split { flex-direction: column; border-radius: 16px; max-width: 430px; }
@@ -689,6 +757,14 @@ body {
       <div class="preview-headline">
         <h2>Biến 1 ảnh sản phẩm<br>thành <span class="grad">bài đăng bán hàng</span><br>chuyên nghiệp</h2>
         <p>Không cần biết viết lách — AI phân tích ảnh,<br>hiểu ngành hàng, tạo caption chuẩn tone shop bạn.</p>
+        <div class="industry-strip">
+          <span class="industry-badge">👗 Thời trang</span>
+          <span class="industry-badge">🛏️ Nội thất</span>
+          <span class="industry-badge">💄 Mỹ phẩm</span>
+          <span class="industry-badge">☕ Cafe</span>
+          <span class="industry-badge">🌿 Spa</span>
+          <span class="industry-badge">🍜 Ăn uống</span>
+        </div>
       </div>
     </div>
 
@@ -727,35 +803,63 @@ body {
       </div>
     </div>
 
-    <!-- Testimonial -->
-    <div class="testimonial-card">
-      <div class="testimonial-top">
-        <div class="testimonial-avatar">K</div>
-        <div class="testimonial-info">
-          <div class="testimonial-name">Kho Nệm Giá Tốt</div>
-          <div class="testimonial-shop">Quảng Trị · Đồ nội thất</div>
-        </div>
-        <div class="testimonial-stars">★★★★★</div>
+    <!-- Register benefits (visible when register tab active) -->
+    <div class="reg-benefits" id="regBenefits" style="display:none">
+      <div class="reg-benefits-title">Bạn nhận được ngay</div>
+      <div class="reg-benefit-item">
+        <span class="reg-benefit-icon blue"><i class="ti ti-sparkles"></i></span>
+        <span>AI caption 4 loại nội dung: Facebook, Shopee, Livestream, Trả lời comment</span>
       </div>
-      <div class="testimonial-text">Mình dùng Vpost mỗi ngày để đăng bài lên Facebook. AI hiểu đúng tone shop, không cần chỉnh nhiều, tiết kiệm cả tiếng đồng hồ mỗi ngày.</div>
+      <div class="reg-benefit-item">
+        <span class="reg-benefit-icon green"><i class="ti ti-calendar-check"></i></span>
+        <span>Lên lịch đăng Facebook tự động — không cần ngồi chờ</span>
+      </div>
+      <div class="reg-benefit-item">
+        <span class="reg-benefit-icon amber"><i class="ti ti-video"></i></span>
+        <span>Tạo video slideshow sản phẩm chỉ 1 click</span>
+      </div>
+      <div class="reg-benefit-item">
+        <span class="reg-benefit-icon purple"><i class="ti ti-clock"></i></span>
+        <span><strong style="color:#c4b5fd">Dùng thử 3 ngày miễn phí</strong> — không cần thẻ tín dụng</span>
+      </div>
+    </div>
+
+    <!-- Testimonials rotating -->
+    <div class="testimonial-wrap">
+      <div class="testimonial-card" id="testimonialCard">
+        <div class="testimonial-top">
+          <div class="testimonial-avatar" id="tAvatar">K</div>
+          <div class="testimonial-info">
+            <div class="testimonial-name" id="tName">Kho Nệm Giá Tốt</div>
+            <div class="testimonial-shop" id="tShop">Quảng Trị · Đồ nội thất</div>
+          </div>
+          <div class="testimonial-stars">★★★★★</div>
+        </div>
+        <div class="testimonial-text" id="tText">Mình dùng Vpost mỗi ngày để đăng bài lên Facebook. AI hiểu đúng tone shop, không cần chỉnh nhiều, tiết kiệm cả tiếng đồng hồ mỗi ngày.</div>
+      </div>
+      <div class="testimonial-dots">
+        <div class="t-dot active" id="dot-0" onclick="goTestimonial(0)"></div>
+        <div class="t-dot" id="dot-1" onclick="goTestimonial(1)"></div>
+        <div class="t-dot" id="dot-2" onclick="goTestimonial(2)"></div>
+      </div>
     </div>
 
     <!-- Stats -->
     <div class="stats-strip">
       <div class="stat-item">
-        <div class="stat-value"><span>1,200+</span></div>
+        <div class="stat-value" data-target="1200"><span id="cnt-captions">1,200+</span></div>
         <div class="stat-label">Caption đã tạo</div>
       </div>
       <div class="stat-item">
-        <div class="stat-value"><span>50+</span></div>
+        <div class="stat-value" data-target="50"><span id="cnt-shops">50+</span></div>
         <div class="stat-label">Shop đang dùng</div>
       </div>
       <div class="stat-item">
-        <div class="stat-value"><span>5 tỉnh</span></div>
+        <div class="stat-value"><span id="cnt-cities">5 tỉnh</span></div>
         <div class="stat-label">Phủ sóng</div>
       </div>
       <div class="stat-item">
-        <div class="stat-value"><span>4.9★</span></div>
+        <div class="stat-value"><span id="cnt-rating">4.9★</span></div>
         <div class="stat-label">Đánh giá</div>
       </div>
     </div>
@@ -896,6 +1000,12 @@ function switchTab(tab) {
   document.getElementById('loginSubtitle').textContent = tab === 'register'
     ? 'Dùng thử 3 ngày không cần thẻ tín dụng. Bắt đầu tạo content ngay hôm nay.'
     : 'Đăng nhập để tiếp tục tạo content bán hàng với AI.';
+
+  // Show register benefits on right panel, hide demo card
+  const regBenefits = document.getElementById('regBenefits');
+  const baCard = document.querySelector('.ba-card');
+  if (regBenefits) regBenefits.style.display = tab === 'register' ? 'block' : 'none';
+  if (baCard) baCard.style.display = tab === 'register' ? 'none' : 'block';
 }
 
 function togglePassword(inputId, btn) {
@@ -1009,6 +1119,80 @@ function mapAuthError(msg) {
   if (m.includes('phone')) return 'Số điện thoại không hợp lệ.';
   return null;
 }
+
+
+// ─── Testimonials ───────────────────────────────────────────
+const TESTIMONIALS = [
+  {
+    avatar: 'K', color: 'linear-gradient(135deg,#2563EB,#7C3AED)',
+    name: 'Kho Nệm Giá Tốt', shop: 'Quảng Trị · Đồ nội thất',
+    text: 'Mình dùng Vpost mỗi ngày để đăng bài lên Facebook. AI hiểu đúng tone shop, không cần chỉnh nhiều, tiết kiệm cả tiếng đồng hồ mỗi ngày.'
+  },
+  {
+    avatar: 'M', color: 'linear-gradient(135deg,#059669,#0891b2)',
+    name: 'Mỹ phẩm Hana', shop: 'Đà Nẵng · Làm đẹp',
+    text: 'Trước mình viết caption mất 30 phút, giờ 30 giây có bài chuẩn tone. Khách hàng inbox nhiều hơn hẳn sau khi dùng Vpost.'
+  },
+  {
+    avatar: 'T', color: 'linear-gradient(135deg,#dc2626,#ea580c)',
+    name: 'Tiệm Cafe Mộc', shop: 'Hội An · Ăn uống',
+    text: 'Vpost tạo caption đúng cái cảm giác mình muốn — ấm cúng, gần gũi. Không quá chuyên nghiệp, không quá cứng nhắc. Rất hợp shop cafe nhỏ.'
+  }
+];
+
+let tIdx = 0, tTimer = null;
+
+function goTestimonial(idx) {
+  clearTimeout(tTimer);
+  const card = document.getElementById('testimonialCard');
+  if (!card) return;
+  card.style.opacity = '0';
+  setTimeout(() => {
+    tIdx = idx;
+    const t = TESTIMONIALS[idx];
+    document.getElementById('tAvatar').textContent = t.avatar;
+    document.getElementById('tAvatar').style.background = t.color;
+    document.getElementById('tName').textContent = t.name;
+    document.getElementById('tShop').textContent = t.shop;
+    document.getElementById('tText').textContent = t.text;
+    document.querySelectorAll('.t-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+    card.style.opacity = '1';
+    tTimer = setTimeout(() => goTestimonial((tIdx + 1) % TESTIMONIALS.length), 5000);
+  }, 350);
+}
+
+// Start rotating after 5s
+setTimeout(() => {
+  tTimer = setTimeout(() => goTestimonial(1), 5000);
+}, 1000);
+
+// ─── Animated counters ──────────────────────────────────────
+function animateCounter(el, target, suffix, duration = 1400) {
+  let start = 0, startTime = null;
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    const progress = Math.min((ts - startTime) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const val = Math.round(start + (target - start) * ease);
+    el.textContent = val >= 1000 ? (val/1000).toFixed(1).replace('.0','') + 'k+' : val + '+';
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target >= 1000 ? (target/1000).toFixed(1).replace('.0','') + 'k+' : target + '+';
+  }
+  requestAnimationFrame(step);
+}
+
+// Run counters on load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const captions = document.getElementById('cnt-captions');
+    const shops = document.getElementById('cnt-shops');
+    if (captions) animateCounter(captions, 1200, '+');
+    if (shops) animateCounter(shops, 50, '+', 1000);
+  }, 600);
+});
+
+// ─── Tab switch: show/hide register benefits ─────────────────
+const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;
 
 // ─── Auto login if session exists ───
 (async function autoLogin() {

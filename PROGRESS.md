@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-28 (session 14)
+**Last updated:** 2026-05-28 (session 15)
 
 ---
 
@@ -264,6 +264,19 @@ npx supabase functions deploy generate-caption
 
 
 ---
+
+
+### Session 15 — Login page nâng cấp (2026-05-28)
+
+**`login.html` cải tiến:**
+- [x] **Rotating testimonials** (3 người): Kho Nệm Giá Tốt / Mỹ phẩm Hana / Tiệm Cafe Mộc — cycle 5s, fade animation, dot indicators
+- [x] **Industry badges strip**: 6 ngành (Thời trang, Nội thất, Mỹ phẩm, Cafe, Spa, Ăn uống) hiện dưới preview headline
+- [x] **Animated counters**: 1,200+ captions và 50+ shops đếm lên khi trang load (easing cubic)
+- [x] **Register benefits panel**: khi click tab "Đăng ký", panel phải hiện checklist 4 tính năng (AI caption, lên lịch, video, trial 3 ngày) — thay ba-card
+- [x] **switchTab** patched: toggle `regBenefits` + `ba-card` theo tab
+
+**Git commit session 15:**
+- `feat: login rotating testimonials, industry badges, animated counters, register benefits panel`
 
 ### Session 14 — Caption History + Pricing nâng cấp + Mobile UX polish (2026-05-28)
 
