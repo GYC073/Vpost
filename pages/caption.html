@@ -1727,9 +1727,9 @@ const TOPIC_BG_PROMPTS = {
   default:     'Vietnamese local business storefront, warm inviting atmosphere, commercial photography'
 };
 const AI_STYLE_MODS = [
-  'photorealistic, commercial photography, 4k, no text, no letters',
-  'vibrant illustration, artistic, colorful, no text, no words',
-  'abstract bokeh, soft blur, modern aesthetic, no text'
+  'photorealistic, commercial photography, 4k, clean background, high quality',
+  'vibrant digital art, colorful, artistic, smooth gradient background',
+  'abstract soft bokeh, modern pastel, blurred background, elegant'
 ];
 
 let selectedBgType = 'none'; // 'none' | 'gradient' | 'ai'
@@ -1850,11 +1850,14 @@ async function generateAiBgs() {
   }
 
   const seed = Math.floor(Math.random() * 90000) + 10000;
-  const promises = [0, 1, 2].map(i => loadAiBgSlot(i, topic, seed + i * 71));
-  await Promise.allSettled(promises);
+  // Stagger requests 900ms apart to avoid rate limiting
+  for (let i = 0; i < 3; i++) {
+    if (i > 0) await new Promise(r => setTimeout(r, 900));
+    loadAiBgSlot(i, topic, seed + i * 71);
+  }
 }
 
-function loadAiBgSlot(i, topic, seed) {
+function loadAiBgSlot(i, topic, seed) { /* seed captured in closure */
   return new Promise(resolve => {
     const slot = document.getElementById(`aiBgSlot${i}`);
     if (!slot) return resolve();
@@ -1874,10 +1877,21 @@ function loadAiBgSlot(i, topic, seed) {
       slot.onclick = () => selectAiBg(i, url);
       resolve();
     };
+    let retried = false;
     img.onerror = () => {
       clearTimeout(timeout);
+      if (!retried) {
+        retried = true;
+        // Retry sau 2s với seed khác
+        setTimeout(() => {
+          const retryUrl = url.replace(/seed=\d+/, `seed=${seed + 999}`);
+          img.src = retryUrl + '&r=' + Date.now();
+        }, 2000);
+        return;
+      }
       slot.className = 'ai-bg-slot';
-      slot.innerHTML = '<div class="ai-bg-slot-err">⚠️</div>';
+      slot.innerHTML = '<div class="ai-bg-slot-err" style="font-size:12px;color:var(--text-secondary)">Thử lại →</div>';
+      slot.onclick = () => { slot.className = 'ai-bg-slot loading'; slot.innerHTML = '<div class="ai-skeleton"></div>'; loadAiBgSlot(i, topic, seed + Date.now() % 10000); };
       resolve();
     };
     img.src = url;
