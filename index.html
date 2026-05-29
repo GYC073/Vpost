@@ -1541,21 +1541,6 @@ window.addEventListener('scroll', () => {
 
 // Hero reveal on load
 document.querySelectorAll('.hero .reveal').forEach((el, i) => {
-// FAQ toggle
-function toggleFaq(item) {
-  const isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-  if (!isOpen) item.classList.add('open');
-}
-
-// Navbar scroll
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('navbar');
-  nav.style.boxShadow = window.scrollY > 20 ? '0 2px 20px rgba(0,0,0,0.08)' : 'none';
-});
-
-// Hero reveal on load
-document.querySelectorAll('.hero .reveal').forEach((el, i) => {
   setTimeout(() => el.classList.add('visible'), 100 + i * 120);
 });
 </script>
