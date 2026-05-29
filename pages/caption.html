@@ -543,6 +543,58 @@
     z-index: 3; transition: background 0.15s;
   }
   .bg-edit-btn:hover { background: rgba(0,0,0,0.55); }
+
+  /* AI generated backgrounds */
+  .ai-bg-row { margin-bottom: 14px; }
+  .ai-bg-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .ai-bg-label { font-size: 12.5px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 5px; }
+  .ai-bg-label i { color: var(--primary); font-size: 14px; }
+  .ai-bg-regen {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; font-size: 12px; font-weight: 600;
+    color: var(--text-secondary); font-family: inherit;
+    transition: all 0.2s;
+  }
+  .ai-bg-regen:hover { border-color: var(--primary); color: var(--primary); }
+  .ai-bg-regen i { font-size: 13px; transition: transform 0.4s; }
+  .ai-bg-regen.spinning i { transform: rotate(360deg); }
+  .ai-bg-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .ai-bg-slot {
+    aspect-ratio: 1/1; border-radius: 10px; overflow: hidden;
+    border: 2.5px solid transparent; cursor: pointer;
+    transition: all 0.2s; position: relative;
+    background: var(--bg);
+  }
+  .ai-bg-slot:not(.loading):hover { border-color: var(--primary); transform: scale(1.03); }
+  .ai-bg-slot.active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,92,252,0.3); transform: scale(1.03); }
+  .ai-bg-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ai-skeleton {
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .ai-bg-slot-err { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 22px; }
+  .bg-divider {
+    text-align: center; font-size: 11.5px; color: var(--text-secondary);
+    margin: 10px 0 12px; position: relative;
+  }
+  .bg-divider::before, .bg-divider::after {
+    content: ''; position: absolute; top: 50%;
+    width: 28%; height: 1px; background: var(--border);
+  }
+  .bg-divider::before { left: 0; } .bg-divider::after { right: 0; }
+  /* Overlay for AI image preview */
+  .bg-preview-overlay {
+    position: absolute; inset: 0; z-index: 1; border-radius: 10px;
+    background: rgba(0,0,0,0); transition: background 0.3s; pointer-events: none;
+  }
+  .bg-preview.ai-mode .bg-preview-overlay { background: rgba(0,0,0,0.32); }
+  .bg-preview-text { position: relative; z-index: 2; }
+  .bg-edit-btn { z-index: 3; }
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -856,12 +908,28 @@
 
     <!-- Facebook-style Background Picker -->
     <div class="bg-picker-section" id="bgPickerSection" style="display:none">
-      <div class="bg-picker-label"><i class="ti ti-palette"></i> Tạo ảnh bài viết (tùy chọn)</div>
+      <div class="bg-picker-label"><i class="ti ti-sparkles"></i> Tạo ảnh bài viết (tùy chọn)</div>
+
+      <!-- AI generated images -->
+      <div class="ai-bg-row" id="aiBgRow">
+        <div class="ai-bg-header">
+          <span class="ai-bg-label"><i class="ti ti-wand"></i> Ảnh AI tự sinh</span>
+          <button class="ai-bg-regen" id="aiBgRegenBtn" onclick="generateAiBgs()"><i class="ti ti-refresh"></i> Tạo lại</button>
+        </div>
+        <div class="ai-bg-imgs" id="aiBgImgs">
+          <div class="ai-bg-slot loading" id="aiBgSlot0"><div class="ai-skeleton"></div></div>
+          <div class="ai-bg-slot loading" id="aiBgSlot1"><div class="ai-skeleton"></div></div>
+          <div class="ai-bg-slot loading" id="aiBgSlot2"><div class="ai-skeleton"></div></div>
+        </div>
+      </div>
+      <div class="bg-divider">— hoặc chọn nền màu —</div>
+
       <div class="bg-chips" id="bgChips">
-        <button class="bg-chip bg-chip-none active" id="bgChipNone" onclick="selectBg(null)" title="Không dùng nền"><i class="ti ti-ban"></i></button>
+        <button class="bg-chip bg-chip-none active" id="bgChipNone" onclick="selectNoBg()" title="Không dùng nền"><i class="ti ti-ban"></i></button>
       </div>
       <div class="bg-preview-wrap" id="bgPreviewWrap">
         <div class="bg-preview" id="bgPreview">
+          <div class="bg-preview-overlay" id="bgPreviewOverlay"></div>
           <div class="bg-preview-text" id="bgPreviewText"></div>
           <button class="bg-edit-btn" onclick="openBgTextEdit()" title="Sửa chữ"><i class="ti ti-pencil"></i></button>
         </div>
@@ -1632,22 +1700,43 @@ function showUpgradePrompt(type) {
 
 // ── Facebook-style Background Picker ────────────────────────────
 const BG_PRESETS = [
-  { name: 'Vàng kem',   bg: 'linear-gradient(135deg,#f6d365 0%,#fda085 100%)',   text: '#3E1500', font: 'Be Vietnam Pro' },
-  { name: 'Hồng đào',  bg: 'linear-gradient(135deg,#ff9a9e 0%,#fecfef 100%)',   text: '#5A0030', font: 'Be Vietnam Pro' },
-  { name: 'Tím xanh',  bg: 'linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)',   text: '#2D0050', font: 'Be Vietnam Pro' },
-  { name: 'Xanh dương',bg: 'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)',   text: '#002A60', font: 'Be Vietnam Pro' },
-  { name: 'Xanh lá',   bg: 'linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)',   text: '#00341E', font: 'Be Vietnam Pro' },
-  { name: 'Cam rực',   bg: 'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)',   text: '#fff',    font: 'Be Vietnam Pro' },
-  { name: 'Hoàng hôn', bg: 'linear-gradient(135deg,#f7971e 0%,#ffd200 100%)',   text: '#3E1500', font: 'Be Vietnam Pro' },
-  { name: 'Đại dương', bg: 'linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)', text: '#e0eaff', font: 'Be Vietnam Pro' },
-  { name: 'Hoa anh đào',bg:'linear-gradient(135deg,#ff758c 0%,#ff7eb3 100%)',   text: '#fff',    font: 'Be Vietnam Pro' },
-  { name: 'Bạc hà',    bg: 'linear-gradient(135deg,#0ba360 0%,#3cba92 100%)',   text: '#fff',    font: 'Be Vietnam Pro' },
-  { name: 'Bầu trời',  bg: 'linear-gradient(160deg,#a8edea 0%,#fed6e3 100%)',   text: '#2D3060', font: 'Be Vietnam Pro' },
-  { name: 'Tím đêm',   bg: 'linear-gradient(135deg,#2d1b69 0%,#11998e 100%)',   text: '#fff',    font: 'Be Vietnam Pro' },
+  { name: 'Vàng kem',    bg: 'linear-gradient(135deg,#f6d365 0%,#fda085 100%)',   text: '#3E1500' },
+  { name: 'Hồng đào',   bg: 'linear-gradient(135deg,#ff9a9e 0%,#fecfef 100%)',   text: '#5A0030' },
+  { name: 'Tím xanh',   bg: 'linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)',   text: '#2D0050' },
+  { name: 'Xanh dương', bg: 'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)',   text: '#002A60' },
+  { name: 'Xanh lá',    bg: 'linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)',   text: '#00341E' },
+  { name: 'Cam rực',    bg: 'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)',   text: '#fff'    },
+  { name: 'Hoàng hôn',  bg: 'linear-gradient(135deg,#f7971e 0%,#ffd200 100%)',   text: '#3E1500' },
+  { name: 'Đại dương',  bg: 'linear-gradient(135deg,#1a1a2e 0%,#0f3460 100%)',   text: '#e0eaff' },
+  { name: 'Hoa đào',    bg: 'linear-gradient(135deg,#ff758c 0%,#ff7eb3 100%)',   text: '#fff'    },
+  { name: 'Bạc hà',     bg: 'linear-gradient(135deg,#0ba360 0%,#3cba92 100%)',   text: '#fff'    },
+  { name: 'Bầu trời',   bg: 'linear-gradient(160deg,#a8edea 0%,#fed6e3 100%)',   text: '#2D3060' },
+  { name: 'Tím đêm',    bg: 'linear-gradient(135deg,#2d1b69 0%,#11998e 100%)',   text: '#fff'    },
 ];
 
-let selectedBgIdx = null;  // null = không dùng nền
+// Topic → Pollinations prompt
+const TOPIC_BG_PROMPTS = {
+  product:     'beautiful product display on elegant surface, soft studio lighting, minimalist background',
+  hiring:      'modern professional office interior, clean bright workspace, teamwork atmosphere',
+  promotion:   'festive sale celebration, colorful confetti, vibrant energy, shopping excitement',
+  new_product: 'premium product launch reveal, white minimal studio, spotlight, elegant',
+  grand_opening:'grand opening celebration, festive decoration, ribbon cutting, warm inviting',
+  shopee:      'e-commerce marketplace, colorful product banner, modern retail aesthetic',
+  livestream:  'streaming studio, ring light glow, modern content creator setup',
+  reply:       'friendly conversation, warm coffee shop background, soft bokeh',
+  default:     'Vietnamese local business storefront, warm inviting atmosphere, commercial photography'
+};
+const AI_STYLE_MODS = [
+  'photorealistic, commercial photography, 4k, no text, no letters',
+  'vibrant illustration, artistic, colorful, no text, no words',
+  'abstract bokeh, soft blur, modern aesthetic, no text'
+];
+
+let selectedBgType = 'none'; // 'none' | 'gradient' | 'ai'
+let selectedBgIdx = null;
+let selectedAiUrl = null;
 let bgPreviewTextContent = '';
+let aiBgUrls = [null, null, null];
 
 function initBgChips() {
   const wrap = document.getElementById('bgChips');
@@ -1663,38 +1752,69 @@ function initBgChips() {
 }
 
 function selectBg(idx) {
+  selectedBgType = 'gradient';
   selectedBgIdx = idx;
-  // Update active chip
+  selectedAiUrl = null;
+  // Deactivate AI slots
+  document.querySelectorAll('.ai-bg-slot').forEach(el => el.classList.remove('active'));
+  // Update chip active state
   document.querySelectorAll('.bg-chip').forEach((el, i) => {
-    if (i === 0) el.classList.toggle('active', idx === null); // "none" chip
+    if (i === 0) el.classList.remove('active');
     else el.classList.toggle('active', i - 1 === idx);
   });
+  document.getElementById('bgChipNone').classList.remove('active');
   const previewWrap = document.getElementById('bgPreviewWrap');
-  if (idx === null) {
-    previewWrap.classList.remove('show');
-  } else {
-    previewWrap.classList.add('show');
-    renderBgPreview();
-  }
+  previewWrap.classList.add('show');
+  renderBgPreview();
+}
+
+function selectNoBg() {
+  selectedBgType = 'none';
+  selectedBgIdx = null;
+  selectedAiUrl = null;
+  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
+  document.getElementById('bgChipNone').classList.add('active');
+  document.querySelectorAll('.ai-bg-slot').forEach(el => el.classList.remove('active'));
+  document.getElementById('bgPreviewWrap').classList.remove('show');
+}
+
+function selectAiBg(slotIdx, url) {
+  selectedBgType = 'ai';
+  selectedAiUrl = url;
+  selectedBgIdx = null;
+  // Update states
+  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
+  document.getElementById('bgChipNone').classList.remove('active');
+  document.querySelectorAll('.ai-bg-slot').forEach((el, i) => el.classList.toggle('active', i === slotIdx));
+  const previewWrap = document.getElementById('bgPreviewWrap');
+  previewWrap.classList.add('show');
+  renderBgPreview();
 }
 
 function renderBgPreview() {
-  if (selectedBgIdx === null) return;
-  const preset = BG_PRESETS[selectedBgIdx];
   const preview = document.getElementById('bgPreview');
   const textEl = document.getElementById('bgPreviewText');
-  preview.style.background = preset.bg;
-  textEl.style.color = preset.text;
-  textEl.style.fontFamily = `'${preset.font}', sans-serif`;
-  // Lấy caption đang chọn
   const cap = bgPreviewTextContent || getSelectedCaptionText();
-  // Trim nếu quá dài cho preview
   const MAX_CHARS = 180;
-  textEl.textContent = cap.length > MAX_CHARS ? cap.slice(0, MAX_CHARS) + '…' : cap;
+  const displayText = cap.length > MAX_CHARS ? cap.slice(0, MAX_CHARS) + '…' : cap;
+  textEl.textContent = displayText;
   bgPreviewTextContent = cap;
-  // Adjust font size
   const len = cap.length;
   textEl.style.fontSize = len < 60 ? '20px' : len < 120 ? '17px' : len < 200 ? '14px' : '12.5px';
+  textEl.style.fontFamily = "'Be Vietnam Pro', sans-serif";
+
+  if (selectedBgType === 'ai' && selectedAiUrl) {
+    preview.style.background = `url(${selectedAiUrl}) center/cover no-repeat`;
+    preview.classList.add('ai-mode');
+    textEl.style.color = '#fff';
+    textEl.style.textShadow = '0 2px 10px rgba(0,0,0,0.7)';
+  } else if (selectedBgType === 'gradient' && selectedBgIdx !== null) {
+    const preset = BG_PRESETS[selectedBgIdx];
+    preview.style.background = preset.bg;
+    preview.classList.remove('ai-mode');
+    textEl.style.color = preset.text;
+    textEl.style.textShadow = 'none';
+  }
 }
 
 function openBgTextEdit() {
@@ -1706,67 +1826,134 @@ function openBgTextEdit() {
   }
 }
 
-function renderBgToCanvas() {
+// ── Pollinations.ai integration ──────────────────────────────────
+function buildAiBgPrompt(topicKey, styleIdx) {
+  const base = TOPIC_BG_PROMPTS[topicKey] || TOPIC_BG_PROMPTS.default;
+  return encodeURIComponent(`${base}, ${AI_STYLE_MODS[styleIdx]}, square format`);
+}
+
+async function generateAiBgs() {
+  const topic = (typeof selectedTopic !== 'undefined' ? selectedTopic : null) || 'default';
+  const btn = document.getElementById('aiBgRegenBtn');
+  if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 500); }
+
+  // Reset to loading
+  for (let i = 0; i < 3; i++) {
+    const slot = document.getElementById(`aiBgSlot${i}`);
+    if (slot) { slot.className = 'ai-bg-slot loading'; slot.innerHTML = '<div class="ai-skeleton"></div>'; slot.onclick = null; }
+  }
+  aiBgUrls = [null, null, null];
+  // If current selection was AI, hide preview
+  if (selectedBgType === 'ai') {
+    selectedBgType = 'none'; selectedAiUrl = null;
+    document.getElementById('bgPreviewWrap').classList.remove('show');
+  }
+
+  const seed = Math.floor(Math.random() * 90000) + 10000;
+  const promises = [0, 1, 2].map(i => loadAiBgSlot(i, topic, seed + i * 71));
+  await Promise.allSettled(promises);
+}
+
+function loadAiBgSlot(i, topic, seed) {
+  return new Promise(resolve => {
+    const slot = document.getElementById(`aiBgSlot${i}`);
+    if (!slot) return resolve();
+    const prompt = buildAiBgPrompt(topic, i);
+    const url = `https://image.pollinations.ai/prompt/${prompt}?width=720&height=720&nologo=true&seed=${seed}`;
+    const img = new Image();
+    const timeout = setTimeout(() => {
+      slot.className = 'ai-bg-slot';
+      slot.innerHTML = '<div class="ai-bg-slot-err">⌛</div>';
+      resolve();
+    }, 30000);
+    img.onload = () => {
+      clearTimeout(timeout);
+      aiBgUrls[i] = url;
+      slot.className = 'ai-bg-slot';
+      slot.innerHTML = `<img src="${url}" alt="AI nền ${i+1}">`;
+      slot.onclick = () => selectAiBg(i, url);
+      resolve();
+    };
+    img.onerror = () => {
+      clearTimeout(timeout);
+      slot.className = 'ai-bg-slot';
+      slot.innerHTML = '<div class="ai-bg-slot-err">⚠️</div>';
+      resolve();
+    };
+    img.src = url;
+  });
+}
+
+// ── Canvas rendering ─────────────────────────────────────────────
+async function renderBgToCanvas() {
   const canvas = document.getElementById('bgCanvas');
   const ctx = canvas.getContext('2d');
-  const preset = BG_PRESETS[selectedBgIdx];
   const W = 1080, H = 1080;
   canvas.width = W; canvas.height = H;
 
-  // Draw background
-  const grad = ctx.createLinearGradient(0, 0, W, H);
-  // Parse gradient stops from CSS string (simple approach)
-  const stops = [...preset.bg.matchAll(/#[0-9a-fA-F]{3,6}|rgba?\([^)]+\)/g)].map(m => m[0]);
-  if (stops.length >= 2) {
-    grad.addColorStop(0, stops[0]);
-    grad.addColorStop(1, stops[stops.length - 1]);
+  if (selectedBgType === 'ai' && selectedAiUrl) {
+    await new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, W, H);
+        // Dark overlay for text readability
+        ctx.fillStyle = 'rgba(0,0,0,0.32)';
+        ctx.fillRect(0, 0, W, H);
+        resolve();
+      };
+      img.onerror = () => {
+        // Fallback: fetch via proxy won't work, use dark gradient
+        const g = ctx.createLinearGradient(0, 0, W, H);
+        g.addColorStop(0, '#1a1a2e'); g.addColorStop(1, '#0f3460');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        resolve();
+      };
+      img.src = selectedAiUrl;
+    });
+  } else if (selectedBgType === 'gradient' && selectedBgIdx !== null) {
+    const preset = BG_PRESETS[selectedBgIdx];
+    const stops = [...preset.bg.matchAll(/#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)/g)].map(m => m[0]);
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    if (stops.length >= 2) { grad.addColorStop(0, stops[0]); grad.addColorStop(1, stops[stops.length-1]); }
+    else { grad.addColorStop(0, stops[0]||'#7C5CFC'); grad.addColorStop(1, stops[0]||'#2563EB'); }
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
   } else {
-    grad.addColorStop(0, stops[0] || '#ffffff');
-    grad.addColorStop(1, stops[0] || '#ffffff');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   }
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
 
-  // Draw text
+  // Text
+  const textColor = selectedBgType === 'ai' ? '#ffffff' : (BG_PRESETS[selectedBgIdx]?.text || '#1C1E21');
   const text = bgPreviewTextContent || getSelectedCaptionText();
-  ctx.fillStyle = preset.text;
   const baseFontSize = text.length < 60 ? 72 : text.length < 120 ? 58 : text.length < 200 ? 46 : text.length < 350 ? 38 : 30;
   ctx.font = `700 ${baseFontSize}px 'Be Vietnam Pro', sans-serif`;
+  ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-
-  // Word wrap
-  const maxWidth = W * 0.78;
-  const lineHeight = baseFontSize * 1.55;
-  const lines = wrapCanvasText(ctx, text, maxWidth);
-  const totalH = lines.length * lineHeight;
-  let y = (H - totalH) / 2 + lineHeight / 2;
-  lines.forEach(line => {
-    ctx.fillText(line, W / 2, y);
-    y += lineHeight;
-  });
-
+  if (selectedBgType === 'ai') {
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 12;
+  }
+  const lines = wrapCanvasText(ctx, text, W * 0.78);
+  const lineH = baseFontSize * 1.55;
+  let y = (H - lines.length * lineH) / 2 + lineH / 2;
+  lines.forEach(l => { ctx.fillText(l, W/2, y); y += lineH; });
+  ctx.shadowBlur = 0;
   // Watermark
   ctx.font = '500 22px sans-serif';
-  ctx.fillStyle = preset.text.startsWith('#fff') ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)';
+  ctx.fillStyle = textColor.startsWith('#fff') ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.25)';
   ctx.textAlign = 'right';
-  ctx.fillText('vpost.vn', W - 40, H - 36);
+  ctx.fillText('vpost.vn', W-40, H-36);
 }
 
 function wrapCanvasText(ctx, text, maxWidth) {
   const lines = [];
-  const paragraphs = text.split('\n');
-  paragraphs.forEach(para => {
+  text.split('\n').forEach(para => {
     const words = para.split(' ');
     let line = '';
     words.forEach(word => {
       const test = line ? line + ' ' + word : word;
-      if (ctx.measureText(test).width > maxWidth && line) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = test;
-      }
+      if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; }
+      else line = test;
     });
     if (line) lines.push(line);
   });
@@ -1774,17 +1961,20 @@ function wrapCanvasText(ctx, text, maxWidth) {
 }
 
 function downloadBgImage() {
-  if (selectedBgIdx === null) return;
-  renderBgToCanvas();
-  const canvas = document.getElementById('bgCanvas');
-  const a = document.createElement('a');
-  a.download = 'vpost-image.jpg';
-  a.href = canvas.toDataURL('image/jpeg', 0.92);
-  a.click();
+  if (selectedBgType === 'none') return;
+  renderBgToCanvas().then(() => {
+    const a = document.createElement('a');
+    a.download = 'vpost-image.jpg';
+    a.href = document.getElementById('bgCanvas').toDataURL('image/jpeg', 0.92);
+    a.click();
+  });
 }
 
 async function uploadBgToStorage() {
-  renderBgToCanvas();
+  // AI image: dùng URL trực tiếp (không cần upload lại)
+  if (selectedBgType === 'ai' && selectedAiUrl) return selectedAiUrl;
+  // Gradient: render canvas → upload
+  await renderBgToCanvas();
   const canvas = document.getElementById('bgCanvas');
   return new Promise((resolve, reject) => {
     canvas.toBlob(async blob => {
@@ -1794,7 +1984,7 @@ async function uploadBgToStorage() {
         const uid = session?.user?.id;
         if (!uid) throw new Error('Chưa đăng nhập');
         const fileName = `bg_${uid}_${Date.now()}.jpg`;
-        const { data, error } = await supa.storage.from('post-images').upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+        const { error } = await supa.storage.from('post-images').upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
         if (error) throw error;
         const { data: { publicUrl } } = supa.storage.from('post-images').getPublicUrl(fileName);
         resolve(publicUrl);
@@ -1816,7 +2006,7 @@ async function vpostPostWithBg() {
   btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i> Đang đăng...';
   try {
     let imageUrl = null;
-    if (selectedBgIdx !== null) imageUrl = await uploadBgToStorage();
+    if (selectedBgType !== 'none') imageUrl = await uploadBgToStorage();
     const { data: post, error: cErr } = await window.vpostPosts.create({ caption, image_url: imageUrl, status: 'draft' });
     if (cErr) throw new Error(cErr.message || cErr);
     await window.vpostFB.postToFB(post.id);
@@ -1829,14 +2019,15 @@ async function vpostPostWithBg() {
   }
 }
 
-// Show bg picker khi có caption
 function showBgPicker() {
   const section = document.getElementById('bgPickerSection');
-  if (section) {
-    section.style.display = 'block';
-    bgPreviewTextContent = '';  // reset để lấy caption mới nhất
-  }
+  if (!section) return;
+  section.style.display = 'block';
+  bgPreviewTextContent = '';  // reset → lấy caption mới nhất
+  // Auto generate AI backgrounds
+  generateAiBgs();
 }
+
 
 </script>
 </body>
