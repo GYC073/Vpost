@@ -234,9 +234,11 @@
   .publish-btn:disabled { opacity: 0.55; cursor: not-allowed; }
   .publish-btn.primary {
     background: #1877F2; color: #fff; border-color: #1877F2;
+    padding: 18px 8px; font-size: 14px;
+    box-shadow: 0 3px 12px rgba(24,119,242,0.35);
   }
-  .publish-btn.primary:hover { background: #1465d0; color: #fff; }
-  .publish-btn.primary:disabled { background: #1877F2; opacity: 0.5; color: #fff; }
+  .publish-btn.primary:hover { background: #1465d0; color: #fff; box-shadow: 0 5px 18px rgba(24,119,242,0.45); transform: translateY(-1px); }
+  .publish-btn.primary:disabled { background: #1877F2; opacity: 0.5; color: #fff; box-shadow: none; transform: none; }
   .publish-btn.warn { color: var(--orange); }
 
   .fb-banner {

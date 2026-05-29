@@ -105,8 +105,8 @@ nav {
 .nav-cta { display: flex; gap: 10px; align-items: center; }
 .btn-ghost { padding: 8px 16px; border: 1.5px solid var(--ink-20); border-radius: 8px; font-family: var(--f-body); font-size: 13.5px; font-weight: 600; color: var(--ink-70); background: none; cursor: pointer; text-decoration: none; transition: all 0.15s; }
 .btn-ghost:hover { border-color: var(--ink-70); color: var(--ink); }
-.btn-primary { padding: 9px 20px; background: var(--blue); border: none; border-radius: 8px; font-family: var(--f-body); font-size: 13.5px; font-weight: 600; color: #fff; cursor: pointer; text-decoration: none; transition: all 0.15s; }
-.btn-primary:hover { background: var(--blue-d); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+.btn-primary { padding: 9px 22px; background: var(--blue); border: none; border-radius: 8px; font-family: var(--f-body); font-size: 13.5px; font-weight: 700; color: #fff; cursor: pointer; text-decoration: none; transition: all 0.15s; box-shadow: 0 2px 8px rgba(37,99,235,0.3); }
+.btn-primary:hover { background: var(--blue-d); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,0.4); }
 
 /* ── HERO ── */
 .hero {
@@ -137,27 +137,34 @@ nav {
 }
 .hero-title .accent { color: var(--blue); }
 .hero-title .line2 { display: block; }
-.hero-desc { font-size: 16px; color: var(--ink-50); line-height: 1.7; margin-bottom: 32px; max-width: 460px; }
+.hero-desc { font-size: 16px; color: var(--ink-50); line-height: 1.7; margin-bottom: 12px; max-width: 460px; }
 .hero-desc strong { color: var(--ink-70); font-weight: 600; }
+.hero-value-hint { font-size: 13px; color: #059669; font-weight: 600; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 6px 14px; margin-bottom: 28px; display: inline-block; }
+.hero-value-hint strong { color: #047857; }
 .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 36px; }
 .btn-hero-primary {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 14px 28px; background: var(--blue); color: #fff;
+  padding: 15px 32px; background: var(--blue); color: #fff;
   border: none; border-radius: 10px; font-family: var(--f-body);
-  font-size: 15px; font-weight: 700; cursor: pointer;
+  font-size: 16px; font-weight: 700; cursor: pointer;
   text-decoration: none; transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(37,99,235,0.25);
+  box-shadow: 0 4px 20px rgba(37,99,235,0.4);
+  animation: ctaPulse 2.8s ease-in-out infinite;
 }
-.btn-hero-primary:hover { background: var(--blue-d); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,0.35); }
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37,99,235,0.4); }
+  50% { box-shadow: 0 6px 28px rgba(37,99,235,0.6); }
+}
+.btn-hero-primary:hover { background: var(--blue-d); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,99,235,0.5); animation: none; }
 .btn-hero-primary i { font-size: 18px; }
 .btn-hero-ghost {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 14px 24px; background: none; color: var(--ink-70);
-  border: 1.5px solid var(--ink-20); border-radius: 10px;
-  font-family: var(--f-body); font-size: 15px; font-weight: 600;
+  padding: 13px 20px; background: none; color: var(--ink-50);
+  border: 1.5px solid var(--ink-12); border-radius: 10px;
+  font-family: var(--f-body); font-size: 14px; font-weight: 500;
   cursor: pointer; text-decoration: none; transition: all 0.2s;
 }
-.btn-hero-ghost:hover { border-color: var(--ink-70); color: var(--ink); }
+.btn-hero-ghost:hover { border-color: var(--ink-40); color: var(--ink-70); }
 .hero-social-proof { display: flex; align-items: center; gap: 12px; }
 .avatars { display: flex; }
 .avatars img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; margin-left: -8px; object-fit: cover; }
@@ -763,6 +770,7 @@ footer { background: var(--ink); padding: 48px 5vw 32px; }
       <p class="hero-desc reveal reveal-delay-2">
         Nhập tên sản phẩm → AI viết caption, hashtag, CTA. <strong>Xong trong 10 giây.</strong> Tự động đăng lên Facebook — dù bạn đang bận giao hàng.
       </p>
+      <p class="hero-value-hint reveal reveal-delay-2">✦ Tiết kiệm ~15 giờ/tháng viết content — chỉ từ <strong>3.300đ/ngày</strong></p>
       <div class="hero-actions reveal reveal-delay-2">
         <a href="login.html" class="btn-hero-primary"><i class="ti ti-rocket"></i>Dùng thử 3 ngày miễn phí</a>
         <a href="#how" class="btn-hero-ghost"><i class="ti ti-play"></i>Xem cách hoạt động</a>
