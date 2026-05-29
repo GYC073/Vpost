@@ -1,44 +1,31 @@
-# NEXT — Handoff note (session 19, 2026-05-28)
+# NEXT — Handoff note (session 20, 2026-05-29)
 
-## Đang làm dở: Pricing value framing
+## Trạng thái: Sẵn sàng launch 🚀
 
-**Bối cảnh:** Thang muốn thêm framing "3.000đ/ngày" vào pricing cards thay vì chỉ "100k/tháng".
-Câu framing đã thống nhất: **"Tiết kiệm ~15 giờ/tháng — chỉ 3.000đ/ngày"**
-
-**Files cần sửa:**
-
-### 1. `pages/upgrade.html` (CHƯA LÀM)
-Thêm `.plan-per-day` dưới mỗi `.plan-period`:
-- Cơ bản: `<div class="plan-per-day">≈ 3.300đ/ngày</div>` + value hint "Tiết kiệm ~10h/tháng"
-- Tiêu chuẩn: `<div class="plan-per-day">≈ 6.600đ/ngày</div>` + "Tiết kiệm ~20h/tháng"
-- Pro: `<div class="plan-per-day">≈ 13.300đ/ngày</div>` + "Tiết kiệm ~30h/tháng"
-
-CSS cần thêm:
-```css
-.plan-per-day { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
-.plan-value-hint { font-size: 11px; color: #059669; font-weight: 600; background: #f0fdf4; border-radius: 6px; padding: 3px 8px; margin-bottom: 12px; display: inline-block; }
-```
-
-### 2. `index.html` — pricing section (CHƯA LÀM)
-Tìm section `id="pricing"` hoặc `class="pricing-grid"`, thêm tương tự per-day framing vào 3 plan cards.
-
-### 3. `index.html` — hero/section subtitle (CÂN NHẮC)
-Thay hoặc thêm dòng: *"Tiết kiệm 15 giờ/tháng viết content — chỉ từ 3.000đ/ngày"*
+Không còn việc tồn đọng. Mọi tính năng core đã hoàn chỉnh.
 
 ---
 
-## Đã xong trong session 19
+## Đã xong trong session 20
 
-- ✅ Bug fix: FB connect banner ẩn sai (chỉ hiện khi `!error && !data`)
-- ✅ Upgrade page: Tiêu chuẩn button solid tím, Pro button disabled "Gói đang dùng"
-- ✅ Video grid: 4+1 → 5 cột đều nhau
-- ✅ Full UI audit toàn bộ trang — đã review admin, caption, calendar, settings, video, history, upgrade, dashboard
+- ✅ Pricing framing: `≈ X.Xđ/ngày` + badge "Tiết kiệm ~Xh/tháng" trên upgrade.html + index.html (3 gói)
+- ✅ Hero value hint: badge xanh lá "Tiết kiệm ~15 giờ/tháng — chỉ từ 3.300đ/ngày"
+- ✅ CTA polish: hero pulse animation, ghost button nhạt hơn, nav btn shadow, "Đăng ngay" to hơn
+- ✅ Chrome audit: tất cả trang load OK, pricing cards hiện đúng, notification banner live
+
+---
+
+## Backlog nhỏ còn lại (không urgent)
+
+- [ ] **Thông báo đăng bài thất bại qua Email** — cần Resend/email provider (chưa đúng trọng tâm)
+- [ ] **Admin: xem fb_api_log** để debug lỗi post
+- [ ] **Meta App Review** — chờ kết quả (4.9), không cần làm gì thêm
 
 ---
 
 ## Chuẩn bị launch
 
-- Pricing framing: làm xong session tới
-- Không làm push notification (đồng ý — chưa đúng trọng tâm)
-- Trial: 3 ngày (đã đúng ở mọi nơi)
-- Kênh nhắc sau launch: Email hoặc Zalo OA (sau khi có revenue)
+- Trial 3 ngày: ✅ đúng ở mọi nơi
+- Thanh toán: MB Bank + Momo ✅
+- Kênh hỗ trợ: Zalo 0789 434 345 ✅
+- Kênh nhắc sau launch: Email hoặc Zalo OA (sau khi có revenue đầu tiên)
