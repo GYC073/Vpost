@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-28 (session 19) — UI audit toàn app, fix FB banner bug, upgrade CTA polish, video grid 5 cột
+**Last updated:** 2026-05-29 (session 21) — Ken Burns + nhạc nền video, fix landing page blank (cache), poster AI generator thêm vào backlog
 
 ---
 
@@ -321,6 +321,56 @@
 
 **Git commit session 14:**
 - `feat: caption history page, pricing comparison+FAQ, mobile UX polish, video.html nav fix`
+
+---
+
+## Phase 8 — Poster Generator AI (backlog — từ session 21)
+
+**Mục tiêu:** `pages/poster.html` — tạo ảnh poster Canvas-based, export JPG, đăng FB luôn.
+
+**Ý tưởng gốc:** Thay vì user tự làm ảnh ngoài (Canva, AI tool), app tự sinh ảnh quảng cáo đẹp từ thông tin shop + nội dung → xuất JPG → đăng kèm caption lên Facebook.
+
+### Flow tổng quan
+1. User chọn **template** (tuyển dụng / khuyến mãi / sản phẩm mới / khai trương)
+2. Điền thông tin (tên shop, tiêu đề chính, chi tiết, liên hệ...)
+3. AI Haiku sinh tagline/slogan ngắn (2-3 từ, optional)
+4. **Pollinations.ai** sinh ảnh nền phù hợp ngành → load vào Canvas
+5. Canvas composit: ảnh nền + gradient overlay + text + logo/watermark → preview live
+6. Export JPG → user tải về hoặc đăng Facebook (dùng `fb-post` edge function)
+
+### Templates cần làm (MVP — 4 template)
+
+| Template | Màu chủ đạo | Ảnh nền Pollinations prompt | Cấu trúc text |
+|---|---|---|---|
+| Tuyển dụng | Đỏ / Cam | "modern office background" | Tuyển [vị trí] — Lương — Liên hệ |
+| Khuyến mãi / Flash sale | Đỏ / Vàng | "sale promotion abstract" | % GIẢM — Thời gian — Sản phẩm |
+| Sản phẩm mới | Xanh / Trắng | "product showcase minimal" | NEW — Tên SP — Giá — Slogan |
+| Khai trương | Tím / Vàng | "grand opening celebration" | Khai Trương — Ngày — Địa chỉ — Ưu đãi |
+
+### Technical approach
+- **Canvas API** — tương tự `video.html` nhưng output 1 frame JPG (1:1 hoặc 4:5 ratio)
+- **Pollinations.ai** — `https://image.pollinations.ai/prompt/{encoded_prompt}?width=720&height=720&nologo=true` (free, no API key)
+- **Font rendering** — Canvas drawText với line-wrap tự viết (font từ Google Fonts CDN load trước)
+- **AI tagline** — gọi `generate-caption` edge function với prompt kiểu "viết 1 tagline ≤5 từ cho..."
+- **Export** — `canvas.toDataURL('image/jpeg', 0.92)` → download link hoặc upload lên Supabase Storage
+- **Post to FB** — sau export: cho user xem preview → gọi `fb-post` kèm ảnh
+
+### Sub-tasks
+
+| Sub | Mô tả | Status |
+|---|---|---|
+| 8.0 | Thiết kế layout `pages/poster.html` (sidebar giống các trang khác) | [ ] Pending |
+| 8.1 | Canvas renderer + template Tuyển dụng (cơ bản nhất) | [ ] Pending |
+| 8.2 | Thêm Pollinations.ai background với fallback (solid gradient nếu load fail) | [ ] Pending |
+| 8.3 | Template Khuyến mãi + Sản phẩm mới | [ ] Pending |
+| 8.4 | Template Khai trương | [ ] Pending |
+| 8.5 | AI tagline integration (gọi generate-caption edge function) | [ ] Pending |
+| 8.6 | Export JPG + upload Storage + post to FB | [ ] Pending |
+| 8.7 | Thêm "Tạo poster" vào sidebar nav tất cả trang + sidebar.js | [ ] Pending |
+
+**Ưu tiên:** Bắt đầu khi Phase 4.9 (Meta App Review) approved hoặc theo yêu cầu Thang.
+
+---
 
 ## UX / Growth Backlog (session 12 — 2026-05-26)
 
