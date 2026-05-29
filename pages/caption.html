@@ -431,10 +431,124 @@
     font-size:13.5px; font-weight:600; cursor:pointer;
   }
   .style-hint { font-size:12px; color:var(--text-hint); margin-top:6px; }
+
+  /* ── Facebook-style Background Picker ── */
+  .bg-picker-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .bg-picker-label {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .bg-picker-label i { font-size: 16px; color: var(--primary); }
+  .bg-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .bg-chip {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .bg-chip:hover { transform: scale(1.12); }
+  .bg-chip.active { border-color: var(--primary); transform: scale(1.15); box-shadow: 0 0 0 3px rgba(124,92,252,0.3); }
+  .bg-chip-none {
+    background: var(--bg);
+    border: 2px dashed var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); font-size: 16px;
+  }
+  .bg-chip-none.active { border-color: var(--primary); color: var(--primary); }
+
+  /* Preview */
+  .bg-preview-wrap {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .bg-preview-wrap.show { display: flex; }
+  .bg-preview {
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 1/1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    cursor: pointer;
+  }
+  .bg-preview-text {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.55;
+    text-align: center;
+    white-space: pre-line;
+    word-break: break-word;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    max-height: 100%;
+    overflow: hidden;
+  }
+  .bg-preview-hint {
+    font-size: 11.5px; color: var(--text-secondary);
+    text-align: center;
+  }
+  .bg-preview-actions {
+    display: flex; gap: 8px; width: 100%; max-width: 360px;
+  }
+  .bg-action-btn {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px; font-weight: 600;
+    font-family: inherit;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .bg-action-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .bg-action-btn.primary { background: #1877F2; color: #fff; border-color: #1877F2; }
+  .bg-action-btn.primary:hover { background: #1465d0; }
+  canvas#bgCanvas { display: none; }
+
+  .bg-edit-btn {
+    position: absolute; bottom: 10px; right: 10px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px;
+    z-index: 3; transition: background 0.15s;
+  }
+  .bg-edit-btn:hover { background: rgba(0,0,0,0.55); }
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -449,7 +563,6 @@
     <a href="caption.html" class="nav-item active"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
     <a href="history.html" class="nav-item"><i class="ti ti-history"></i><span>Lịch sử</span></a>
     <a href="video.html" class="nav-item"><i class="ti ti-video"></i><span>Tạo Video</span></a>
-    <a href="poster.html" class="nav-item"><i class="ti ti-layout-grid"></i><span>Tạo Poster</span></a>
     <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
   </nav>
   <div class="sidebar-plan">
@@ -740,6 +853,27 @@
       <div class="result-text" id="result3"></div>
     </div>
 
+
+    <!-- Facebook-style Background Picker -->
+    <div class="bg-picker-section" id="bgPickerSection" style="display:none">
+      <div class="bg-picker-label"><i class="ti ti-palette"></i> Tạo ảnh bài viết (tùy chọn)</div>
+      <div class="bg-chips" id="bgChips">
+        <button class="bg-chip bg-chip-none active" id="bgChipNone" onclick="selectBg(null)" title="Không dùng nền"><i class="ti ti-ban"></i></button>
+      </div>
+      <div class="bg-preview-wrap" id="bgPreviewWrap">
+        <div class="bg-preview" id="bgPreview">
+          <div class="bg-preview-text" id="bgPreviewText"></div>
+          <button class="bg-edit-btn" onclick="openBgTextEdit()" title="Sửa chữ"><i class="ti ti-pencil"></i></button>
+        </div>
+        <div class="bg-preview-hint">Nhấn vào preview để chỉnh sửa nội dung</div>
+        <div class="bg-preview-actions">
+          <button class="bg-action-btn" onclick="downloadBgImage()"><i class="ti ti-download"></i> Tải ảnh</button>
+          <button class="bg-action-btn primary" id="btnPostBg" onclick="vpostPostWithBg()"><i class="ti ti-brand-facebook"></i> Đăng lên FB</button>
+        </div>
+      </div>
+      <canvas id="bgCanvas" width="1080" height="1080"></canvas>
+    </div>
+
     <!-- FB banner (hiện nếu chưa kết nối) -->
     <div class="fb-banner" id="fbConnectBanner" style="display:none">
       <i class="ti ti-info-circle"></i>
@@ -779,7 +913,6 @@
   <a href="calendar.html" class="mobile-nav-item"><i class="ti ti-calendar"></i><span>Lịch đăng</span></a>
   <a href="caption.html" class="mobile-nav-item active"><i class="ti ti-sparkles"></i><span>AI Caption</span></a>
   <a href="video.html" class="mobile-nav-item"><i class="ti ti-video"></i><span>Video</span></a>
-  <a href="poster.html" class="mobile-nav-item"><i class="ti ti-layout-grid"></i><span>Poster</span></a>
   <a href="settings.html" class="mobile-nav-item"><i class="ti ti-settings"></i><span>Cài đặt</span></a>
 </nav>
 
@@ -1164,6 +1297,7 @@ async function generateCaptions() {
 
   results.classList.add('show');
   results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showBgPicker();
   resetBtn(); // Re-enable ngay, không block user
 
   // Fade in card 2 sau 400ms, card 3 sau 650ms
@@ -1406,6 +1540,7 @@ function removeCaptionImg(e) {
 
 document.addEventListener('DOMContentLoaded', () => {
   initFbStatus();
+  initBgChips();
   // Prefill từ lịch sử (khi user bấm "Dùng lại" ở history.html)
   if (new URLSearchParams(location.search).get('from') === 'history') {
     const prefillCaption = sessionStorage.getItem('vpost_prefill_caption');
@@ -1492,6 +1627,215 @@ function showUpgradePrompt(type) {
     </div>`;
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   document.body.appendChild(modal);
+}
+
+
+// ── Facebook-style Background Picker ────────────────────────────
+const BG_PRESETS = [
+  { name: 'Vàng kem',   bg: 'linear-gradient(135deg,#f6d365 0%,#fda085 100%)',   text: '#3E1500', font: 'Be Vietnam Pro' },
+  { name: 'Hồng đào',  bg: 'linear-gradient(135deg,#ff9a9e 0%,#fecfef 100%)',   text: '#5A0030', font: 'Be Vietnam Pro' },
+  { name: 'Tím xanh',  bg: 'linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)',   text: '#2D0050', font: 'Be Vietnam Pro' },
+  { name: 'Xanh dương',bg: 'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)',   text: '#002A60', font: 'Be Vietnam Pro' },
+  { name: 'Xanh lá',   bg: 'linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)',   text: '#00341E', font: 'Be Vietnam Pro' },
+  { name: 'Cam rực',   bg: 'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)',   text: '#fff',    font: 'Be Vietnam Pro' },
+  { name: 'Hoàng hôn', bg: 'linear-gradient(135deg,#f7971e 0%,#ffd200 100%)',   text: '#3E1500', font: 'Be Vietnam Pro' },
+  { name: 'Đại dương', bg: 'linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)', text: '#e0eaff', font: 'Be Vietnam Pro' },
+  { name: 'Hoa anh đào',bg:'linear-gradient(135deg,#ff758c 0%,#ff7eb3 100%)',   text: '#fff',    font: 'Be Vietnam Pro' },
+  { name: 'Bạc hà',    bg: 'linear-gradient(135deg,#0ba360 0%,#3cba92 100%)',   text: '#fff',    font: 'Be Vietnam Pro' },
+  { name: 'Bầu trời',  bg: 'linear-gradient(160deg,#a8edea 0%,#fed6e3 100%)',   text: '#2D3060', font: 'Be Vietnam Pro' },
+  { name: 'Tím đêm',   bg: 'linear-gradient(135deg,#2d1b69 0%,#11998e 100%)',   text: '#fff',    font: 'Be Vietnam Pro' },
+];
+
+let selectedBgIdx = null;  // null = không dùng nền
+let bgPreviewTextContent = '';
+
+function initBgChips() {
+  const wrap = document.getElementById('bgChips');
+  if (!wrap) return;
+  BG_PRESETS.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'bg-chip';
+    btn.title = p.name;
+    btn.style.background = p.bg;
+    btn.onclick = () => selectBg(i);
+    wrap.appendChild(btn);
+  });
+}
+
+function selectBg(idx) {
+  selectedBgIdx = idx;
+  // Update active chip
+  document.querySelectorAll('.bg-chip').forEach((el, i) => {
+    if (i === 0) el.classList.toggle('active', idx === null); // "none" chip
+    else el.classList.toggle('active', i - 1 === idx);
+  });
+  const previewWrap = document.getElementById('bgPreviewWrap');
+  if (idx === null) {
+    previewWrap.classList.remove('show');
+  } else {
+    previewWrap.classList.add('show');
+    renderBgPreview();
+  }
+}
+
+function renderBgPreview() {
+  if (selectedBgIdx === null) return;
+  const preset = BG_PRESETS[selectedBgIdx];
+  const preview = document.getElementById('bgPreview');
+  const textEl = document.getElementById('bgPreviewText');
+  preview.style.background = preset.bg;
+  textEl.style.color = preset.text;
+  textEl.style.fontFamily = `'${preset.font}', sans-serif`;
+  // Lấy caption đang chọn
+  const cap = bgPreviewTextContent || getSelectedCaptionText();
+  // Trim nếu quá dài cho preview
+  const MAX_CHARS = 180;
+  textEl.textContent = cap.length > MAX_CHARS ? cap.slice(0, MAX_CHARS) + '…' : cap;
+  bgPreviewTextContent = cap;
+  // Adjust font size
+  const len = cap.length;
+  textEl.style.fontSize = len < 60 ? '20px' : len < 120 ? '17px' : len < 200 ? '14px' : '12.5px';
+}
+
+function openBgTextEdit() {
+  const cur = bgPreviewTextContent || getSelectedCaptionText();
+  const newText = prompt('Chỉnh sửa nội dung hiển thị trên ảnh:', cur);
+  if (newText !== null) {
+    bgPreviewTextContent = newText;
+    renderBgPreview();
+  }
+}
+
+function renderBgToCanvas() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  const preset = BG_PRESETS[selectedBgIdx];
+  const W = 1080, H = 1080;
+  canvas.width = W; canvas.height = H;
+
+  // Draw background
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  // Parse gradient stops from CSS string (simple approach)
+  const stops = [...preset.bg.matchAll(/#[0-9a-fA-F]{3,6}|rgba?\([^)]+\)/g)].map(m => m[0]);
+  if (stops.length >= 2) {
+    grad.addColorStop(0, stops[0]);
+    grad.addColorStop(1, stops[stops.length - 1]);
+  } else {
+    grad.addColorStop(0, stops[0] || '#ffffff');
+    grad.addColorStop(1, stops[0] || '#ffffff');
+  }
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Draw text
+  const text = bgPreviewTextContent || getSelectedCaptionText();
+  ctx.fillStyle = preset.text;
+  const baseFontSize = text.length < 60 ? 72 : text.length < 120 ? 58 : text.length < 200 ? 46 : text.length < 350 ? 38 : 30;
+  ctx.font = `700 ${baseFontSize}px 'Be Vietnam Pro', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Word wrap
+  const maxWidth = W * 0.78;
+  const lineHeight = baseFontSize * 1.55;
+  const lines = wrapCanvasText(ctx, text, maxWidth);
+  const totalH = lines.length * lineHeight;
+  let y = (H - totalH) / 2 + lineHeight / 2;
+  lines.forEach(line => {
+    ctx.fillText(line, W / 2, y);
+    y += lineHeight;
+  });
+
+  // Watermark
+  ctx.font = '500 22px sans-serif';
+  ctx.fillStyle = preset.text.startsWith('#fff') ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)';
+  ctx.textAlign = 'right';
+  ctx.fillText('vpost.vn', W - 40, H - 36);
+}
+
+function wrapCanvasText(ctx, text, maxWidth) {
+  const lines = [];
+  const paragraphs = text.split('\n');
+  paragraphs.forEach(para => {
+    const words = para.split(' ');
+    let line = '';
+    words.forEach(word => {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+  });
+  return lines;
+}
+
+function downloadBgImage() {
+  if (selectedBgIdx === null) return;
+  renderBgToCanvas();
+  const canvas = document.getElementById('bgCanvas');
+  const a = document.createElement('a');
+  a.download = 'vpost-image.jpg';
+  a.href = canvas.toDataURL('image/jpeg', 0.92);
+  a.click();
+}
+
+async function uploadBgToStorage() {
+  renderBgToCanvas();
+  const canvas = document.getElementById('bgCanvas');
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(async blob => {
+      try {
+        const supa = window.vpostSupabase;
+        const { data: { session } } = await supa.auth.getSession();
+        const uid = session?.user?.id;
+        if (!uid) throw new Error('Chưa đăng nhập');
+        const fileName = `bg_${uid}_${Date.now()}.jpg`;
+        const { data, error } = await supa.storage.from('post-images').upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+        if (error) throw error;
+        const { data: { publicUrl } } = supa.storage.from('post-images').getPublicUrl(fileName);
+        resolve(publicUrl);
+      } catch(e) { reject(e); }
+    }, 'image/jpeg', 0.92);
+  });
+}
+
+async function vpostPostWithBg() {
+  const caption = getSelectedCaptionText();
+  if (!caption) { showToast('Chưa có caption để đăng!'); return; }
+  const status = await window.vpostFB?.getStatus?.();
+  if (!status?.connected || !status?.activePage) {
+    showToast('⚠️ Chưa kết nối Fanpage Facebook!');
+    return;
+  }
+  const btn = document.getElementById('btnPostBg');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i> Đang đăng...';
+  try {
+    let imageUrl = null;
+    if (selectedBgIdx !== null) imageUrl = await uploadBgToStorage();
+    const { data: post, error: cErr } = await window.vpostPosts.create({ caption, image_url: imageUrl, status: 'draft' });
+    if (cErr) throw new Error(cErr.message || cErr);
+    await window.vpostFB.postToFB(post.id);
+    showToast('🎉 Đã đăng lên Facebook!');
+  } catch(e) {
+    showToast('❌ Đăng thất bại: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-brand-facebook"></i> Đăng lên FB';
+  }
+}
+
+// Show bg picker khi có caption
+function showBgPicker() {
+  const section = document.getElementById('bgPickerSection');
+  if (section) {
+    section.style.display = 'block';
+    bgPreviewTextContent = '';  // reset để lấy caption mới nhất
+  }
 }
 
 </script>

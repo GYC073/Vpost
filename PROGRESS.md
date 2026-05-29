@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-29 (session 21) — Ken Burns + nhạc nền video, fix landing page blank (cache), poster AI generator thêm vào backlog
+**Last updated:** 2026-05-29 (session 22) — Phase 8 Poster Generator MVP live: poster.html 4 templates (tuyển dụng/khuyến mãi/SP mới/khai trương), Canvas+Pollinations.ai, AI tagline, export JPG, đăng FB, nav update toàn app
 
 ---
 
