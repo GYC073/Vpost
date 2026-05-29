@@ -711,6 +711,174 @@ function goToStep(step) {
   if (step === 2) renderPreview();
 }
 
+// ===== MUSIC SYNTHESIS (Web Audio API) =====
+function buildMusicStream(audioCtx, destNode, key, durationSec) {
+  const MUSIC = {
+    upbeat: {
+      bpm: 120,
+      melody: [523.25, 587.33, 659.25, 783.99, 880.00], // C5 D5 E5 G5 A5
+      bass:   [130.81, 146.83, 164.81, 196.00, 220.00], // C3 D3 E3 G3 A3
+      mpat: [0,2,4,2,3,4,0,1,2,4,3,1,0,4,2,3],
+      bpat: [0,0,2,0,3,0,2,0],
+      mwave:'square', bwave:'triangle',
+      mfilt:1100, noteDur:0.25, staccato:0.55,
+      mGain:0.10, bGain:0.16, drums:true
+    },
+    chill: {
+      bpm: 76,
+      melody: [349.23, 392.00, 440.00, 523.25, 587.33], // F4 G4 A4 C5 D5
+      bass:   [87.31, 98.00, 110.00, 130.81, 146.83],   // F2 G2 A2 C3 D3
+      mpat: [0,1,2,3,2,3,4,2,1,0,2,3,1,4,0,2],
+      bpat: [0,0,1,0,2,0,1,0],
+      mwave:'sine', bwave:'sine',
+      mfilt:550, noteDur:0.395, staccato:0.88,
+      mGain:0.09, bGain:0.14, drums:false
+    },
+    luxury: {
+      bpm: 63,
+      melody: [392.00, 440.00, 493.88, 587.33, 659.25], // G4 A4 B4 D5 E5
+      bass:   [98.00, 110.00, 123.47, 146.83, 164.81],  // G2 A2 B2 D3 E3
+      mpat: [0,2,4,1,3,0,4,2,1,3,2,0,4,1,3,2],
+      bpat: [0,0,0,1,1,2,0,0],
+      mwave:'sine', bwave:'sine',
+      mfilt:420, noteDur:0.476, staccato:0.92,
+      mGain:0.08, bGain:0.13, drums:false
+    },
+    trendy: {
+      bpm: 138,
+      melody: [329.63, 392.00, 440.00, 493.88, 587.33], // E4 G4 A4 B4 D5
+      bass:   [82.41, 98.00, 110.00, 123.47, 146.83],   // E2 G2 A2 B2 D3
+      mpat: [0,4,2,3,4,0,2,1,3,4,0,2,4,1,3,2],
+      bpat: [0,0,2,0,3,0,2,0],
+      mwave:'sawtooth', bwave:'square',
+      mfilt:1400, noteDur:0.217, staccato:0.50,
+      mGain:0.09, bGain:0.14, drums:true
+    }
+  };
+  const cfg = MUSIC[key];
+  if (!cfg) return;
+
+  const master = audioCtx.createGain();
+  master.gain.setValueAtTime(0.38, 0);
+  // fade out cuối
+  const endT = audioCtx.currentTime + durationSec;
+  master.gain.setValueAtTime(0.38, endT - 0.9);
+  master.gain.linearRampToValueAtTime(0, endT + 0.1);
+  master.connect(destNode);
+
+  const mFilter = audioCtx.createBiquadFilter();
+  mFilter.type = 'lowpass';
+  mFilter.frequency.setValueAtTime(cfg.mfilt, 0);
+  mFilter.connect(master);
+
+  const now = audioCtx.currentTime + 0.05;
+  const scheduleUntil = now + durationSec + 0.5;
+
+  // Melody (8th notes)
+  let t = now, mi = 0;
+  while (t < scheduleUntil) {
+    const freq = cfg.melody[cfg.mpat[mi % cfg.mpat.length] % cfg.melody.length];
+    const playDur = cfg.noteDur * cfg.staccato;
+    const osc = audioCtx.createOscillator();
+    osc.type = cfg.mwave;
+    osc.frequency.setValueAtTime(freq, t);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(cfg.mGain, t + Math.min(0.02, playDur * 0.12));
+    g.gain.setValueAtTime(cfg.mGain * 0.7, t + playDur * 0.65);
+    g.gain.linearRampToValueAtTime(0, t + playDur);
+    osc.connect(g); g.connect(mFilter);
+    osc.start(t); osc.stop(t + playDur);
+    t += cfg.noteDur; mi++;
+  }
+
+  // Bass (quarter notes = 2× noteDur)
+  let bt = now, bi = 0;
+  const bassDur = cfg.noteDur * 2;
+  while (bt < scheduleUntil) {
+    const freq = cfg.bass[cfg.bpat[bi % cfg.bpat.length] % cfg.bass.length];
+    const playDur = bassDur * 0.78;
+    const osc = audioCtx.createOscillator();
+    osc.type = cfg.bwave;
+    osc.frequency.setValueAtTime(freq, bt);
+    const bassFilter = audioCtx.createBiquadFilter();
+    bassFilter.type = 'lowpass';
+    bassFilter.frequency.setValueAtTime(500, bt);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, bt);
+    g.gain.linearRampToValueAtTime(cfg.bGain, bt + 0.04);
+    g.gain.setValueAtTime(cfg.bGain * 0.55, bt + playDur * 0.5);
+    g.gain.linearRampToValueAtTime(0, bt + playDur);
+    osc.connect(bassFilter); bassFilter.connect(g); g.connect(master);
+    osc.start(bt); osc.stop(bt + playDur);
+    bt += bassDur; bi++;
+  }
+
+  // Drums (upbeat + trendy)
+  if (cfg.drums) {
+    const beatDur = cfg.noteDur * 4; // quarter note = 1 beat
+    let kt = now;
+    let beat = 0;
+    while (kt < scheduleUntil) {
+      // Kick on 1 and 3
+      if (beat % 2 === 0) {
+        const kOsc = audioCtx.createOscillator();
+        kOsc.type = 'sine';
+        kOsc.frequency.setValueAtTime(90, kt);
+        kOsc.frequency.exponentialRampToValueAtTime(38, kt + 0.1);
+        const kGain = audioCtx.createGain();
+        kGain.gain.setValueAtTime(0.28, kt);
+        kGain.gain.exponentialRampToValueAtTime(0.001, kt + 0.14);
+        kOsc.connect(kGain); kGain.connect(master);
+        kOsc.start(kt); kOsc.stop(kt + 0.15);
+      }
+      // Snare on 2 and 4
+      if (beat % 2 === 1) {
+        try {
+          const sBuf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.08), audioCtx.sampleRate);
+          const sData = sBuf.getChannelData(0);
+          for (let i = 0; i < sData.length; i++) sData[i] = (Math.random() * 2 - 1) * (1 - i / sData.length);
+          const sNode = audioCtx.createBufferSource();
+          sNode.buffer = sBuf;
+          const sFilt = audioCtx.createBiquadFilter();
+          sFilt.type = 'bandpass'; sFilt.frequency.setValueAtTime(2800, kt);
+          const sGain = audioCtx.createGain();
+          sGain.gain.setValueAtTime(0.16, kt);
+          sNode.connect(sFilt); sFilt.connect(sGain); sGain.connect(master);
+          sNode.start(kt);
+        } catch(e) {}
+      }
+      // Hi-hat on every 8th
+      try {
+        const hBuf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.03), audioCtx.sampleRate);
+        const hData = hBuf.getChannelData(0);
+        for (let i = 0; i < hData.length; i++) hData[i] = (Math.random() * 2 - 1) * (1 - i / hData.length);
+        const hNode = audioCtx.createBufferSource();
+        hNode.buffer = hBuf;
+        const hFilt = audioCtx.createBiquadFilter();
+        hFilt.type = 'highpass'; hFilt.frequency.setValueAtTime(6000, kt);
+        const hGain = audioCtx.createGain();
+        hGain.gain.setValueAtTime(0.07, kt);
+        hNode.connect(hFilt); hFilt.connect(hGain); hGain.connect(master);
+        hNode.start(kt);
+        // Half beat hi-hat
+        const hBuf2 = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.02), audioCtx.sampleRate);
+        const hData2 = hBuf2.getChannelData(0);
+        for (let i = 0; i < hData2.length; i++) hData2[i] = (Math.random() * 2 - 1) * (1 - i / hData2.length);
+        const hNode2 = audioCtx.createBufferSource();
+        hNode2.buffer = hBuf2;
+        const hFilt2 = audioCtx.createBiquadFilter();
+        hFilt2.type = 'highpass'; hFilt2.frequency.setValueAtTime(7000, kt + beatDur / 2);
+        const hGain2 = audioCtx.createGain();
+        hGain2.gain.setValueAtTime(0.05, kt + beatDur / 2);
+        hNode2.connect(hFilt2); hFilt2.connect(hGain2); hGain2.connect(master);
+        hNode2.start(kt + beatDur / 2);
+      } catch(e) {}
+      kt += beatDur; beat++;
+    }
+  }
+}
+
 // ===== GENERATE VIDEO (REAL — Canvas + MediaRecorder) =====
 let lastVideoBlob = null;
 let lastVideoMime = 'video/webm';
@@ -727,24 +895,45 @@ function preloadImages(srcs) {
   })));
 }
 
-// Vẽ 1 frame slideshow lên canvas (đã có image objects sẵn)
-function drawFrame(ctx, canvas, imgA, imgB, blend, overlayText, shopName) {
-  // Background đen
+// Vẽ 1 frame slideshow lên canvas — Ken Burns zoom/pan effect
+function drawFrame(ctx, canvas, imgA, imgB, blend, overlayText, shopName, slideProgress, slideIdx) {
+  slideProgress = slideProgress || 0;
+  slideIdx = slideIdx || 0;
+
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Vẽ ảnh A (cover-fit)
-  const drawCover = (img, alpha) => {
+  // Ken Burns: zoom chậm + pan nhẹ xen kẽ theo slide
+  const drawCoverKB = (img, alpha, progress, idx) => {
     if (!img || alpha <= 0) return;
+    ctx.save();
     ctx.globalAlpha = alpha;
-    const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+
+    const zoomAmt = 0.07; // zoom 7% suốt thời gian hiển thị slide
+    const zoom = (idx % 2 === 0)
+      ? 1.0 + zoomAmt * progress        // zoom in
+      : 1.0 + zoomAmt * (1 - progress); // zoom out
+
+    const scale = Math.max(canvas.width / img.width, canvas.height / img.height) * zoom;
     const sw = img.width * scale, sh = img.height * scale;
-    const sx = (canvas.width - sw) / 2, sy = (canvas.height - sh) / 2;
+
+    // Pan nhẹ theo 4 hướng xen kẽ
+    const maxPan = 0.025;
+    let panX = 0, panY = 0;
+    const dir = idx % 4;
+    if (dir === 0) panX = (progress - 0.5) * maxPan * canvas.width;
+    else if (dir === 1) panX = -(progress - 0.5) * maxPan * canvas.width;
+    else if (dir === 2) panY = (progress - 0.5) * maxPan * canvas.height;
+    else panY = -(progress - 0.5) * maxPan * canvas.height;
+
+    const sx = (canvas.width - sw) / 2 + panX;
+    const sy = (canvas.height - sh) / 2 + panY;
     ctx.drawImage(img, sx, sy, sw, sh);
-    ctx.globalAlpha = 1;
+    ctx.restore();
   };
-  drawCover(imgA, 1 - blend);
-  drawCover(imgB, blend);
+
+  drawCoverKB(imgA, 1 - blend, slideProgress, slideIdx);
+  drawCoverKB(imgB, blend, 0, slideIdx + 1);
 
   // Gradient overlay đáy
   const grad = ctx.createLinearGradient(0, canvas.height * 0.5, 0, canvas.height);
@@ -829,11 +1018,38 @@ async function startGenerate() {
     progressBar.style.width = '15%';
     progressLabel.textContent = 'Chuẩn bị canvas...';
 
-    // 2. Build canvas + capture stream
+    // 2. Build canvas + streams (video + optional audio)
     const canvas = buildRenderCanvas();
     const ctx = canvas.getContext('2d');
     const FPS = 30;
-    const stream = canvas.captureStream(FPS);
+
+    // Tính thông số timing trước để setup audio
+    const overlayText = document.getElementById('overlayText')?.value || '';
+    const shop = CaptionEngine.getShopInfo();
+    const shopName = shop.shopName || shop.name || '';
+    const slideDurMs = selectedSpeed * 1000;
+    const transDurMs = 400;
+    const totalDur = loaded.length * slideDurMs;
+    const durationSec = totalDur / 1000;
+
+    // Setup audio nếu có chọn nhạc
+    let audioTracks = [];
+    let activeAudioCtx = null;
+    if (selectedMusicKey && selectedMusicKey !== 'none') {
+      try {
+        activeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioDest = activeAudioCtx.createMediaStreamDestination();
+        buildMusicStream(activeAudioCtx, audioDest, selectedMusicKey, durationSec);
+        audioTracks = audioDest.stream.getAudioTracks();
+        progressLabel.textContent = 'Đã tạo nhạc nền...';
+      } catch (audioErr) {
+        console.warn('[Vpost] audio setup error:', audioErr);
+      }
+    }
+
+    // Combine video + audio tracks
+    const videoStream = canvas.captureStream(FPS);
+    const combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
 
     const mime = pickMime();
     if (!mime) {
@@ -845,7 +1061,7 @@ async function startGenerate() {
     lastVideoExt  = mime.includes('mp4') ? 'mp4' : 'webm';
 
     const chunks = [];
-    const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
+    const recorder = new MediaRecorder(combinedStream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
     recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
     const donePromise = new Promise(resolve => {
       recorder.onstop = () => {
@@ -854,15 +1070,9 @@ async function startGenerate() {
       };
     });
 
-    recorder.start(100); // emit chunk mỗi 100ms
+    recorder.start(100);
 
-    // 3. Render từng slide với fade transition
-    const overlayText = document.getElementById('overlayText')?.value || '';
-    const shop = CaptionEngine.getShopInfo();
-    const shopName = shop.shopName || shop.name || '';
-    const slideDurMs = selectedSpeed * 1000;
-    const transDurMs = 350; // fade 0.35s
-    const totalDur = loaded.length * slideDurMs;
+    // 3. Render từng slide với Ken Burns + fade transition
     const startTime = performance.now();
 
     progressBar.style.width = '20%';
@@ -874,15 +1084,16 @@ async function startGenerate() {
         const t = Math.min(elapsed, totalDur);
         const slideIdx = Math.min(Math.floor(t / slideDurMs), loaded.length - 1);
         const inSlideT = t - slideIdx * slideDurMs;
-        // Fade vào ảnh tiếp theo trong [slideDurMs - transDurMs, slideDurMs]
+        const slideProgress = Math.min(inSlideT / slideDurMs, 1);
+
         let imgA = loaded[slideIdx], imgB = null, blend = 0;
         const nextIdx = slideIdx + 1;
         if (nextIdx < loaded.length && inSlideT > slideDurMs - transDurMs) {
           imgB = loaded[nextIdx];
           blend = (inSlideT - (slideDurMs - transDurMs)) / transDurMs;
         }
-        drawFrame(ctx, canvas, imgA, imgB, blend, overlayText, shopName);
-        // Progress 20-95%
+        drawFrame(ctx, canvas, imgA, imgB, blend, overlayText, shopName, slideProgress, slideIdx);
+
         const pct = 20 + Math.round((t / totalDur) * 75);
         progressBar.style.width = pct + '%';
 
@@ -895,11 +1106,12 @@ async function startGenerate() {
       requestAnimationFrame(tick);
     });
 
-    // 4. Stop recorder, đợi blob ready
+    // 4. Stop recorder + audio context, đợi blob ready
     progressBar.style.width = '97%';
     progressLabel.textContent = 'Đang đóng gói file...';
     recorder.stop();
     await donePromise;
+    if (activeAudioCtx) { try { activeAudioCtx.close(); } catch(e) {} activeAudioCtx = null; }
     progressBar.style.width = '100%';
     progressLabel.textContent = 'Hoàn tất!';
 
