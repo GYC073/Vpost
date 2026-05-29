@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-28 (session 18) — Typography polish, confetti onboarding, post result notifications
+**Last updated:** 2026-05-28 (session 19) — UI audit toàn app, fix FB banner bug, upgrade CTA polish, video grid 5 cột
 
 ---
 
