@@ -1715,184 +1715,98 @@ const BG_PRESETS = [
 ];
 
 // Topic → Pollinations prompt
-// 3 prompt cố định đẹp cho mỗi slot - map theo topic
-const TOPIC_SLOT_PROMPTS = {
-  product:      ['product on white table, soft studio lighting, commercial photography',
-                 'cherry blossom flowers, soft pink bokeh, spring, beautiful',
-                 'modern minimalist room, natural light, clean, elegant photography'],
-  hiring:       ['bright modern office lobby, professional, clean, daytime photography',
-                 'city buildings sunrise, blue sky, optimistic, beautiful photography',
-                 'coffee shop interior, warm light, cozy, professional photography'],
-  promotion:    ['colorful gift boxes, festive decoration, warm light, celebration',
-                 'golden sparkles bokeh, luxury, shining, warm yellow photography',
-                 'shopping street night, colorful lights, vibrant, city photography'],
-  new_product:  ['white marble table, elegant product display, soft shadow, photography',
-                 'sunset sky orange pink, beautiful, warm, landscape photography',
-                 'green tropical leaves, natural bokeh, fresh, elegant photography'],
-  grand_opening:['colorful balloons, celebration, festive, warm light photography',
-                 'flower arch doorway, beautiful, welcoming, bright photography',
-                 'golden confetti falling, celebration, joyful, warm photography'],
-  default:      ['Vietnamese street food market, colorful, warm evening light, photography',
-                 'cherry blossom park, soft pink, beautiful spring, photography',
-                 'tropical beach sunset, warm orange, beautiful, landscape photography']
+// Pool prompt đa dạng — fire 6, lấy 3 đầu tiên load xong
+const PROMPT_POOL = {
+  product:      [
+    'product photography, white background, studio light, elegant',
+    'modern shop display, colorful items, warm light, photography',
+    'beautiful sunrise landscape, warm golden, photography',
+    'cozy cafe interior, warm light, soft bokeh, photography',
+    'tropical garden, green leaves, sunlight, nature photography',
+    'city street evening, colorful lights, bokeh, photography'
+  ],
+  hiring:       [
+    'bright modern office, professional, clean minimal, photography',
+    'business meeting room, natural light, elegant, photography',
+    'city skyline blue sky, modern, beautiful, photography',
+    'cozy cafe interior, warm light, soft bokeh, photography',
+    'green park pathway, sunlight, peaceful, nature photography',
+    'modern architecture, glass building, blue sky, photography'
+  ],
+  promotion:    [
+    'colorful market, vibrant, festive, warm light, photography',
+    'beautiful flower arrangement, colorful, celebration, photography',
+    'golden bokeh lights, warm, festive, beautiful, photography',
+    'city street evening, colorful lights, bokeh, photography',
+    'tropical beach sunset, warm orange, beautiful, photography',
+    'modern shop display, colorful items, warm light, photography'
+  ],
+  default:      [
+    'Vietnamese market, colorful, vibrant, warm evening, photography',
+    'beautiful sunrise landscape, warm golden sky, photography',
+    'cozy cafe interior, warm light, soft bokeh, photography',
+    'tropical garden, green leaves, sunlight, nature photography',
+    'modern city street, evening lights, colorful bokeh, photography',
+    'flower garden, colorful blooms, natural light, photography'
+  ]
 };
-function getSlotPrompts(topic) {
-  return TOPIC_SLOT_PROMPTS[topic] || TOPIC_SLOT_PROMPTS.default;
-}
-
-let selectedBgType = 'none'; // 'none' | 'gradient' | 'ai'
-let selectedBgIdx = null;
-let selectedAiUrl = null;
-let bgPreviewTextContent = '';
-let aiBgUrls = [null, null, null];
-
-function initBgChips() {
-  const wrap = document.getElementById('bgChips');
-  if (!wrap) return;
-  BG_PRESETS.forEach((p, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'bg-chip';
-    btn.title = p.name;
-    btn.style.background = p.bg;
-    btn.onclick = () => selectBg(i);
-    wrap.appendChild(btn);
-  });
-}
-
-function selectBg(idx) {
-  selectedBgType = 'gradient';
-  selectedBgIdx = idx;
-  selectedAiUrl = null;
-  // Deactivate AI slots
-  document.querySelectorAll('.ai-bg-slot').forEach(el => el.classList.remove('active'));
-  // Update chip active state
-  document.querySelectorAll('.bg-chip').forEach((el, i) => {
-    if (i === 0) el.classList.remove('active');
-    else el.classList.toggle('active', i - 1 === idx);
-  });
-  document.getElementById('bgChipNone').classList.remove('active');
-  const previewWrap = document.getElementById('bgPreviewWrap');
-  previewWrap.classList.add('show');
-  renderBgPreview();
-}
-
-function selectNoBg() {
-  selectedBgType = 'none';
-  selectedBgIdx = null;
-  selectedAiUrl = null;
-  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
-  document.getElementById('bgChipNone').classList.add('active');
-  document.querySelectorAll('.ai-bg-slot').forEach(el => el.classList.remove('active'));
-  document.getElementById('bgPreviewWrap').classList.remove('show');
-}
-
-function selectAiBg(slotIdx, url) {
-  selectedBgType = 'ai';
-  selectedAiUrl = url;
-  selectedBgIdx = null;
-  // Update states
-  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
-  document.getElementById('bgChipNone').classList.remove('active');
-  document.querySelectorAll('.ai-bg-slot').forEach((el, i) => el.classList.toggle('active', i === slotIdx));
-  const previewWrap = document.getElementById('bgPreviewWrap');
-  previewWrap.classList.add('show');
-  renderBgPreview();
-}
-
-function renderBgPreview() {
-  const preview = document.getElementById('bgPreview');
-  const textEl = document.getElementById('bgPreviewText');
-  const cap = bgPreviewTextContent || getSelectedCaptionText();
-  const MAX_CHARS = 180;
-  const displayText = cap.length > MAX_CHARS ? cap.slice(0, MAX_CHARS) + '…' : cap;
-  textEl.textContent = displayText;
-  bgPreviewTextContent = cap;
-  const len = cap.length;
-  textEl.style.fontSize = len < 60 ? '20px' : len < 120 ? '17px' : len < 200 ? '14px' : '12.5px';
-  textEl.style.fontFamily = "'Be Vietnam Pro', sans-serif";
-
-  if (selectedBgType === 'ai' && selectedAiUrl) {
-    preview.style.background = `url(${selectedAiUrl}) center/cover no-repeat`;
-    preview.classList.add('ai-mode');
-    textEl.style.color = '#fff';
-    textEl.style.textShadow = '0 2px 10px rgba(0,0,0,0.7)';
-  } else if (selectedBgType === 'gradient' && selectedBgIdx !== null) {
-    const preset = BG_PRESETS[selectedBgIdx];
-    preview.style.background = preset.bg;
-    preview.classList.remove('ai-mode');
-    textEl.style.color = preset.text;
-    textEl.style.textShadow = 'none';
-  }
-}
-
-function openBgTextEdit() {
-  const cur = bgPreviewTextContent || getSelectedCaptionText();
-  const newText = prompt('Chỉnh sửa nội dung hiển thị trên ảnh:', cur);
-  if (newText !== null) {
-    bgPreviewTextContent = newText;
-    renderBgPreview();
-  }
-}
-
-// ── Pollinations.ai integration ──────────────────────────────────
-function buildAiBgPrompt(topicKey, styleIdx) {
-  const prompts = getSlotPrompts(topicKey);
-  return encodeURIComponent(prompts[styleIdx] || prompts[0]);
+function getPromptPool(topic) {
+  return PROMPT_POOL[topic] || PROMPT_POOL.default;
 }
 
 async function generateAiBgs() {
   const topic = (typeof selectedTopic !== 'undefined' ? selectedTopic : null) || 'default';
   const btn = document.getElementById('aiBgRegenBtn');
-  if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 500); }
+  if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 600); }
 
-  // Reset to loading
+  // Reset slots
   for (let i = 0; i < 3; i++) {
     const slot = document.getElementById(`aiBgSlot${i}`);
     if (slot) { slot.className = 'ai-bg-slot loading'; slot.innerHTML = '<div class="ai-skeleton"></div>'; slot.onclick = null; }
   }
   aiBgUrls = [null, null, null];
-  // If current selection was AI, hide preview
   if (selectedBgType === 'ai') {
     selectedBgType = 'none'; selectedAiUrl = null;
     document.getElementById('bgPreviewWrap').classList.remove('show');
   }
 
+  const pool = getPromptPool(topic);
   const seed = Math.floor(Math.random() * 90000) + 10000;
-  // Sequential thật sự: đợi từng ảnh xong mới load tiếp
-  for (let i = 0; i < 3; i++) {
-    await loadAiBgSlot(i, topic, seed + i * 137);
-  }
-}
+  let filled = 0;
 
-function loadAiBgSlot(i, topic, seed) { /* seed captured in closure */
-  return new Promise(resolve => {
-    const slot = document.getElementById(`aiBgSlot${i}`);
-    if (!slot) return resolve();
-    const prompt = buildAiBgPrompt(topic, i);
-    const url = `https://image.pollinations.ai/prompt/${prompt}?width=720&height=720&nologo=true&seed=${seed}`;
+  // Fire tất cả 6 request song song, race: ai load xong trước thì điền vào slot
+  await Promise.all(pool.map((promptText, idx) => new Promise(resolve => {
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}?width=720&height=720&nologo=true&seed=${seed + idx * 173}`;
     const img = new Image();
-    const timeout = setTimeout(() => {
-      slot.className = 'ai-bg-slot';
-      slot.innerHTML = '<div class="ai-bg-slot-err">⌛</div>';
-      resolve();
-    }, 20000);
+    const t = setTimeout(() => resolve(), 18000);
     img.onload = () => {
-      clearTimeout(timeout);
-      aiBgUrls[i] = url;
-      slot.className = 'ai-bg-slot';
-      slot.innerHTML = `<img src="${url}" alt="AI nền ${i+1}">`;
-      slot.onclick = () => selectAiBg(i, url);
+      clearTimeout(t);
+      if (filled < 3) {
+        const slotIdx = filled++;
+        aiBgUrls[slotIdx] = url;
+        const slot = document.getElementById(`aiBgSlot${slotIdx}`);
+        if (slot) {
+          slot.className = 'ai-bg-slot';
+          slot.innerHTML = `<img src="${url}" alt="AI nền ${slotIdx+1}">`;
+          slot.onclick = () => selectAiBg(slotIdx, url);
+        }
+      }
       resolve();
     };
-    img.onerror = () => {
-      clearTimeout(timeout);
-      slot.className = 'ai-bg-slot';
-      slot.innerHTML = '<div class="ai-bg-slot-err" style="font-size:11px;color:var(--text-secondary);padding:6px;text-align:center">Thử lại ↻</div>';
-      slot.onclick = () => { slot.className = 'ai-bg-slot loading'; slot.innerHTML = '<div class="ai-skeleton"></div>'; slot.onclick=null; loadAiBgSlot(i, topic, seed + Date.now() % 50000); };
-      resolve();
-    };
+    img.onerror = () => { clearTimeout(t); resolve(); };
     img.src = url;
-  });
+  })));
+
+  // Nếu không đủ 3, show lỗi cho các slot trống
+  for (let i = filled; i < 3; i++) {
+    const slot = document.getElementById(`aiBgSlot${i}`);
+    if (slot && slot.className.includes('loading')) {
+      slot.className = 'ai-bg-slot';
+      slot.innerHTML = '<div class="ai-bg-slot-err" style="font-size:11px;color:var(--text-secondary);text-align:center">Thử lại ↻</div>';
+      const capI = i;
+      slot.onclick = () => generateAiBgs();
+    }
+  }
 }
 
 // ── Canvas rendering ─────────────────────────────────────────────
