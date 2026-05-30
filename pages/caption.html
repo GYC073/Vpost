@@ -1717,24 +1717,24 @@ const BG_PRESETS = [
 // Topic → Pollinations prompt
 // 3 prompt cố định đẹp cho mỗi slot - map theo topic
 const TOPIC_SLOT_PROMPTS = {
-  product:      ['studio product photography, elegant minimal white background, soft light',
-                 'colorful abstract swirls, purple pink blue gradient, smooth artistic',
-                 'tropical leaves pattern, green bokeh, natural light, elegant'],
-  hiring:       ['modern office interior bright, professional workspace, clean minimal',
-                 'business team collaboration abstract, blue teal gradient, professional',
-                 'city skyline blur, modern corporate, blue bokeh, elegant'],
-  promotion:    ['festive confetti explosion, red yellow gold, vibrant celebration',
-                 'sale shopping bags abstract, colorful bold, energetic warm',
-                 'sparkles glitter golden background, luxury festive, shining'],
-  new_product:  ['white minimal product showcase, clean studio, soft shadow, elegant',
-                 'geometric abstract shapes, pastel pink purple, modern design',
-                 'luxury gold marble texture, premium, elegant, smooth'],
-  grand_opening:['celebration fireworks colorful, festive, warm golden light',
-                 'ribbon cutting ceremony abstract, red gold, festive joyful',
-                 'flowers bouquet decoration, warm pink, romantic celebration'],
-  default:      ['Vietnamese street food market, colorful vibrant, warm evening light',
-                 'abstract colorful gradient waves, purple blue teal, smooth modern',
-                 'tropical flowers bokeh, soft warm light, beautiful natural']
+  product:      ['product on white table, soft studio lighting, commercial photography',
+                 'cherry blossom flowers, soft pink bokeh, spring, beautiful',
+                 'modern minimalist room, natural light, clean, elegant photography'],
+  hiring:       ['bright modern office lobby, professional, clean, daytime photography',
+                 'city buildings sunrise, blue sky, optimistic, beautiful photography',
+                 'coffee shop interior, warm light, cozy, professional photography'],
+  promotion:    ['colorful gift boxes, festive decoration, warm light, celebration',
+                 'golden sparkles bokeh, luxury, shining, warm yellow photography',
+                 'shopping street night, colorful lights, vibrant, city photography'],
+  new_product:  ['white marble table, elegant product display, soft shadow, photography',
+                 'sunset sky orange pink, beautiful, warm, landscape photography',
+                 'green tropical leaves, natural bokeh, fresh, elegant photography'],
+  grand_opening:['colorful balloons, celebration, festive, warm light photography',
+                 'flower arch doorway, beautiful, welcoming, bright photography',
+                 'golden confetti falling, celebration, joyful, warm photography'],
+  default:      ['Vietnamese street food market, colorful, warm evening light, photography',
+                 'cherry blossom park, soft pink, beautiful spring, photography',
+                 'tropical beach sunset, warm orange, beautiful, landscape photography']
 };
 function getSlotPrompts(topic) {
   return TOPIC_SLOT_PROMPTS[topic] || TOPIC_SLOT_PROMPTS.default;
@@ -1858,10 +1858,9 @@ async function generateAiBgs() {
   }
 
   const seed = Math.floor(Math.random() * 90000) + 10000;
-  // Stagger 2s — đủ tránh rate limit, không chờ lâu như sequential
+  // Sequential thật sự: đợi từng ảnh xong mới load tiếp
   for (let i = 0; i < 3; i++) {
-    if (i > 0) await new Promise(r => setTimeout(r, 2000));
-    loadAiBgSlot(i, topic, seed + i * 137);
+    await loadAiBgSlot(i, topic, seed + i * 137);
   }
 }
 
@@ -1876,7 +1875,7 @@ function loadAiBgSlot(i, topic, seed) { /* seed captured in closure */
       slot.className = 'ai-bg-slot';
       slot.innerHTML = '<div class="ai-bg-slot-err">⌛</div>';
       resolve();
-    }, 45000);
+    }, 20000);
     img.onload = () => {
       clearTimeout(timeout);
       aiBgUrls[i] = url;
@@ -1885,21 +1884,11 @@ function loadAiBgSlot(i, topic, seed) { /* seed captured in closure */
       slot.onclick = () => selectAiBg(i, url);
       resolve();
     };
-    let retried = false;
     img.onerror = () => {
       clearTimeout(timeout);
-      if (!retried) {
-        retried = true;
-        // Retry sau 2s với seed khác
-        setTimeout(() => {
-          const retryUrl = url.replace(/seed=\d+/, `seed=${seed + 999}`);
-          img.src = retryUrl + '&r=' + Date.now();
-        }, 2000);
-        return;
-      }
       slot.className = 'ai-bg-slot';
-      slot.innerHTML = '<div class="ai-bg-slot-err" style="font-size:12px;color:var(--text-secondary)">Thử lại →</div>';
-      slot.onclick = () => { slot.className = 'ai-bg-slot loading'; slot.innerHTML = '<div class="ai-skeleton"></div>'; loadAiBgSlot(i, topic, seed + Date.now() % 10000); };
+      slot.innerHTML = '<div class="ai-bg-slot-err" style="font-size:11px;color:var(--text-secondary);padding:6px;text-align:center">Thử lại ↻</div>';
+      slot.onclick = () => { slot.className = 'ai-bg-slot loading'; slot.innerHTML = '<div class="ai-skeleton"></div>'; slot.onclick=null; loadAiBgSlot(i, topic, seed + Date.now() % 50000); };
       resolve();
     };
     img.src = url;
