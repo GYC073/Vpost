@@ -11,6 +11,86 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+  /* ── Desktop 2-column dashboard ── */
+  .dash-cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (min-width: 1100px) {
+    .dash-cols { grid-template-columns: minmax(0,1.1fr) minmax(0,0.9fr); }
+    .dash-right { position: sticky; top: 20px; }
+  }
+
+  /* FB Post Preview Panel */
+  .fb-preview-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .fb-preview-header {
+    padding: 12px 16px 0;
+    font-size: 13px; font-weight: 600; color: var(--text);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .fb-preview-header i { color: #1877F2; }
+  .fb-mock {
+    padding: 12px 16px 16px;
+  }
+  .fb-mock-top {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .fb-mock-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg,#1877F2,#42b72a);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 16px; flex-shrink: 0;
+    overflow: hidden;
+  }
+  .fb-mock-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .fb-mock-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .fb-mock-time { font-size: 11px; color: var(--text-secondary); }
+  .fb-mock-text {
+    font-size: 13px; line-height: 1.6; color: var(--text);
+    white-space: pre-line; word-break: break-word;
+    margin-bottom: 10px; min-height: 40px;
+  }
+  .fb-mock-img {
+    width: 100%; border-radius: 8px; object-fit: cover;
+    max-height: 200px; display: none;
+  }
+  .fb-mock-img.show { display: block; }
+  .fb-mock-reactions {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 10px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text-secondary);
+    margin-top: 10px;
+  }
+  .fb-mock-react-icons { display: flex; gap: 2px; }
+  .fb-mock-react-icons span { font-size: 14px; }
+
+  /* Onboarding checklist */
+  .onboard-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .onboard-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .onboard-title i { color: var(--primary); }
+  .onboard-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); margin-bottom: 7px; }
+  .onboard-item i { font-size: 15px; }
+  .onboard-item.done { color: #059669; }
+  .onboard-item.done i { color: #059669; }
+  .onboard-item.todo i { color: var(--text-secondary); }
+</style>
 </head>
 <body>
 
@@ -694,82 +774,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-  /* ── Desktop 2-column dashboard ── */
-  .dash-cols {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    align-items: start;
-  }
-  @media (min-width: 1100px) {
-    .dash-cols { grid-template-columns: minmax(0,1.1fr) minmax(0,0.9fr); }
-    .dash-right { position: sticky; top: 20px; }
-  }
-
-  /* FB Post Preview Panel */
-  .fb-preview-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    margin-bottom: 16px;
-  }
-  .fb-preview-header {
-    padding: 12px 16px 0;
-    font-size: 13px; font-weight: 600; color: var(--text);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .fb-preview-header i { color: #1877F2; }
-  .fb-mock {
-    padding: 12px 16px 16px;
-  }
-  .fb-mock-top {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-  }
-  .fb-mock-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: linear-gradient(135deg,#1877F2,#42b72a);
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 16px; flex-shrink: 0;
-    overflow: hidden;
-  }
-  .fb-mock-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .fb-mock-name { font-size: 13px; font-weight: 700; color: var(--text); }
-  .fb-mock-time { font-size: 11px; color: var(--text-secondary); }
-  .fb-mock-text {
-    font-size: 13px; line-height: 1.6; color: var(--text);
-    white-space: pre-line; word-break: break-word;
-    margin-bottom: 10px; min-height: 40px;
-  }
-  .fb-mock-img {
-    width: 100%; border-radius: 8px; object-fit: cover;
-    max-height: 200px; display: none;
-  }
-  .fb-mock-img.show { display: block; }
-  .fb-mock-reactions {
-    display: flex; align-items: center; justify-content: space-between;
-    padding-top: 10px; border-top: 1px solid var(--border);
-    font-size: 12px; color: var(--text-secondary);
-    margin-top: 10px;
-  }
-  .fb-mock-react-icons { display: flex; gap: 2px; }
-  .fb-mock-react-icons span { font-size: 14px; }
-
-  /* Onboarding checklist */
-  .onboard-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    box-shadow: var(--shadow);
-    margin-bottom: 16px;
-  }
-  .onboard-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .onboard-title i { color: var(--primary); }
-  .onboard-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); margin-bottom: 7px; }
-  .onboard-item i { font-size: 15px; }
-  .onboard-item.done { color: #059669; }
-  .onboard-item.done i { color: #059669; }
-  .onboard-item.todo i { color: var(--text-secondary); }
 
