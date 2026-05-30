@@ -1658,6 +1658,71 @@ const BG_PRESETS = [
 ];
 
 // Topic → Pollinations prompt
+
+let selectedBgType = 'none';
+let selectedBgIdx = null;
+let bgPreviewTextContent = '';
+
+function initBgChips() {
+  const wrap = document.getElementById('bgChips');
+  if (!wrap) return;
+  BG_PRESETS.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'bg-chip';
+    btn.title = p.name;
+    btn.style.background = p.bg;
+    btn.onclick = () => selectBg(i);
+    wrap.appendChild(btn);
+  });
+}
+
+function selectBg(idx) {
+  selectedBgType = 'gradient';
+  selectedBgIdx = idx;
+  document.querySelectorAll('.bg-chip').forEach((el, i) => {
+    if (i === 0) el.classList.remove('active');
+    else el.classList.toggle('active', i - 1 === idx);
+  });
+  document.getElementById('bgChipNone').classList.remove('active');
+  document.getElementById('bgPreviewWrap').classList.add('show');
+  renderBgPreview();
+}
+
+function selectNoBg() {
+  selectedBgType = 'none';
+  selectedBgIdx = null;
+  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
+  document.getElementById('bgChipNone').classList.add('active');
+  document.getElementById('bgPreviewWrap').classList.remove('show');
+}
+
+function renderBgPreview() {
+  if (selectedBgType !== 'gradient' || selectedBgIdx === null) return;
+  const preset = BG_PRESETS[selectedBgIdx];
+  const preview = document.getElementById('bgPreview');
+  const textEl = document.getElementById('bgPreviewText');
+  preview.style.background = preset.bg;
+  preview.classList.remove('ai-mode');
+  textEl.style.color = preset.text;
+  textEl.style.textShadow = 'none';
+  textEl.style.fontFamily = "'Be Vietnam Pro', sans-serif";
+  const cap = bgPreviewTextContent || getSelectedCaptionText();
+  const MAX_CHARS = 180;
+  textEl.textContent = cap.length > MAX_CHARS ? cap.slice(0, MAX_CHARS) + '…' : cap;
+  bgPreviewTextContent = cap;
+  const len = cap.length;
+  textEl.style.fontSize = len < 60 ? '20px' : len < 120 ? '17px' : len < 200 ? '14px' : '12.5px';
+}
+
+function openBgTextEdit() {
+  const cur = bgPreviewTextContent || getSelectedCaptionText();
+  const newText = prompt('Chỉnh sửa nội dung hiển thị trên ảnh:', cur);
+  if (newText !== null) {
+    bgPreviewTextContent = newText;
+    renderBgPreview();
+  }
+}
+
 // ── Canvas rendering ─────────────────────────────────────────────
 async function renderBgToCanvas() {
   const canvas = document.getElementById('bgCanvas');
@@ -1778,7 +1843,7 @@ async function vpostPostWithBg() {
   btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i> Đang đăng...';
   try {
     let imageUrl = null;
-    if (selectedBgType === 'gradient') imageUrl = await uploadBgToStorage();
+    if (selectedBgType === 'gradient' && selectedBgIdx !== null) imageUrl = await uploadBgToStorage();
     const { data: post, error: cErr } = await window.vpostPosts.create({ caption, image_url: imageUrl, status: 'draft' });
     if (cErr) throw new Error(cErr.message || cErr);
     await window.vpostFB.postToFB(post.id);
