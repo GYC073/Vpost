@@ -544,49 +544,6 @@
   }
   .bg-edit-btn:hover { background: rgba(0,0,0,0.55); }
 
-  /* AI generated backgrounds */
-  .ai-bg-row { margin-bottom: 14px; }
-  .ai-bg-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .ai-bg-label { font-size: 12.5px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 5px; }
-  .ai-bg-label i { color: var(--primary); font-size: 14px; }
-  .ai-bg-regen {
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 10px; border-radius: 20px;
-    border: 1px solid var(--border); background: var(--surface);
-    cursor: pointer; font-size: 12px; font-weight: 600;
-    color: var(--text-secondary); font-family: inherit;
-    transition: all 0.2s;
-  }
-  .ai-bg-regen:hover { border-color: var(--primary); color: var(--primary); }
-  .ai-bg-regen i { font-size: 13px; transition: transform 0.4s; }
-  .ai-bg-regen.spinning i { transform: rotate(360deg); }
-  .ai-bg-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .ai-bg-slot {
-    aspect-ratio: 1/1; border-radius: 10px; overflow: hidden;
-    border: 2.5px solid transparent; cursor: pointer;
-    transition: all 0.2s; position: relative;
-    background: var(--bg);
-  }
-  .ai-bg-slot:not(.loading):hover { border-color: var(--primary); transform: scale(1.03); }
-  .ai-bg-slot.active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,92,252,0.3); transform: scale(1.03); }
-  .ai-bg-slot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 0.2s; }
-  .ai-skeleton {
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .ai-bg-slot-err { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 22px; }
-  .bg-divider {
-    text-align: center; font-size: 11.5px; color: var(--text-secondary);
-    margin: 10px 0 12px; position: relative;
-  }
-  .bg-divider::before, .bg-divider::after {
-    content: ''; position: absolute; top: 50%;
-    width: 28%; height: 1px; background: var(--border);
-  }
-  .bg-divider::before { left: 0; } .bg-divider::after { right: 0; }
   /* Overlay for AI image preview */
   .bg-preview-overlay {
     position: absolute; inset: 0; z-index: 1; border-radius: 10px;
@@ -908,21 +865,7 @@
 
     <!-- Facebook-style Background Picker -->
     <div class="bg-picker-section" id="bgPickerSection" style="display:none">
-      <div class="bg-picker-label"><i class="ti ti-sparkles"></i> Tạo ảnh bài viết (tùy chọn)</div>
-
-      <!-- AI generated images -->
-      <div class="ai-bg-row" id="aiBgRow">
-        <div class="ai-bg-header">
-          <span class="ai-bg-label"><i class="ti ti-wand"></i> Ảnh AI tự sinh</span>
-          <button class="ai-bg-regen" id="aiBgRegenBtn" onclick="generateAiBgs()"><i class="ti ti-refresh"></i> Tạo lại</button>
-        </div>
-        <div class="ai-bg-imgs" id="aiBgImgs">
-          <div class="ai-bg-slot loading" id="aiBgSlot0"><div class="ai-skeleton"></div></div>
-          <div class="ai-bg-slot loading" id="aiBgSlot1"><div class="ai-skeleton"></div></div>
-          <div class="ai-bg-slot loading" id="aiBgSlot2"><div class="ai-skeleton"></div></div>
-        </div>
-      </div>
-      <div class="bg-divider">— hoặc chọn nền màu —</div>
+      <div class="bg-picker-label"><i class="ti ti-palette"></i> Tạo ảnh bài viết (tùy chọn)</div>
 
       <div class="bg-chips" id="bgChips">
         <button class="bg-chip bg-chip-none active" id="bgChipNone" onclick="selectNoBg()" title="Không dùng nền"><i class="ti ti-ban"></i></button>
@@ -1715,234 +1658,6 @@ const BG_PRESETS = [
 ];
 
 // Topic → Pollinations prompt
-// Pool prompt đa dạng — fire 6, lấy 3 đầu tiên load xong
-// Prompt ngắn gọn — Pollinations xử lý nhanh nhất với prompt 1-3 từ
-const PROMPT_POOL = {
-  product:      ['product photo', 'colorful market', 'flower garden', 'cafe interior', 'sunrise landscape', 'city lights'],
-  hiring:       ['modern office', 'city skyline', 'green park', 'bright workspace', 'blue sky', 'cafe interior'],
-  promotion:    ['colorful market', 'golden bokeh', 'flower garden', 'city lights', 'sunrise', 'festive decoration'],
-  grand_opening:['celebration', 'flower arch', 'colorful balloons', 'golden light', 'festive market', 'sunrise'],
-  default:      ['Vietnamese market', 'flower garden', 'cafe interior', 'sunrise', 'colorful street', 'green nature']
-};
-function getPromptPool(topic) {
-  return PROMPT_POOL[topic] || PROMPT_POOL.default;
-}
-
-
-let selectedBgType = 'none'; // 'none' | 'gradient' | 'ai'
-let selectedBgIdx = null;
-let selectedAiUrl = null;
-let bgPreviewTextContent = '';
-let aiBgUrls = [null, null, null];
-
-function initBgChips() {
-  const wrap = document.getElementById('bgChips');
-  if (!wrap) return;
-  BG_PRESETS.forEach((p, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'bg-chip';
-    btn.title = p.name;
-    btn.style.background = p.bg;
-    btn.onclick = () => selectBg(i);
-    wrap.appendChild(btn);
-  });
-}
-
-function selectBg(idx) {
-  selectedBgType = 'gradient';
-  selectedBgIdx = idx;
-  selectedAiUrl = null;
-  document.querySelectorAll('.ai-bg-slot').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.bg-chip').forEach((el, i) => {
-    if (i === 0) el.classList.remove('active');
-    else el.classList.toggle('active', i - 1 === idx);
-  });
-  document.getElementById('bgChipNone').classList.remove('active');
-  document.getElementById('bgPreviewWrap').classList.add('show');
-  renderBgPreview();
-}
-
-function selectNoBg() {
-  selectedBgType = 'none';
-  selectedBgIdx = null;
-  selectedAiUrl = null;
-  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
-  document.getElementById('bgChipNone').classList.add('active');
-  document.querySelectorAll('.ai-bg-slot').forEach(el => el.classList.remove('active'));
-  document.getElementById('bgPreviewWrap').classList.remove('show');
-}
-
-function selectAiBg(slotIdx, url) {
-  selectAiBgVariant(slotIdx, url, 'none', 'rgba(0,0,0,0.28)');
-}
-
-function renderBgPreview() {
-  const preview = document.getElementById('bgPreview');
-  const textEl = document.getElementById('bgPreviewText');
-  const cap = bgPreviewTextContent || getSelectedCaptionText();
-  const MAX_CHARS = 180;
-  textEl.textContent = cap.length > MAX_CHARS ? cap.slice(0, MAX_CHARS) + '…' : cap;
-  bgPreviewTextContent = cap;
-  const len = cap.length;
-  textEl.style.fontSize = len < 60 ? '20px' : len < 120 ? '17px' : len < 200 ? '14px' : '12.5px';
-  textEl.style.fontFamily = "'Be Vietnam Pro', sans-serif";
-  if (selectedBgType === 'ai' && selectedAiUrl) {
-    renderBgPreviewVariant(selectedAiUrl, window._aiBgFilter||'none', window._aiBgOverlay||'rgba(0,0,0,0.28)');
-    return;
-  } else if (selectedBgType === 'gradient' && selectedBgIdx !== null) {
-    const preset = BG_PRESETS[selectedBgIdx];
-    preview.style.background = preset.bg;
-    preview.classList.remove('ai-mode');
-    textEl.style.color = preset.text;
-    textEl.style.textShadow = 'none';
-  }
-}
-
-function openBgTextEdit() {
-  const cur = bgPreviewTextContent || getSelectedCaptionText();
-  const newText = prompt('Chỉnh sửa nội dung hiển thị trên ảnh:', cur);
-  if (newText !== null) {
-    bgPreviewTextContent = newText;
-    renderBgPreview();
-  }
-}
-
-// 4 bộ filter — mỗi lần bấm "Tạo lại" xoay sang bộ tiếp theo (instant, không cần API)
-const FILTER_SETS = [
-  [
-    { name: 'Tự nhiên', filter: 'none',                                               overlay: 'rgba(0,0,0,0.28)' },
-    { name: 'Ấm áp',   filter: 'sepia(0.45) saturate(1.3) brightness(1.05)',          overlay: 'rgba(60,20,0,0.30)' },
-    { name: 'Lạnh',    filter: 'hue-rotate(195deg) saturate(1.25) brightness(0.95)',  overlay: 'rgba(0,20,60,0.32)' },
-  ],
-  [
-    { name: 'Vintage',  filter: 'sepia(0.65) contrast(1.1) brightness(0.98)',          overlay: 'rgba(80,40,0,0.25)' },
-    { name: 'Pastel',   filter: 'saturate(0.65) brightness(1.18) contrast(0.92)',      overlay: 'rgba(100,80,120,0.18)' },
-    { name: 'Neon',     filter: 'saturate(1.9) brightness(0.88) contrast(1.15)',       overlay: 'rgba(0,0,0,0.35)' },
-  ],
-  [
-    { name: 'Sáng',     filter: 'brightness(1.22) contrast(0.93) saturate(1.1)',       overlay: 'rgba(0,0,0,0.20)' },
-    { name: 'Tối',      filter: 'brightness(0.72) contrast(1.25) saturate(1.15)',      overlay: 'rgba(0,0,0,0.10)' },
-    { name: 'Xanh lá',  filter: 'hue-rotate(95deg) saturate(1.4) brightness(0.92)',   overlay: 'rgba(0,30,10,0.30)' },
-  ],
-  [
-    { name: 'Hồng',     filter: 'hue-rotate(310deg) saturate(1.3) brightness(1.05)',  overlay: 'rgba(60,0,30,0.28)' },
-    { name: 'Vàng',     filter: 'hue-rotate(30deg) saturate(1.5) brightness(1.0)',    overlay: 'rgba(40,20,0,0.28)' },
-    { name: 'Tím',      filter: 'hue-rotate(260deg) saturate(1.3) brightness(0.95)',  overlay: 'rgba(20,0,50,0.32)' },
-  ],
-];
-let currentAiBaseUrl = null;
-let currentFilterSetIdx = 0;
-
-async function generateAiBgs() {
-  const topic = (typeof selectedTopic !== 'undefined' ? selectedTopic : null) || 'default';
-  const btn = document.getElementById('aiBgRegenBtn');
-  if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 600); }
-
-  // Nếu đã có ảnh gốc → chỉ xoay sang bộ filter tiếp theo (instant, không gọi API)
-  if (currentAiBaseUrl) {
-    currentFilterSetIdx = (currentFilterSetIdx + 1) % FILTER_SETS.length;
-    applyFilterSet(currentAiBaseUrl, currentFilterSetIdx);
-    return;
-  }
-
-  // Lần đầu: gọi Pollinations để lấy ảnh gốc
-  for (let i = 0; i < 3; i++) {
-    const slot = document.getElementById(`aiBgSlot${i}`);
-    if (slot) { slot.className = 'ai-bg-slot loading'; slot.innerHTML = '<div class="ai-skeleton"></div>'; slot.onclick = null; }
-  }
-  aiBgUrls = [null, null, null];
-  if (selectedBgType === 'ai') {
-    selectedBgType = 'none'; selectedAiUrl = null;
-    document.getElementById('bgPreviewWrap').classList.remove('show');
-  }
-
-  // Chỉ cần 1 request duy nhất — tạo 3 variants từ 1 ảnh bằng CSS filter
-  const pool = getPromptPool(topic);
-  const seed = Math.floor(Math.random() * 90000) + 10000;
-  let loaded = false;
-
-  for (let attempt = 0; attempt < pool.length && !loaded; attempt++) {
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(pool[attempt])}?width=720&height=720&nologo=true&seed=${seed + attempt * 173}`;
-    loaded = await new Promise(resolve => {
-      const img = new Image();
-      const t = setTimeout(() => resolve(false), 40000);
-      img.onload = () => {
-        clearTimeout(t);
-        currentAiBaseUrl = url;  // Set URL ngay khi load thành công
-        resolve(true);
-      };
-      img.onerror = () => { clearTimeout(t); resolve(false); };
-      img.src = url;
-    });
-  }
-
-  if (currentAiBaseUrl) {
-    currentFilterSetIdx = 0;
-    applyFilterSet(currentAiBaseUrl, 0);
-  } else {
-    // Tất cả fail
-    for (let i = 0; i < 3; i++) {
-      const slot = document.getElementById(`aiBgSlot${i}`);
-      if (slot) {
-        slot.className = 'ai-bg-slot';
-        slot.innerHTML = '<div class="ai-bg-slot-err" style="font-size:11px;color:var(--text-secondary);text-align:center;padding:8px">Thử lại ↻</div>';
-        slot.onclick = () => generateAiBgs();
-      }
-    }
-  }
-}
-
-
-function applyFilterSet(baseUrl, setIdx) {
-  const variants = FILTER_SETS[setIdx];
-  variants.forEach((v, i) => {
-    const slot = document.getElementById(`aiBgSlot${i}`);
-    if (!slot) return;
-    aiBgUrls[i] = baseUrl;
-    slot.className = 'ai-bg-slot';
-    slot.innerHTML = `<img src="${baseUrl}" alt="${v.name}" style="filter:${v.filter}"><div style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:10px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);pointer-events:none">${v.name}</div>`;
-    slot.onclick = () => selectAiBgVariant(i, baseUrl, v.filter, v.overlay);
-    // Nếu slot đang active thì cập nhật preview luôn
-    if (slot.classList.contains('active')) {
-      selectAiBgVariant(i, baseUrl, v.filter, v.overlay);
-    }
-  });
-}
-
-// Select AI variant (with CSS filter info)
-function selectAiBgVariant(slotIdx, url, filter, overlay) {
-  selectedBgType = 'ai';
-  selectedAiUrl = url;
-  selectedBgIdx = null;
-  window._aiBgFilter = filter;
-  window._aiBgOverlay = overlay;
-  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
-  document.getElementById('bgChipNone').classList.remove('active');
-  document.querySelectorAll('.ai-bg-slot').forEach((el, i) => el.classList.toggle('active', i === slotIdx));
-  document.getElementById('bgPreviewWrap').classList.add('show');
-  renderBgPreviewVariant(url, filter, overlay);
-}
-
-function renderBgPreviewVariant(url, filter, overlay) {
-  const preview = document.getElementById('bgPreview');
-  const textEl = document.getElementById('bgPreviewText');
-  preview.style.background = `url(${url}) center/cover no-repeat`;
-  preview.style.setProperty('--ai-filter', filter);
-  preview.classList.add('ai-mode');
-  // Apply filter via pseudo-element workaround: wrap in div
-  // Simple: just tint with overlay color
-  document.getElementById('bgPreviewOverlay').style.background = overlay;
-  textEl.style.color = '#fff';
-  textEl.style.fontFamily = "'Be Vietnam Pro', sans-serif";
-  textEl.style.textShadow = '0 2px 10px rgba(0,0,0,0.7)';
-  const cap = bgPreviewTextContent || getSelectedCaptionText();
-  const MAX_CHARS = 180;
-  textEl.textContent = cap.length > MAX_CHARS ? cap.slice(0, MAX_CHARS) + '…' : cap;
-  bgPreviewTextContent = cap;
-  const len = cap.length;
-  textEl.style.fontSize = len < 60 ? '20px' : len < 120 ? '17px' : len < 200 ? '14px' : '12.5px';
-}
-
 // ── Canvas rendering ─────────────────────────────────────────────
 async function renderBgToCanvas() {
   const canvas = document.getElementById('bgCanvas');
@@ -2030,9 +1745,7 @@ function downloadBgImage() {
 }
 
 async function uploadBgToStorage() {
-  // AI image: dùng URL trực tiếp (không cần upload lại)
-  if (selectedBgType === 'ai' && selectedAiUrl) return selectedAiUrl;
-  // Gradient: render canvas → upload
+  // Render canvas → upload
   await renderBgToCanvas();
   const canvas = document.getElementById('bgCanvas');
   return new Promise((resolve, reject) => {
@@ -2065,7 +1778,7 @@ async function vpostPostWithBg() {
   btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;display:inline-block"></i> Đang đăng...';
   try {
     let imageUrl = null;
-    if (selectedBgType !== 'none') imageUrl = await uploadBgToStorage();
+    if (selectedBgType === 'gradient') imageUrl = await uploadBgToStorage();
     const { data: post, error: cErr } = await window.vpostPosts.create({ caption, image_url: imageUrl, status: 'draft' });
     if (cErr) throw new Error(cErr.message || cErr);
     await window.vpostFB.postToFB(post.id);
@@ -2083,8 +1796,6 @@ function showBgPicker() {
   if (!section) return;
   section.style.display = 'block';
   bgPreviewTextContent = '';  // reset → lấy caption mới nhất
-  // Auto generate AI backgrounds
-  generateAiBgs();
 }
 
 
