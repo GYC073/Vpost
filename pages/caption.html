@@ -1754,6 +1754,94 @@ function getPromptPool(topic) {
   return PROMPT_POOL[topic] || PROMPT_POOL.default;
 }
 
+
+let selectedBgType = 'none'; // 'none' | 'gradient' | 'ai'
+let selectedBgIdx = null;
+let selectedAiUrl = null;
+let bgPreviewTextContent = '';
+let aiBgUrls = [null, null, null];
+
+function initBgChips() {
+  const wrap = document.getElementById('bgChips');
+  if (!wrap) return;
+  BG_PRESETS.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'bg-chip';
+    btn.title = p.name;
+    btn.style.background = p.bg;
+    btn.onclick = () => selectBg(i);
+    wrap.appendChild(btn);
+  });
+}
+
+function selectBg(idx) {
+  selectedBgType = 'gradient';
+  selectedBgIdx = idx;
+  selectedAiUrl = null;
+  document.querySelectorAll('.ai-bg-slot').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.bg-chip').forEach((el, i) => {
+    if (i === 0) el.classList.remove('active');
+    else el.classList.toggle('active', i - 1 === idx);
+  });
+  document.getElementById('bgChipNone').classList.remove('active');
+  document.getElementById('bgPreviewWrap').classList.add('show');
+  renderBgPreview();
+}
+
+function selectNoBg() {
+  selectedBgType = 'none';
+  selectedBgIdx = null;
+  selectedAiUrl = null;
+  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
+  document.getElementById('bgChipNone').classList.add('active');
+  document.querySelectorAll('.ai-bg-slot').forEach(el => el.classList.remove('active'));
+  document.getElementById('bgPreviewWrap').classList.remove('show');
+}
+
+function selectAiBg(slotIdx, url) {
+  selectedBgType = 'ai';
+  selectedAiUrl = url;
+  selectedBgIdx = null;
+  document.querySelectorAll('.bg-chip').forEach(el => el.classList.remove('active'));
+  document.getElementById('bgChipNone').classList.remove('active');
+  document.querySelectorAll('.ai-bg-slot').forEach((el, i) => el.classList.toggle('active', i === slotIdx));
+  document.getElementById('bgPreviewWrap').classList.add('show');
+  renderBgPreview();
+}
+
+function renderBgPreview() {
+  const preview = document.getElementById('bgPreview');
+  const textEl = document.getElementById('bgPreviewText');
+  const cap = bgPreviewTextContent || getSelectedCaptionText();
+  const MAX_CHARS = 180;
+  textEl.textContent = cap.length > MAX_CHARS ? cap.slice(0, MAX_CHARS) + '…' : cap;
+  bgPreviewTextContent = cap;
+  const len = cap.length;
+  textEl.style.fontSize = len < 60 ? '20px' : len < 120 ? '17px' : len < 200 ? '14px' : '12.5px';
+  textEl.style.fontFamily = "'Be Vietnam Pro', sans-serif";
+  if (selectedBgType === 'ai' && selectedAiUrl) {
+    preview.style.background = `url(${selectedAiUrl}) center/cover no-repeat`;
+    preview.classList.add('ai-mode');
+    textEl.style.color = '#fff';
+    textEl.style.textShadow = '0 2px 10px rgba(0,0,0,0.7)';
+  } else if (selectedBgType === 'gradient' && selectedBgIdx !== null) {
+    const preset = BG_PRESETS[selectedBgIdx];
+    preview.style.background = preset.bg;
+    preview.classList.remove('ai-mode');
+    textEl.style.color = preset.text;
+    textEl.style.textShadow = 'none';
+  }
+}
+
+function openBgTextEdit() {
+  const cur = bgPreviewTextContent || getSelectedCaptionText();
+  const newText = prompt('Chỉnh sửa nội dung hiển thị trên ảnh:', cur);
+  if (newText !== null) {
+    bgPreviewTextContent = newText;
+    renderBgPreview();
+  }
+}
+
 async function generateAiBgs() {
   const topic = (typeof selectedTopic !== 'undefined' ? selectedTopic : null) || 'default';
   const btn = document.getElementById('aiBgRegenBtn');
