@@ -1716,39 +1716,13 @@ const BG_PRESETS = [
 
 // Topic → Pollinations prompt
 // Pool prompt đa dạng — fire 6, lấy 3 đầu tiên load xong
+// Prompt ngắn gọn — Pollinations xử lý nhanh nhất với prompt 1-3 từ
 const PROMPT_POOL = {
-  product:      [
-    'product photography, white background, studio light, elegant',
-    'modern shop display, colorful items, warm light, photography',
-    'beautiful sunrise landscape, warm golden, photography',
-    'cozy cafe interior, warm light, soft bokeh, photography',
-    'tropical garden, green leaves, sunlight, nature photography',
-    'city street evening, colorful lights, bokeh, photography'
-  ],
-  hiring:       [
-    'bright modern office, professional, clean minimal, photography',
-    'business meeting room, natural light, elegant, photography',
-    'city skyline blue sky, modern, beautiful, photography',
-    'cozy cafe interior, warm light, soft bokeh, photography',
-    'green park pathway, sunlight, peaceful, nature photography',
-    'modern architecture, glass building, blue sky, photography'
-  ],
-  promotion:    [
-    'colorful market, vibrant, festive, warm light, photography',
-    'beautiful flower arrangement, colorful, celebration, photography',
-    'golden bokeh lights, warm, festive, beautiful, photography',
-    'city street evening, colorful lights, bokeh, photography',
-    'tropical beach sunset, warm orange, beautiful, photography',
-    'modern shop display, colorful items, warm light, photography'
-  ],
-  default:      [
-    'Vietnamese market, colorful, vibrant, warm evening, photography',
-    'beautiful sunrise landscape, warm golden sky, photography',
-    'cozy cafe interior, warm light, soft bokeh, photography',
-    'tropical garden, green leaves, sunlight, nature photography',
-    'modern city street, evening lights, colorful bokeh, photography',
-    'flower garden, colorful blooms, natural light, photography'
-  ]
+  product:      ['product photo', 'colorful market', 'flower garden', 'cafe interior', 'sunrise landscape', 'city lights'],
+  hiring:       ['modern office', 'city skyline', 'green park', 'bright workspace', 'blue sky', 'cafe interior'],
+  promotion:    ['colorful market', 'golden bokeh', 'flower garden', 'city lights', 'sunrise', 'festive decoration'],
+  grand_opening:['celebration', 'flower arch', 'colorful balloons', 'golden light', 'festive market', 'sunrise'],
+  default:      ['Vietnamese market', 'flower garden', 'cafe interior', 'sunrise', 'colorful street', 'green nature']
 };
 function getPromptPool(topic) {
   return PROMPT_POOL[topic] || PROMPT_POOL.default;
@@ -1891,7 +1865,7 @@ async function generateAiBgs() {
     const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(pool[attempt])}?width=720&height=720&nologo=true&seed=${seed + attempt * 173}`;
     loaded = await new Promise(resolve => {
       const img = new Image();
-      const t = setTimeout(() => resolve(false), 20000);
+      const t = setTimeout(() => resolve(false), 40000);
       img.onload = () => {
         clearTimeout(t);
         currentAiBaseUrl = url;  // Set URL ngay khi load thành công
