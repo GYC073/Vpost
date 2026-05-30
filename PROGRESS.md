@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-29 (session 22) — Phase 8 Poster Generator MVP live: poster.html 4 templates (tuyển dụng/khuyến mãi/SP mới/khai trương), Canvas+Pollinations.ai, AI tagline, export JPG, đăng FB, nav update toàn app
+**Last updated:** 2026-05-30 (session 23) — UX nâng cấp: xóa poster, thêm gradient background picker cho caption, cải thiện prompt AI caption, landing page headline rõ hơn, dashboard 2 cột desktop (FB preview + checklist + stats)
 
 ---
 
