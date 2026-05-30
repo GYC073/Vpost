@@ -1716,20 +1716,20 @@ const BG_PRESETS = [
 
 // Topic → Pollinations prompt
 const TOPIC_BG_PROMPTS = {
-  product:     'beautiful product display on elegant surface, soft studio lighting, minimalist background',
-  hiring:      'modern professional office interior, clean bright workspace, teamwork atmosphere',
-  promotion:   'festive sale celebration, colorful confetti, vibrant energy, shopping excitement',
-  new_product: 'premium product launch reveal, white minimal studio, spotlight, elegant',
-  grand_opening:'grand opening celebration, festive decoration, ribbon cutting, warm inviting',
-  shopee:      'e-commerce marketplace, colorful product banner, modern retail aesthetic',
-  livestream:  'streaming studio, ring light glow, modern content creator setup',
-  reply:       'friendly conversation, warm coffee shop background, soft bokeh',
-  default:     'Vietnamese local business storefront, warm inviting atmosphere, commercial photography'
+  product:     'product display, soft studio light, minimal, elegant',
+  hiring:      'modern office interior, bright, professional, clean',
+  promotion:   'sale celebration, colorful, festive, vibrant energy',
+  new_product: 'product launch, white studio, elegant, spotlight',
+  grand_opening:'grand opening, festive decoration, celebration, warm',
+  shopee:      'colorful market, retail, shopping, vibrant',
+  livestream:  'streaming studio, ring light, modern setup',
+  reply:       'coffee shop, warm bokeh, friendly atmosphere',
+  default:     'Vietnamese shop, colorful storefront, warm, commercial'
 };
 const AI_STYLE_MODS = [
-  'photorealistic, commercial photography, 4k, clean background, high quality',
-  'vibrant digital art, colorful, artistic, smooth gradient background',
-  'abstract soft bokeh, modern pastel, blurred background, elegant'
+  'photorealistic, 4k, beautiful, high quality',
+  'digital illustration, vibrant, colorful, artistic',
+  'watercolor style, soft, dreamy, pastel'
 ];
 
 let selectedBgType = 'none'; // 'none' | 'gradient' | 'ai'
@@ -1829,7 +1829,7 @@ function openBgTextEdit() {
 // ── Pollinations.ai integration ──────────────────────────────────
 function buildAiBgPrompt(topicKey, styleIdx) {
   const base = TOPIC_BG_PROMPTS[topicKey] || TOPIC_BG_PROMPTS.default;
-  return encodeURIComponent(`${base}, ${AI_STYLE_MODS[styleIdx]}, square format`);
+  return encodeURIComponent(`${base}, ${AI_STYLE_MODS[styleIdx]}`);
 }
 
 async function generateAiBgs() {
@@ -1850,10 +1850,10 @@ async function generateAiBgs() {
   }
 
   const seed = Math.floor(Math.random() * 90000) + 10000;
-  // Stagger requests 900ms apart to avoid rate limiting
+  // Sequential: đợi từng ảnh xong rồi mới load ảnh tiếp
   for (let i = 0; i < 3; i++) {
-    if (i > 0) await new Promise(r => setTimeout(r, 900));
-    loadAiBgSlot(i, topic, seed + i * 71);
+    await loadAiBgSlot(i, topic, seed + i * 71);
+    if (i < 2) await new Promise(r => setTimeout(r, 800));
   }
 }
 
@@ -1862,13 +1862,13 @@ function loadAiBgSlot(i, topic, seed) { /* seed captured in closure */
     const slot = document.getElementById(`aiBgSlot${i}`);
     if (!slot) return resolve();
     const prompt = buildAiBgPrompt(topic, i);
-    const url = `https://image.pollinations.ai/prompt/${prompt}?width=720&height=720&nologo=true&seed=${seed}`;
+    const url = `https://image.pollinations.ai/prompt/${prompt}?width=720&height=720&nologo=true&seed=${seed}&model=flux`;
     const img = new Image();
     const timeout = setTimeout(() => {
       slot.className = 'ai-bg-slot';
       slot.innerHTML = '<div class="ai-bg-slot-err">⌛</div>';
       resolve();
-    }, 30000);
+    }, 45000);
     img.onload = () => {
       clearTimeout(timeout);
       aiBgUrls[i] = url;
