@@ -1715,22 +1715,30 @@ const BG_PRESETS = [
 ];
 
 // Topic → Pollinations prompt
-const TOPIC_BG_PROMPTS = {
-  product:     'product display, soft studio light, minimal, elegant',
-  hiring:      'modern office interior, bright, professional, clean',
-  promotion:   'sale celebration, colorful, festive, vibrant energy',
-  new_product: 'product launch, white studio, elegant, spotlight',
-  grand_opening:'grand opening, festive decoration, celebration, warm',
-  shopee:      'colorful market, retail, shopping, vibrant',
-  livestream:  'streaming studio, ring light, modern setup',
-  reply:       'coffee shop, warm bokeh, friendly atmosphere',
-  default:     'Vietnamese shop, colorful storefront, warm, commercial'
+// 3 prompt cố định đẹp cho mỗi slot - map theo topic
+const TOPIC_SLOT_PROMPTS = {
+  product:      ['studio product photography, elegant minimal white background, soft light',
+                 'colorful abstract swirls, purple pink blue gradient, smooth artistic',
+                 'tropical leaves pattern, green bokeh, natural light, elegant'],
+  hiring:       ['modern office interior bright, professional workspace, clean minimal',
+                 'business team collaboration abstract, blue teal gradient, professional',
+                 'city skyline blur, modern corporate, blue bokeh, elegant'],
+  promotion:    ['festive confetti explosion, red yellow gold, vibrant celebration',
+                 'sale shopping bags abstract, colorful bold, energetic warm',
+                 'sparkles glitter golden background, luxury festive, shining'],
+  new_product:  ['white minimal product showcase, clean studio, soft shadow, elegant',
+                 'geometric abstract shapes, pastel pink purple, modern design',
+                 'luxury gold marble texture, premium, elegant, smooth'],
+  grand_opening:['celebration fireworks colorful, festive, warm golden light',
+                 'ribbon cutting ceremony abstract, red gold, festive joyful',
+                 'flowers bouquet decoration, warm pink, romantic celebration'],
+  default:      ['Vietnamese street food market, colorful vibrant, warm evening light',
+                 'abstract colorful gradient waves, purple blue teal, smooth modern',
+                 'tropical flowers bokeh, soft warm light, beautiful natural']
 };
-const AI_STYLE_MODS = [
-  'photorealistic, 4k, beautiful, high quality',
-  'digital illustration, vibrant, colorful, artistic',
-  'watercolor style, soft, dreamy, pastel'
-];
+function getSlotPrompts(topic) {
+  return TOPIC_SLOT_PROMPTS[topic] || TOPIC_SLOT_PROMPTS.default;
+}
 
 let selectedBgType = 'none'; // 'none' | 'gradient' | 'ai'
 let selectedBgIdx = null;
@@ -1828,8 +1836,8 @@ function openBgTextEdit() {
 
 // ── Pollinations.ai integration ──────────────────────────────────
 function buildAiBgPrompt(topicKey, styleIdx) {
-  const base = TOPIC_BG_PROMPTS[topicKey] || TOPIC_BG_PROMPTS.default;
-  return encodeURIComponent(`${base}, ${AI_STYLE_MODS[styleIdx]}`);
+  const prompts = getSlotPrompts(topicKey);
+  return encodeURIComponent(prompts[styleIdx] || prompts[0]);
 }
 
 async function generateAiBgs() {
@@ -1850,10 +1858,10 @@ async function generateAiBgs() {
   }
 
   const seed = Math.floor(Math.random() * 90000) + 10000;
-  // Sequential: đợi từng ảnh xong rồi mới load ảnh tiếp
+  // Stagger 2s — đủ tránh rate limit, không chờ lâu như sequential
   for (let i = 0; i < 3; i++) {
-    await loadAiBgSlot(i, topic, seed + i * 71);
-    if (i < 2) await new Promise(r => setTimeout(r, 800));
+    if (i > 0) await new Promise(r => setTimeout(r, 2000));
+    loadAiBgSlot(i, topic, seed + i * 137);
   }
 }
 
@@ -1862,7 +1870,7 @@ function loadAiBgSlot(i, topic, seed) { /* seed captured in closure */
     const slot = document.getElementById(`aiBgSlot${i}`);
     if (!slot) return resolve();
     const prompt = buildAiBgPrompt(topic, i);
-    const url = `https://image.pollinations.ai/prompt/${prompt}?width=720&height=720&nologo=true&seed=${seed}&model=flux`;
+    const url = `https://image.pollinations.ai/prompt/${prompt}?width=720&height=720&nologo=true&seed=${seed}`;
     const img = new Image();
     const timeout = setTimeout(() => {
       slot.className = 'ai-bg-slot';
