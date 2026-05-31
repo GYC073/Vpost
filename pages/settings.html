@@ -546,7 +546,6 @@ async function saveShopInfo() {
       shop_name: shopName,
       shop_address: shopAddr || null,
       shop_desc: shopDesc || null,
-      full_name: shopName,
     }).eq('id', session.user.id);
     if (error) throw error;
     // Sync localStorage
