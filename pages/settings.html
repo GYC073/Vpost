@@ -420,6 +420,25 @@
     </div>
   </div>
 
+  <!-- Tự động đăng bài -->
+  <div class="settings-section">
+    <div class="settings-section-title"><i class="ti ti-robot"></i>Tự động đăng bài mỗi ngày</div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-label">Bật chế độ tự động</div>
+        <div class="settings-row-sub">AI sẽ tự viết caption + tự đăng Facebook lúc 10h sáng — bạn không cần vào app</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="autoPostToggle" onchange="toggleAutoPost(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="settings-row" id="autoPostInfoRow" style="display:none; background: rgba(37,99,235,0.04); border-top: 1px solid var(--border);">
+      <div style="font-size:13px; color: var(--text-secondary); line-height:1.6;">
+        <i class="ti ti-info-circle" style="color:var(--primary)"></i>
+        AI tự chọn chủ đề xoay vòng mỗi ngày trong tuần (giới thiệu sản phẩm, mẹo hay, flash sale...).
+        Bài sẽ xuất hiện trong <a href="calendar.html" style="color:var(--primary)">lịch đăng bài</a> — bạn vẫn có thể sửa hoặc huỷ trước 10h.
+      </div>
+    </div>
+  </div>
+
   <!-- Thông báo -->
   <div class="settings-section">
     <div class="settings-section-title"><i class="ti ti-bell"></i>Thông báo nhắc nhở</div>
@@ -534,6 +553,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!p) return;
 
     applySettingsUI(p.shop_name, null, null, p.industry, p.plan);
+    loadAutoPostSetting();
 
     // Sync ngược về localStorage
     const stored = JSON.parse(localStorage.getItem('vpost_user') || '{}');
@@ -570,6 +590,35 @@ async function updateIndustry(val) {
 }
 
 // ============================================================
+// Auto post toggle
+async function toggleAutoPost(enabled) {
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
+    await supa.from('profiles').update({ auto_post_enabled: enabled }).eq('id', session.user.id);
+    document.getElementById('autoPostInfoRow').style.display = enabled ? 'block' : 'none';
+    if (window.showToast) showToast(enabled ? '✅ Đã bật tự động đăng bài lúc 10h sáng' : 'Đã tắt tự động đăng bài');
+  } catch(e) { console.warn('[Settings] toggleAutoPost error:', e); }
+}
+
+async function loadAutoPostSetting() {
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
+    const { data } = await supa.from('profiles').select('auto_post_enabled').eq('id', session.user.id).single();
+    if (!data) return;
+    const toggle = document.getElementById('autoPostToggle');
+    if (toggle) {
+      toggle.checked = !!data.auto_post_enabled;
+      document.getElementById('autoPostInfoRow').style.display = data.auto_post_enabled ? 'block' : 'none';
+    }
+  } catch(e) { console.warn('[Settings] loadAutoPostSetting error:', e); }
+}
+
 // Facebook OAuth — render status + actions
 // ============================================================
 async function vpostSettings_renderFB() {
