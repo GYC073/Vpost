@@ -593,7 +593,51 @@ async function loadShopFromSupabase() {
     // Cập nhật UI với data thật từ Supabase
     applyShopAssets(profile.industry, profile.shop_name);
 
+    // Load avatar + cover từ Facebook nếu đã kết nối
+    loadFBPageAssets(supa, session.user.id);
+
   } catch(e) { console.warn('[Vpost] loadShopFromSupabase error:', e); }
+}
+
+async function loadFBPageAssets(supa, userId) {
+  try {
+    const { data: page } = await supa
+      .from('fb_pages')
+      .select('fb_page_id, page_access_token')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .single();
+
+    if (!page?.fb_page_id) return;
+
+    // Avatar: Graph API public, không cần token
+    const avatarUrl = `https://graph.facebook.com/${page.fb_page_id}/picture?type=square&width=120&height=120`;
+    const avatarEl = document.getElementById('shopAvatarInitial');
+    if (avatarEl) {
+      // Đổi div thành img
+      const img = document.createElement('img');
+      img.src = avatarUrl;
+      img.alt = 'Avatar';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:inherit';
+      img.onerror = () => { img.remove(); }; // fallback về chữ cái nếu load lỗi
+      avatarEl.textContent = '';
+      avatarEl.appendChild(img);
+    }
+
+    // Cover: cần access token
+    if (!page.page_access_token) return;
+    const coverRes = await fetch(
+      `https://graph.facebook.com/${page.fb_page_id}?fields=cover&access_token=${page.page_access_token}`
+    );
+    if (!coverRes.ok) return;
+    const coverData = await coverRes.json();
+    const coverUrl = coverData?.cover?.source;
+    if (coverUrl) {
+      document.querySelectorAll('.shop-hero-cover').forEach(el => {
+        el.src = coverUrl;
+      });
+    }
+  } catch(e) { console.warn('[Vpost] loadFBPageAssets error:', e); }
 }
 
 // Gọi khi trang load xong
