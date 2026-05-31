@@ -324,7 +324,7 @@
 
 ---
 
-## Phase 8 — Poster Generator AI (backlog — từ session 21)
+## Phase 8 — Poster Generator AI ~~(backlog)~~ ❌ Đã bỏ (session 24)
 
 **Mục tiêu:** `pages/poster.html` — tạo ảnh poster Canvas-based, export JPG, đăng FB luôn.
 
@@ -368,7 +368,7 @@
 | 8.6 | Export JPG + upload Storage + post to FB | [ ] Pending |
 | 8.7 | Thêm "Tạo poster" vào sidebar nav tất cả trang + sidebar.js | [ ] Pending |
 
-**Ưu tiên:** Bắt đầu khi Phase 4.9 (Meta App Review) approved hoặc theo yêu cầu Thang.
+**Quyết định:** Bỏ hoàn toàn. Không phù hợp với trọng tâm hiện tại.
 
 ---
 

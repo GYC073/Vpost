@@ -524,34 +524,6 @@ body {
 .testimonial-text::before { content: '"'; }
 .testimonial-text::after  { content: '"'; }
 
-/* ── Stats strip ── */
-.stats-strip {
-  display: flex;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.07);
-  margin-top: auto;
-}
-.stat-item {
-  flex: 1;
-  padding: 12px 8px;
-  text-align: center;
-  background: rgba(255,255,255,0.03);
-  border-right: 1px solid rgba(255,255,255,0.06);
-  transition: background 0.2s;
-}
-.stat-item:last-child { border-right: none; }
-.stat-item:hover { background: rgba(255,255,255,0.06); }
-.stat-value {
-  font-family: 'Sora', sans-serif;
-  font-size: 17px; font-weight: 700; color: #fff;
-  line-height: 1.2; margin-bottom: 3px;
-}
-.stat-value span {
-  background: linear-gradient(135deg, #60a5fa, #a78bfa);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.stat-label { font-size: 10px; color: rgba(255,255,255,0.35); }
 
 
 /* ── Industry badges ── */
@@ -844,25 +816,6 @@ body {
       </div>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-strip">
-      <div class="stat-item">
-        <div class="stat-value" data-target="1200"><span id="cnt-captions">1,200+</span></div>
-        <div class="stat-label">Caption đã tạo</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" data-target="50"><span id="cnt-shops">50+</span></div>
-        <div class="stat-label">Shop đang dùng</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value"><span id="cnt-cities">5 tỉnh</span></div>
-        <div class="stat-label">Phủ sóng</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value"><span id="cnt-rating">4.9★</span></div>
-        <div class="stat-label">Đánh giá</div>
-      </div>
-    </div>
 
   </div><!-- /login-right -->
 
@@ -1166,30 +1119,6 @@ setTimeout(() => {
   tTimer = setTimeout(() => goTestimonial(1), 5000);
 }, 1000);
 
-// ─── Animated counters ──────────────────────────────────────
-function animateCounter(el, target, suffix, duration = 900) {
-  let start = Math.round(target * 0.75), startTime = null;
-  function step(ts) {
-    if (!startTime) startTime = ts;
-    const progress = Math.min((ts - startTime) / duration, 1);
-    const ease = 1 - Math.pow(1 - progress, 3);
-    const val = Math.round(start + (target - start) * ease);
-    el.textContent = val >= 1000 ? (val/1000).toFixed(1).replace('.0','') + 'k+' : val + '+';
-    if (progress < 1) requestAnimationFrame(step);
-    else el.textContent = target >= 1000 ? (target/1000).toFixed(1).replace('.0','') + 'k+' : target + '+';
-  }
-  requestAnimationFrame(step);
-}
-
-// Run counters on load
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const captions = document.getElementById('cnt-captions');
-    const shops = document.getElementById('cnt-shops');
-    if (captions) animateCounter(captions, 1200, '+');
-    if (shops) animateCounter(shops, 50, '+', 1000);
-  }, 600);
-});
 
 // ─── Tab switch: show/hide register benefits ─────────────────
 const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;

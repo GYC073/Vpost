@@ -255,35 +255,39 @@ Viết 3 mẫu bài tuyển dụng Facebook, tách bằng "---".`;
 
     } else {
       // facebook (default)
-      systemPrompt = `Bạn là chuyên gia viết caption Facebook cho shop nhỏ Việt Nam.
+      systemPrompt = `Bạn là người viết caption Facebook cho shop nhỏ Việt Nam — viết như chính chủ shop nhắn, không phải copywriter marketing.
 
-MỤC TIÊU: Caption đọc lên phải nghe như CHÍNH CHỦ SHOP đang nhắn với khách quen — không phải AI viết bài marketing.
+TỪ TUYỆT ĐỐI KHÔNG DÙNG (dù chỉ 1 từ là loại luôn):
+"đừng bỏ lỡ" / "chất lượng vượt trội" / "siêu hot" / "deal hấp dẫn" / "cơ hội vàng" / "đội ngũ chuyên nghiệp" / "sản phẩm uy tín" / "giá cực tốt" / "không thể bỏ lỡ" / "đừng bỏ qua" / "ưu đãi hấp dẫn" / "chất lượng cao" / "phục vụ tận tâm"
 
-TUYỆT ĐỐI CẤM các cụm từ sáo rỗng sau (có 1 cụm này là caption bị loại):
-"đừng bỏ lỡ", "inbox ngay", "chất lượng tuyệt vời", "siêu hot", "deal hấp dẫn", "cơ hội vàng", "liên hệ để được tư vấn", "đội ngũ chuyên nghiệp", "sản phẩm uy tín", "nhanh tay", "giá cực tốt", "không thể bỏ lỡ", "đừng bỏ qua"
+3 CÁCH MỞ ĐẦU KHÁC NHAU — mỗi caption dùng 1 cách, theo thứ tự:
+1. Câu hỏi hoặc quan sát bất ngờ → rồi mới nói đến sản phẩm
+2. Chia sẻ thẳng 1 sự thật/chi tiết cụ thể về sản phẩm (con số, cảm nhận, so sánh)
+3. Kể ngắn 1 tình huống thật của khách hoặc 1 mẹo hay liên quan
 
-BA CẤU TRÚC BẮT BUỘC — mỗi caption dùng đúng 1 cấu trúc, theo thứ tự A→B→C:
-[A – Chuyện kể] Mở bằng 1 tình huống/quan sát thật → dẫn vào sản phẩm một cách tự nhiên
-[B – Thẳng thắn] Chia sẻ thẳng 1 điều thú vị/thực tế về sản phẩm, không hoa mỹ, không quảng cáo
-[C – Góc nhìn khách] Lời phản hồi của khách, hoặc mẹo/tip hữu ích liên quan sản phẩm
+VIẾT NHƯ NGƯỜI VIỆT THẬT:
+- Câu ngắn 5–10 chữ xen câu dài hơn — không đều nhau
+- Xuống dòng sau 1–2 câu
+- Được bắt đầu câu không có chủ ngữ ("Vừa về hôm nay.", "Mặc vào là mát liền.")
+- CTA nhẹ tự nhiên cuối bài nếu cần: "ai cần nhắn mình", "nhắn shop nhé" (KHÔNG dùng "inbox ngay")
+- Emoji 0–2 cái — đặt giữa câu hoặc cuối đoạn, không nhồi
+- Hashtag 1–3 cái, cụ thể ngành/sản phẩm
 
-QUY TẮC ĐỊNH DẠNG:
-- Độ dài: 50–100 chữ (ngắn — người Việt scroll nhanh)
-- Emoji: 0–2 cái, đặt tự nhiên trong câu (KHÔNG nhồi cuối đoạn)
-- Hashtag: tối đa 2, phải cụ thể (tránh #MuaNgay #Sale quá chung)
-- Tách caption bằng dòng chỉ có "---"`;
+ĐỘ DÀI: 40–90 chữ mỗi caption — ngắn nhưng đủ ý, không bỏ thừa chữ nào
+
+TÁCH CAPTION bằng dòng chỉ có "---"`;
 
       userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
-${profile.shop_desc ? `Mô tả: ${profile.shop_desc}` : ""}
-Tone: ${toneLabel}
-${topic ? `Chủ đề / sản phẩm hôm nay: ${topic}` : ""}
-${userDesc ? `Ghi chú từ chủ shop: ${userDesc}` : ""}
+${profile.shop_desc ? `Mô tả shop: ${profile.shop_desc}` : ""}
+Tone mong muốn: ${toneLabel}
+${topic ? `Nội dung / sản phẩm: ${topic}` : ""}
+${userDesc ? `Thêm từ chủ shop: ${userDesc}` : ""}
 
 ${referenceBlock}
-TRÁNH lặp ý với các bài đã đăng:
+Bài đã đăng gần đây (tránh lặp ý):
 ${recentContent}
 
-Viết đúng 3 caption theo thứ tự cấu trúc A → B → C, tách bằng "---".`;
+Viết 3 caption theo 3 cách mở đầu khác nhau, tách bằng "---". Không đánh số, không thêm nhãn [1] [2] [3].`;
     }
 
     // ----- Ghép Style Preset + Humanize Layer vào systemPrompt -----
@@ -294,12 +298,11 @@ PHONG CÁCH BÀI ĐĂNG (ưu tiên cao — áp dụng cho cả 3 mẫu):
 ${styleInstruction}
 
 HUMANIZE — BẮT BUỘC:
-- Câu ngắn dài xen kẽ, không đều nhau
-- Xuống dòng sau 1–2 câu (kiểu Facebook thật)
-- Đôi khi bắt đầu câu không có chủ ngữ
-- Tránh tuyệt đối: "chất lượng vượt trội", "sản phẩm tuyệt vời", "đừng bỏ lỡ"
-- Dùng từ đời thường: "shop vừa về", "hàng ngon nha", "ai cần nhắn mình"
-- Không có câu nào nghe như quảng cáo trên TV`;
+- Dùng từ đời thường: "vừa về", "ngon nha", "ai cần nhắn mình", "thử xem", "ghiền lắm"
+- Được viết tắt tự nhiên: "k" (không), "vs" (với), "đc" (được) nếu phù hợp tone
+- Không câu nào nghe như slogan hoặc quảng cáo trên TV
+- Nếu có giá: viết thẳng số (ví dụ "180k", "1.2tr") — không viết "giá hợp lý" hay "giá tốt"
+- Kết bài bằng hành động cụ thể nếu cần: nhắn shop / bình luận / ghé xem — KHÔNG "liên hệ ngay"`;
 
     // ----- Gọi Claude Haiku -----
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
@@ -308,7 +311,7 @@ HUMANIZE — BẮT BUỘC:
     const anthropic = new Anthropic({ apiKey });
     const msg = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 900,
+      max_tokens: 1100,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
     });
