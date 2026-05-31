@@ -292,7 +292,7 @@
     <div class="settings-row">
       <div class="settings-row-left">
         <div class="settings-row-label">Tên shop</div>
-        <input class="settings-input" type="text" value="" placeholder="Tên shop của bạn">
+        <input class="settings-input" id="settingShopName" type="text" value="" placeholder="Tên shop của bạn">
       </div>
     </div>
     <div class="settings-row">
@@ -320,14 +320,14 @@
     <div class="settings-row">
       <div class="settings-row-left">
         <div class="settings-row-label">Địa chỉ</div>
-        <input class="settings-input" type="text" value="123 Đường Hoa, Quận 1, TP.HCM" placeholder="Địa chỉ shop">
+        <input class="settings-input" id="settingShopAddr" type="text" value="" placeholder="Địa chỉ shop">
       </div>
     </div>
     <div class="settings-row">
       <div class="settings-row-left">
         <div class="settings-row-label">Mô tả ngắn cho AI</div>
         <div class="settings-row-sub">AI sẽ dùng thông tin này để viết caption phù hợp hơn</div>
-        <textarea class="settings-input" rows="3" placeholder="Ví dụ: Tiệm cà phê phong cách hoài cổ, chuyên các loại cà phê truyền thống và thức uống sáng tạo. Giá bình dân, không gian yên tĩnh...">Tiệm cà phê phong cách hoài cổ, chuyên các loại cà phê truyền thống và thức uống sáng tạo. Giá bình dân, không gian yên tĩnh.</textarea>
+        <textarea class="settings-input" id="settingShopDesc" rows="3" placeholder="Ví dụ: Shop nệm cao su thiên nhiên, chuyên giao hàng tận nơi, bảo hành 5 năm, giá tốt nhất Quảng Trị..."></textarea>
       </div>
     </div>
   </div>
@@ -465,7 +465,7 @@
     </div>
   </div>
 
-  <button class="save-btn" onclick="showToast('Đã lưu cài đặt thành công! ✅')">
+  <button class="save-btn" onclick="saveShopInfo()">
     <i class="ti ti-device-floppy"></i> Lưu cài đặt
   </button>
 </main>
@@ -514,9 +514,9 @@ const INDUSTRY_LABELS = {
 
 // Áp dụng data lên UI
 function applySettingsUI(shopName, shopAddr, shopDesc, industry, plan) {
-  const nameInput = document.querySelector('input[placeholder="Tên shop của bạn"]');
-  const addrInput = document.querySelector('input[placeholder="Địa chỉ shop"]');
-  const descArea  = document.querySelector('textarea.settings-input');
+  const nameInput      = document.getElementById('settingShopName');
+  const addrInput      = document.getElementById('settingShopAddr');
+  const descArea       = document.getElementById('settingShopDesc');
   const industrySelect = document.getElementById('industrySelect');
   const profileName    = document.querySelector('.shop-profile-name');
   const profileInd     = document.querySelector('.shop-profile-industry');
@@ -530,6 +530,39 @@ function applySettingsUI(shopName, shopAddr, shopDesc, industry, plan) {
   if (profileName && shopName)    profileName.textContent = shopName;
   if (profileInd  && industry)    profileInd.textContent  = INDUSTRY_LABELS[industry] || industry;
   if (planBadge   && plan)        planBadge.textContent   = 'Gói ' + (planNames[plan] || plan);
+}
+
+async function saveShopInfo() {
+  const shopName = document.getElementById('settingShopName')?.value.trim();
+  const shopAddr = document.getElementById('settingShopAddr')?.value.trim();
+  const shopDesc = document.getElementById('settingShopDesc')?.value.trim();
+  if (!shopName) { if (window.showToast) showToast('Vui lòng nhập tên shop'); return; }
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
+    const { error } = await supa.from('profiles').update({
+      shop_name: shopName,
+      shop_address: shopAddr || null,
+      shop_desc: shopDesc || null,
+      full_name: shopName,
+    }).eq('id', session.user.id);
+    if (error) throw error;
+    // Sync localStorage
+    const stored = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+    stored.shopName = shopName;
+    stored.shopAddr = shopAddr;
+    stored.shopDesc = shopDesc;
+    localStorage.setItem('vpost_user', JSON.stringify(stored));
+    // Update profile header
+    const profileName = document.querySelector('.shop-profile-name');
+    if (profileName) profileName.textContent = shopName;
+    if (window.showToast) showToast('Đã lưu thông tin shop ✅');
+  } catch(e) {
+    console.error('[Settings] saveShopInfo error:', e);
+    if (window.showToast) showToast('Lưu thất bại, thử lại nhé');
+  }
 }
 
 // Load từ localStorage trước (nhanh), sau đó override bằng Supabase
@@ -548,11 +581,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!session?.user?.id) return;
 
     const { data: p } = await supa.from('profiles')
-      .select('shop_name, industry, plan')
+      .select('shop_name, shop_address, shop_desc, industry, plan')
       .eq('id', session.user.id).single();
     if (!p) return;
 
-    applySettingsUI(p.shop_name, null, null, p.industry, p.plan);
+    applySettingsUI(p.shop_name, p.shop_address, p.shop_desc, p.industry, p.plan);
     loadAutoPostSetting();
 
     // Sync ngược về localStorage
