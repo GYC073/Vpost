@@ -174,7 +174,7 @@ button, input, select, textarea { font-family: inherit; }
 .shop-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom,rgba(13,15,20,0.1) 0%,rgba(13,15,20,0.68) 100%); }
 .shop-hero-content { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 14px 18px; gap: 12px; }
 .shop-avatar-wrap { position: relative; flex-shrink: 0; }
-.shop-avatar { width: 46px; height: 46px; border-radius: var(--r-lg); border: 2.5px solid rgba(255,255,255,0.9); object-fit: cover; display: block; }
+.shop-avatar { width: 46px; height: 46px; border-radius: var(--r-lg); border: 2.5px solid rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2563EB, #7C3AED); color: #fff; font-size: 18px; font-weight: 700; flex-shrink: 0; }
 .shop-avatar-fb { position: absolute; bottom: -3px; right: -3px; width: 15px; height: 15px; background: #1877F2; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; }
 .shop-avatar-fb i { color: #fff; font-size: 8px; }
 .shop-hero-info { flex: 1; min-width: 0; }

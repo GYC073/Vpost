@@ -535,9 +535,12 @@ function applyShopAssets(overrideIndustry, overrideName) {
     document.querySelectorAll('.shop-hero-name').forEach(el => el.textContent = shopName);
     document.querySelectorAll('.platform-page').forEach(el => el.textContent = shopName);
 
-    // Cập nhật ảnh cover và avatar theo ngành
+    // Cập nhật ảnh cover theo ngành
     document.querySelectorAll('.shop-hero-cover, .shop-profile-cover img').forEach(el => { el.src = assets.cover; });
-    document.querySelectorAll('.shop-avatar, .shop-profile-avatar, #settingsAvatar').forEach(el => { el.src = assets.avatar; });
+
+    // Avatar: dùng chữ cái đầu tên shop (không dùng ảnh nữa)
+    const avatarEl = document.getElementById('shopAvatarInitial');
+    if (avatarEl) avatarEl.textContent = shopName.charAt(0).toUpperCase();
 
     // Cập nhật ảnh mẫu theo ngành
     const sampleImgs = document.querySelectorAll('.sample-img');
