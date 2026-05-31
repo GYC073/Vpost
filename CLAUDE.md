@@ -138,3 +138,23 @@ D:\vpost\
 - Render: https://dashboard.render.com (service tên `vpost`)
 - iNET OneShield: portal iNET → vpost.vn → OneShield → Bản ghi DNS
 - Meta for Developers: https://developers.facebook.com/apps (cần tạo app, lấy App ID + Secret, set OAuth Redirect URI = `https://vpost.vn/fb-callback.html`)
+
+---
+
+## 9. Về Thắng (người build sản phẩm)
+
+- **Tay ngang, không background lập trình** — ra quyết định bằng cảm tính product và hiểu user thật
+- **Không tự test kỹ sau mỗi tính năng** → Claude phải chủ động test sau khi code xong: click nút, điền form, reload xem data có lưu/load đúng không
+- Ưu tiên: đơn giản, chạy được, user hiểu ngay — không cần fancy hay over-engineer
+- Kênh liên lạc với user: Zalo cá nhân 0789 434 345
+- Real user hiện tại: **Kho Nệm Giá Tốt — Quảng Trị** (đã kết nối Facebook, đang dùng thật)
+
+---
+
+## 10. Product Vision
+
+- **Mục tiêu cốt lõi:** shop nhỏ VN không cần biết marketing vẫn có fanpage hoạt động đều đặn mỗi ngày
+- Không phải "tool AI caption" — là **"nhân viên content tự động"**
+- **User target:** chủ shop 1-3 người, bận rộn, không rành mạng xã hội, muốn có bài đăng đều mà không tốn thời gian
+- **Định nghĩa thành công:** user bật auto mode rồi không cần vào app nữa — fanpage vẫn sống
+- **Trạng thái hiện tại:** Facebook App đang chờ Meta App Review (submit 23/05/2026), tính năng auto-post chỉ khả dụng cho Tester trong lúc chờ
