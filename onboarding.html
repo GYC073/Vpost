@@ -463,6 +463,18 @@ function suggestDescription() {
   document.getElementById('shopDesc').focus();
 }
 
+// ── Pre-fill từ localStorage ngay lập tức (user vừa đăng ký) ──
+(function prefillFromLocalStorage() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('vpost_user') || '{}');
+    const shopNameEl = document.getElementById('shopName');
+    if (shopNameEl && !shopNameEl.value && stored.shopName) {
+      shopNameEl.value = stored.shopName;
+      autoDetectIndustry(stored.shopName);
+    }
+  } catch(_) {}
+})();
+
 // ── Pre-fill từ Supabase profile ──────────────────────────────
 (async function prefillProfile() {
   try {
