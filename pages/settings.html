@@ -513,7 +513,7 @@ const INDUSTRY_LABELS = {
 };
 
 // Áp dụng data lên UI
-function applySettingsUI(shopName, shopAddr, shopDesc, industry, plan) {
+function applySettingsUI(shopName, shopAddr, shopDesc, industry, plan, planExpiresAt) {
   const nameInput      = document.getElementById('settingShopName');
   const addrInput      = document.getElementById('settingShopAddr');
   const descArea       = document.getElementById('settingShopDesc');
@@ -521,7 +521,12 @@ function applySettingsUI(shopName, shopAddr, shopDesc, industry, plan) {
   const profileName    = document.querySelector('.shop-profile-name');
   const profileInd     = document.querySelector('.shop-profile-industry');
   const planBadge      = document.querySelector('.plan-badge');
-  const planNames = { trial:'Dùng thử', basic:'Cơ Bản', standard:'Tiêu Chuẩn', pro:'Pro' };
+  const planExpireEl   = document.querySelector('.plan-expire');
+  const planDaysEl     = document.querySelector('.plan-days');
+  const planCardTitle  = document.querySelector('.plan-card-title');
+  const planCardExpire = document.querySelector('.plan-card-expire');
+  const planNames      = { trial:'Dùng thử', basic:'Cơ Bản', standard:'Tiêu Chuẩn', pro:'Pro' };
+  const postQuota      = { trial:'1 bài', basic:'1 bài', standard:'2 bài', pro:'2 bài' };
 
   if (nameInput && shopName)  nameInput.value = shopName;
   if (addrInput && shopAddr)  addrInput.value = shopAddr;
@@ -529,7 +534,20 @@ function applySettingsUI(shopName, shopAddr, shopDesc, industry, plan) {
   if (industrySelect && industry) industrySelect.value = industry;
   if (profileName && shopName)    profileName.textContent = shopName;
   if (profileInd  && industry)    profileInd.textContent  = INDUSTRY_LABELS[industry] || industry;
-  if (planBadge   && plan)        planBadge.textContent   = 'Gói ' + (planNames[plan] || plan);
+
+  const planLabel = planNames[plan] || plan || 'Dùng thử';
+  if (planBadge) planBadge.textContent = 'Gói ' + planLabel;
+  if (planCardTitle) planCardTitle.textContent = planLabel + ' — ' + (postQuota[plan] || '1 bài') + '/ngày';
+
+  if (planExpiresAt) {
+    const exp = new Date(planExpiresAt);
+    const daysLeft = Math.max(0, Math.floor((exp - new Date()) / 86400000));
+    const expStr = exp.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' });
+    const daysStr = daysLeft > 365*5 ? 'Vĩnh viễn' : `Còn ${daysLeft} ngày`;
+    if (planExpireEl)   planExpireEl.textContent   = 'Hết hạn: ' + expStr;
+    if (planDaysEl)     planDaysEl.textContent     = daysStr;
+    if (planCardExpire) planCardExpire.textContent  = 'Hết hạn: ' + expStr + ' · ' + daysStr;
+  }
 }
 
 async function saveShopInfo() {
@@ -580,11 +598,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!session?.user?.id) return;
 
     const { data: p } = await supa.from('profiles')
-      .select('shop_name, shop_address, shop_desc, industry, plan')
+      .select('shop_name, shop_address, shop_desc, industry, plan, plan_expires_at')
       .eq('id', session.user.id).single();
     if (!p) return;
 
-    applySettingsUI(p.shop_name, p.shop_address, p.shop_desc, p.industry, p.plan);
+    applySettingsUI(p.shop_name, p.shop_address, p.shop_desc, p.industry, p.plan, p.plan_expires_at);
     loadAutoPostSetting();
 
     // Sync ngược về localStorage
@@ -711,40 +729,4 @@ async function vpostSettings_renderFB() {
           return '<option value="' + p.id + '"' + sel + '>' + p.page_name + '</option>';
         }).join('');
       const active = status.activePage;
-      nameEl.textContent = active ? active.page_name : 'Đã kết nối — chưa chọn Fanpage';
-    } else {
-      nameEl.textContent = 'Đã kết nối — không có Fanpage nào';
-      picker.style.display = 'none';
-    }
-  } catch (e) {
-    nameEl.textContent = 'Lỗi: ' + (e.message || e);
-  }
-}
-
-async function vpostSettings_setActivePage(rowId) {
-  if (!rowId || !window.vpostFB) return;
-  try {
-    await window.vpostFB.setActivePage(rowId);
-    if (window.showToast) showToast('Đã chọn Fanpage tự đăng ✅');
-    vpostSettings_renderFB();
-  } catch (e) {
-    alert('Lỗi: ' + (e.message || e));
-  }
-}
-
-async function vpostSettings_disconnect() {
-  if (!confirm('Ngắt kết nối Facebook? Vpost sẽ không đăng bài thay bạn nữa.')) return;
-  try {
-    await window.vpostFB.disconnect();
-    if (window.showToast) showToast('Đã ngắt kết nối Facebook');
-    vpostSettings_renderFB();
-  } catch (e) {
-    alert('Lỗi: ' + (e.message || e));
-  }
-}
-
-// Auto-render khi page load (đợi DOMContentLoaded từ block trên xong)
-window.addEventListener('load', function() {
-  setTimeout(vpostSettings_renderFB, 300);
-});
-</script>
+      nameEl.textContent = active ? ac

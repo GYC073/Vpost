@@ -755,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: prof } = await supa.from('profiles').select('shop_name, industry').eq('id', uid).single();
       if (prof?.shop_name && prof?.industry) markDone('ob-profile');
       // FB
-      const { data: fb } = await supa.from('fb_connections').select('id').eq('user_id', uid).maybeSingle();
+      const { data: fb } = await supa.from('fb_connections').select('user_id').eq('user_id', uid).maybeSingle();
       if (fb) markDone('ob-fb');
       // Posts
       const { count } = await supa.from('posts').select('*', {count:'exact',head:true}).eq('user_id', uid);
