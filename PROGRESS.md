@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-05-31 (session 24) — Auto-post feature: edge function auto-generate-post + pg_cron 8:30 VN + toggle settings; fix settings save (không lưu gì cả); fix avatar dùng chữ cái đầu + load ảnh/cover từ Facebook; xóa stats giả landing; trust signal bảo mật FB; CLAUDE.md thêm context Thắng + product vision
+**Last updated:** 2026-06-01 (session 25) — Debug auto-post: fix pg_cron dùng current_setting() → hardcode SCHEDULER_SECRET giống fb-scheduler; E2E audit toàn bộ app: fix fb checklist (select 'id' → 'user_id'), fix plan date hardcoded trong settings.html (load dynamic từ Supabase), fix landing scroll animation (threshold 0.12 → 0.05). Tất cả tính năng core hoàn chỉnh, sẵn sàng launch khi Meta approve.
 
 ---
 

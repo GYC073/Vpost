@@ -1,31 +1,41 @@
-# NEXT — Handoff note (session 20, 2026-05-29)
+# NEXT — Handoff note (session 25, 2026-06-01)
 
-## Trạng thái: Sẵn sàng launch 🚀
+## Trạng thái: Đèn đỏ → Chờ đèn xanh 🚦
 
-Không còn việc tồn đọng. Mọi tính năng core đã hoàn chỉnh.
-
----
-
-## Đã xong trong session 20
-
-- ✅ Pricing framing: `≈ X.Xđ/ngày` + badge "Tiết kiệm ~Xh/tháng" trên upgrade.html + index.html (3 gói)
-- ✅ Hero value hint: badge xanh lá "Tiết kiệm ~15 giờ/tháng — chỉ từ 3.300đ/ngày"
-- ✅ CTA polish: hero pulse animation, ghost button nhạt hơn, nav btn shadow, "Đăng ngay" to hơn
-- ✅ Chrome audit: tất cả trang load OK, pricing cards hiện đúng, notification banner live
+App hoàn chỉnh. Đang chờ Meta App Review approve để mở ra cho tất cả user (không chỉ Tester).
 
 ---
 
-## Backlog nhỏ còn lại (không urgent)
+## Đã xong trong session 25
 
-- [ ] **Thông báo đăng bài thất bại qua Email** — cần Resend/email provider (chưa đúng trọng tâm)
-- [ ] **Admin: xem fb_api_log** để debug lỗi post
-- [ ] **Meta App Review** — chờ kết quả (4.9), không cần làm gì thêm
+- ✅ **Fix auto-post cron**: pg_cron dùng `current_setting()` không có giá trị → 401 mỗi ngày. Fix: hardcode SCHEDULER_SECRET trong command (giống fb-scheduler). Verified: function trả về `ok: true`.
+- ✅ **Fix FB checklist trên dashboard**: `.select('id')` trên `fb_connections` (không có cột id) → sửa thành `.select('user_id')`. User mới sẽ thấy tick đúng.
+- ✅ **Fix plan date trong settings**: hardcoded "15/06/2025 · Còn 30 ngày" → load dynamic từ Supabase, tính đúng ngày còn lại, hiển thị "Vĩnh viễn" nếu plan Pro dài hạn.
+- ✅ **Fix landing scroll animation**: threshold 0.12 → 0.05, thêm rootMargin. Hết blank spaces khi scroll nhanh.
 
 ---
 
-## Chuẩn bị launch
+## Khi Meta approve — làm ngay
 
-- Trial 3 ngày: ✅ đúng ở mọi nơi
-- Thanh toán: MB Bank + Momo ✅
-- Kênh hỗ trợ: Zalo 0789 434 345 ✅
-- Kênh nhắc sau launch: Email hoặc Zalo OA (sau khi có revenue đầu tiên)
+1. Switch FB App từ Development → Live mode
+2. Onboard 3-5 khách đầu tiên thủ công (Zalo trực tiếp)
+3. Ngồi cùng họ qua onboarding, ghi lại chỗ mắc
+4. Thu feedback sau tuần đầu → iterate
+
+---
+
+## Backlog (sau khi có user thật + revenue)
+
+- [ ] **Thông báo đăng bài thất bại** — email/Zalo khi post failed
+- [ ] **Admin: xem fb_api_log chi tiết** — debug lỗi đăng bài
+- [ ] **Onboarding nhắc kết nối FB** — wizard step 4 chưa redirect đúng cho user mới
+- [ ] **Zalo OA** — kênh thông báo + chăm sóc khách sau khi có revenue đầu tiên
+
+---
+
+## Hạ tầng ổn định
+
+- Auto-post cron: `vpost-auto-generate` chạy 8:30 VN (01:30 UTC) ✅
+- FB scheduler: `vpost-fb-scheduler` */5 phút ✅
+- pg_cron recover stuck: */30 phút ✅
+- Kho Nệm Giá Tốt đang dùng thật, `auto_post_enabled = true` ✅
