@@ -2,7 +2,7 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-06-01 (session 25) — Debug auto-post: fix pg_cron dùng current_setting() → hardcode SCHEDULER_SECRET giống fb-scheduler; E2E audit toàn bộ app: fix fb checklist (select 'id' → 'user_id'), fix plan date hardcoded trong settings.html (load dynamic từ Supabase), fix landing scroll animation (threshold 0.12 → 0.05). Tất cả tính năng core hoàn chỉnh, sẵn sàng launch khi Meta approve.
+**Last updated:** 2026-06-03 (session 26) — Fix settings.html: script block bị đặt sau </html> → toàn bộ JS (renderFB, applySettingsUI...) không chạy, FB status mãi "Đang kiểm tra...". Fix: move </body></html> về cuối file, đồng thời khôi phục phần file bị truncate. Deploy auto-generate-post edge function lần đầu (function commit 31/05 nhưng chưa bao giờ deploy → cron gọi 404 mỗi ngày → không có bài auto nào từ 29/05). Sau deploy, cron sẽ chạy ngày mai 08:30 VN.
 
 ---
 

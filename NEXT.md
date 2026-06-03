@@ -1,41 +1,37 @@
-# NEXT — Handoff note (session 25, 2026-06-01)
+# NEXT — Handoff note (session 26, 2026-06-03)
 
-## Trạng thái: Đèn đỏ → Chờ đèn xanh 🚦
+## Trạng thái
 
-App hoàn chỉnh. Đang chờ Meta App Review approve để mở ra cho tất cả user (không chỉ Tester).
-
----
-
-## Đã xong trong session 25
-
-- ✅ **Fix auto-post cron**: pg_cron dùng `current_setting()` không có giá trị → 401 mỗi ngày. Fix: hardcode SCHEDULER_SECRET trong command (giống fb-scheduler). Verified: function trả về `ok: true`.
-- ✅ **Fix FB checklist trên dashboard**: `.select('id')` trên `fb_connections` (không có cột id) → sửa thành `.select('user_id')`. User mới sẽ thấy tick đúng.
-- ✅ **Fix plan date trong settings**: hardcoded "15/06/2025 · Còn 30 ngày" → load dynamic từ Supabase, tính đúng ngày còn lại, hiển thị "Vĩnh viễn" nếu plan Pro dài hạn.
-- ✅ **Fix landing scroll animation**: threshold 0.12 → 0.05, thêm rootMargin. Hết blank spaces khi scroll nhanh.
+App ổn định. Đang chờ Meta App Review approve. 2 bug lớn đã fix hôm nay.
 
 ---
 
-## Khi Meta approve — làm ngay
+## Đã xong trong session 26
 
-1. Switch FB App từ Development → Live mode
-2. Onboard 3-5 khách đầu tiên thủ công (Zalo trực tiếp)
-3. Ngồi cùng họ qua onboarding, ghi lại chỗ mắc
-4. Thu feedback sau tuần đầu → iterate
+- ✅ **Fix settings.html**: toàn bộ script block (renderFB, applySettingsUI, DOMContentLoaded...) bị đặt SAU `</html>` → Chrome không chạy → FB status mãi "Đang kiểm tra...", shop name/plan không load từ Supabase. Fix: move `</body></html>` về đúng cuối file. File còn bị truncate giữa chừng — đã khôi phục đầy đủ.
+- ✅ **Deploy `auto-generate-post`**: function commit ngày 31/05 nhưng chưa bao giờ deploy → pg_cron gọi lên thì 404 → không có bài auto nào từ 29/05 đến 03/06 (6 ngày trống). Sau deploy hôm nay, cron sẽ chạy lần đầu ngày mai **08:30 VN**.
 
 ---
 
-## Backlog (sau khi có user thật + revenue)
+## Ngày mai cần kiểm tra (2026-06-04)
+
+1. Vào app.html hoặc calendar.html xem có bài auto được tạo lúc ~10h VN không
+2. Nếu có bài nhưng chưa đăng Facebook → fb-scheduler sẽ pick up trong 5 phút
+3. Nếu không có bài → check fb_api_log + Supabase Edge Function logs
+
+---
+
+## Hạ tầng
+
+- `vpost-auto-generate` pg_cron: chạy 01:30 UTC (08:30 VN) hằng ngày — gọi `auto-generate-post` edge function
+- `vpost-fb-scheduler` pg_cron: */5 phút — post scheduled → Facebook
+- `vpost-recover-stuck` pg_cron: */30 phút — recover posts bị stuck ở 'posting'
+- FB token: còn ~59 ngày
+- Kho Nệm Giá Tốt: `auto_post_enabled = true`, plan Pro ✓
+
+---
+
+## Backlog
 
 - [ ] **Thông báo đăng bài thất bại** — email/Zalo khi post failed
-- [ ] **Admin: xem fb_api_log chi tiết** — debug lỗi đăng bài
-- [ ] **Onboarding nhắc kết nối FB** — wizard step 4 chưa redirect đúng cho user mới
-- [ ] **Zalo OA** — kênh thông báo + chăm sóc khách sau khi có revenue đầu tiên
-
----
-
-## Hạ tầng ổn định
-
-- Auto-post cron: `vpost-auto-generate` chạy 8:30 VN (01:30 UTC) ✅
-- FB scheduler: `vpost-fb-scheduler` */5 phút ✅
-- pg_cron recover stuck: */30 phút ✅
-- Kho Nệm Giá Tốt đang dùng thật, `auto_post_enabled = true` ✅
+- [ ] **Chờ Meta App Review** — sau khi approve: switch app sang Live mode, onboard 3-5 khách đầu tiên
