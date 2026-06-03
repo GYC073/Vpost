@@ -498,8 +498,6 @@ async function doLogout() {
   window.location.href = '../login.html';
 }
 </script>
-</body>
-</html>
 <script>
 const INDUSTRY_LABELS = {
   coffee:'☕ Cà phê / Đồ uống', fashion:'👗 Thời trang',
@@ -729,4 +727,42 @@ async function vpostSettings_renderFB() {
           return '<option value="' + p.id + '"' + sel + '>' + p.page_name + '</option>';
         }).join('');
       const active = status.activePage;
-      nameEl.textContent = active ? ac
+      nameEl.textContent = active ? active.page_name : 'Đã kết nối — chưa chọn Fanpage';
+    } else {
+      nameEl.textContent = 'Đã kết nối — không có Fanpage nào';
+      picker.style.display = 'none';
+    }
+  } catch (e) {
+    nameEl.textContent = 'Lỗi: ' + (e.message || e);
+  }
+}
+
+async function vpostSettings_setActivePage(rowId) {
+  if (!rowId || !window.vpostFB) return;
+  try {
+    await window.vpostFB.setActivePage(rowId);
+    if (window.showToast) showToast('Đã chọn Fanpage tự đăng ✅');
+    vpostSettings_renderFB();
+  } catch (e) {
+    alert('Lỗi: ' + (e.message || e));
+  }
+}
+
+async function vpostSettings_disconnect() {
+  if (!confirm('Ngắt kết nối Facebook? Vpost sẽ không đăng bài thay bạn nữa.')) return;
+  try {
+    await window.vpostFB.disconnect();
+    if (window.showToast) showToast('Đã ngắt kết nối Facebook');
+    vpostSettings_renderFB();
+  } catch (e) {
+    alert('Lỗi: ' + (e.message || e));
+  }
+}
+
+// Auto-render khi page load (đợi DOMContentLoaded từ block trên xong)
+window.addEventListener('load', function() {
+  setTimeout(vpostSettings_renderFB, 300);
+});
+</script>
+</body>
+</html>
