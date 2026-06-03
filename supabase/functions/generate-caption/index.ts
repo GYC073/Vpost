@@ -280,8 +280,8 @@ TÁCH CAPTION bằng dòng chỉ có "---"`;
       userPrompt = `Shop: "${profile.shop_name ?? "Shop"}" — ngành ${industryLabel}.
 ${profile.shop_desc ? `Mô tả shop: ${profile.shop_desc}` : ""}
 Tone mong muốn: ${toneLabel}
-${topic ? `Nội dung / sản phẩm: ${topic}` : ""}
-${userDesc ? `Thêm từ chủ shop: ${userDesc}` : ""}
+${topic ? `Chủ đề / định hướng bài đăng: ${topic}` : ""}
+${userDesc ? `Gợi ý thêm từ chủ shop (dùng làm định hướng sáng tạo, KHÔNG trích nguyên văn vào caption): ${userDesc}` : ""}
 
 ${referenceBlock}
 Bài đã đăng gần đây (tránh lặp ý):

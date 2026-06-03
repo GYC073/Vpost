@@ -1205,7 +1205,16 @@ async function generateCaptions() {
 
   const tone = document.getElementById('toneSelect').value;
   let userDesc = document.getElementById('userDesc').value.trim();
-  let topicForApi = selectedTopic;
+  // Map topic key → mô tả tiếng Việt rõ ràng cho AI (tránh AI nhận "interact" không hiểu)
+  const TOPIC_API_LABELS = {
+    product:   'Giới thiệu sản phẩm mới hoặc bán chạy nhất của shop',
+    promotion: 'Thông báo khuyến mãi, giảm giá hoặc ưu đãi đặc biệt',
+    interact:  'Bài tương tác: đặt câu hỏi thú vị, mini poll, hoặc kêu gọi khách comment và tag bạn bè',
+    quote:     'Chia sẻ mẹo hay hoặc sự thật thú vị liên quan ngành hàng của shop',
+    checkin:   'Bài check-in: khoảnh khắc đặc biệt, hậu trường hoặc câu chuyện hằng ngày của shop',
+    fallback:  'Bài đăng tổng quát: câu chuyện shop, sản phẩm nổi bật hoặc lời cảm ơn khách hàng',
+  };
+  let topicForApi = TOPIC_API_LABELS[selectedTopic] || selectedTopic;
 
   // Nếu là hiring → build userDesc cực giàu từ form, đẩy hết info vào để Claude có context
   if (selectedTopic === 'hiring') {

@@ -191,14 +191,14 @@ Trả lời ĐÚNG JSON sau, không thêm gì khác:
     };
   },
 
-  // Fallback nếu API lỗi
+  // Fallback nếu API lỗi — dùng caption generic, KHÔNG paste userDesc vào
   getFallback(shopName, userDesc, topic) {
     const shop = this.getShopInfo();
     const name = shopName || shop.shopName || 'shop';
     return [
-      `✨ Hôm nay ${name} muốn chia sẻ điều đặc biệt với bạn!\n\n${userDesc || 'Chúng mình luôn nỗ lực mang đến những điều tốt nhất cho khách hàng.'}\n\nGhé thăm ${name} để trải nghiệm nhé! 💙\n\n#${name.replace(/\s/g,'')} #ChấtLượng #TậnTâm`,
-      `💫 Bạn có biết điều gì làm ${name} khác biệt không?\n\n${userDesc || 'Đó chính là sự tận tâm với từng khách hàng — mỗi người, mỗi sản phẩm đều được chăm chút kỹ lưỡng.'}\n\nTag người bạn muốn chia sẻ điều này! 👇\n\n#${name.replace(/\s/g,'')} #KhácBiệt`,
-      `🌟 ${name} — nơi mỗi ngày đều có điều mới!\n\n${userDesc || 'Chúng mình liên tục cải thiện để phục vụ bạn tốt hơn mỗi ngày.'}\n\nNhắn tin hoặc ghé thăm mình nhé! 😊\n\n#${name.replace(/\s/g,'')} #MỗiNgàyMộiMới`,
+      `✨ Hôm nay ${name} có điều muốn chia sẻ!\n\nMình luôn cố gắng mang sản phẩm tốt nhất đến tay bạn. Ai cần thì nhắn shop nhé 💙\n\n#${name.replace(/\s/g,'')} #MớiVề`,
+      `💫 ${name} — mỗi ngày đều có hàng mới!\n\nGhé qua xem nhé, thấy ưng thì nhắn mình, tư vấn miễn phí 😊\n\n#${name.replace(/\s/g,'')} #HàngChất`,
+      `🌟 Cảm ơn mọi người đã ủng hộ ${name}!\n\nMỗi đơn hàng là động lực để mình tiếp tục cố gắng 💪 Nhắn shop nếu cần tư vấn nhé!\n\n#${name.replace(/\s/g,'')} #CảmƠn`,
     ];
   },
 };
