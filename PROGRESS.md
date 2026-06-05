@@ -2,7 +2,11 @@
 
 > Cập nhật mỗi khi đổi trạng thái task. Đọc file này ngay sau CLAUDE.md.
 
-**Last updated:** 2026-06-03 (session 26) — Fix settings.html: script block bị đặt sau </html> → toàn bộ JS (renderFB, applySettingsUI...) không chạy, FB status mãi "Đang kiểm tra...". Fix: move </body></html> về cuối file, đồng thời khôi phục phần file bị truncate. Deploy auto-generate-post edge function lần đầu (function commit 31/05 nhưng chưa bao giờ deploy → cron gọi 404 mỗi ngày → không có bài auto nào từ 29/05). Sau deploy, cron sẽ chạy ngày mai 08:30 VN.
+**Last updated:** 2026-06-04 (session 27) — Auto-post chết: 2 cron gửi token lệch SCHEDULER_SECRET → cả auto-generate lẫn fb-scheduler bị 401 mỗi lần chạy (soi net._http_response). Sửa: rewrite 2 cron dùng chung secret đúng + timeout 30s; xác nhận lại secret ở Dashboard. Lỗi thứ 2 lộ ra sau khi sửa auth: `h.caption.slice(0,80)` xẻ đôi emoji → Anthropic 400 "no low surrogate" → vá thành cắt theo code-point (+ stripLoneSurrogates ở bản local), deploy qua Dashboard editor. Verify end-to-end: bài auto ĐÃ ĐĂNG lên Facebook thật (status posted, có fb_post_id). Chi tiết: NEXT.md.
+
+> **Bài học debug cron:** khi cron gọi edge function mà "không thấy gì xảy ra", soi `SELECT status_code, content FROM net._http_response ORDER BY created DESC LIMIT 10;` — đó là nơi thấy đúng HTTP status (401/404/200) và body lỗi function trả về.
+
+**(session 26 — 2026-06-03):** Fix settings.html (script block đặt sau thẻ đóng html → JS không chạy). Deploy auto-generate-post lần đầu.
 
 ---
 

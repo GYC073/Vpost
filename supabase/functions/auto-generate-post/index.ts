@@ -56,16 +56,44 @@ const INDUSTRY_LABEL: Record<string, string> = {
   other:      "kinh doanh",
 };
 
-// 7 chủ đề xoay vòng theo thứ trong tuần (0=CN, 1=T2, ...)
-const WEEKLY_TOPICS = [
-  "giới thiệu sản phẩm mới về hoặc bán chạy nhất",   // CN
-  "chia sẻ mẹo hay / kiến thức liên quan ngành hàng", // T2
-  "câu chuyện khách hàng thật / feedback tích cực",    // T3
-  "flash sale hoặc ưu đãi cuối tuần sắp tới",         // T4
-  "behind the scenes / một ngày của shop",             // T5
-  "sản phẩm combo / gợi ý quà tặng",                  // T6
-  "cảm ơn khách hàng + nhắc đến sản phẩm hot",        // T7
+// Pool chủ đề — CHỌN NGẪU NHIÊN mỗi ngày (không gán cứng theo thứ để tránh lặp nhịp tuần)
+const TOPIC_POOL = [
+  "giới thiệu sản phẩm mới về hoặc bán chạy nhất",
+  "chia sẻ mẹo hay / kiến thức liên quan ngành hàng",
+  "câu chuyện khách hàng thật / feedback tích cực",
+  "flash sale hoặc ưu đãi sắp tới",
+  "behind the scenes / một ngày của shop",
+  "sản phẩm combo / gợi ý quà tặng",
+  "cảm ơn khách hàng + nhắc đến sản phẩm hot",
+  "đính chính 1 hiểu lầm phổ biến trong ngành",
+  "so sánh giúp khách chọn đúng (kiểu A vs kiểu B)",
+  "giải đáp 1 câu hỏi khách hay thắc mắc",
+  "mẹo bảo quản / dùng sản phẩm bền đẹp",
+  "khoảnh khắc đời thường ở shop (chân thật, không bán hàng lộ liễu)",
 ];
+
+// Các kiểu mở bài — chọn ngẫu nhiên 1 kiểu mỗi ngày để caption không cùng giọng
+const OPENING_ANGLES = [
+  "một câu hỏi bất ngờ khiến người đọc khựng lại",
+  "một quan sát đời thường rất relatable",
+  "kể 1 khoảnh khắc/tình huống thật (mini-story)",
+  "một con số hoặc chi tiết cụ thể gây tò mò",
+  "một mẹo dùng được ngay",
+  "một lời thú nhận thật lòng của chủ shop",
+  "mở bằng cảm giác cụ thể (mát, êm, thơm, nhẹ tay...)",
+  "một câu nói vu vơ như đang nhắn cho bạn thân",
+];
+
+// Cắt chuỗi theo CODE POINT (không xẻ đôi emoji / surrogate pair như String.slice)
+function safeTruncate(s: string, n: number): string {
+  return [...(s ?? "")].slice(0, n).join("");
+}
+
+// Loại bỏ surrogate lẻ (nửa emoji) — nếu lọt vào JSON gửi Anthropic sẽ gây
+// lỗi 400 "no low surrogate in string". Đây là lớp phòng thủ cuối cùng.
+function stripLoneSurrogates(s: string): string {
+  return (s ?? "").replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "");
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -101,8 +129,16 @@ Deno.serve(async (req) => {
   const expected = Deno.env.get("SCHEDULER_SECRET");
   if (!expected) return json({ error: "SCHEDULER_SECRET not configured" }, 500);
 
-  const auth = req.headers.get("Authorization") ?? "";
-  if (auth !== `Bearer ${expected}`) return json({ error: "unauthorized" }, 401);
+  // Chấp nhận secret qua nhiều cách để chịu được mọi kiểu cấu hình cron:
+  //   - Authorization: Bearer <secret>
+  //   - x-scheduler-secret: <secret>
+  //   - apikey: <secret>
+  const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const provided = bearer || req.headers.get("x-scheduler-secret") || req.headers.get("apikey") || "";
+  if (provided !== expected) {
+    console.warn("auto-generate-post: unauthorized (secret mismatch)");
+    return json({ error: "unauthorized" }, 401);
+  }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -114,17 +150,18 @@ Deno.serve(async (req) => {
   const anthropic = new Anthropic({ apiKey });
 
   const todayVN = getTodayVN();
-  const scheduledAt = getTodayAt10hVN();
-
-  // Nếu đã qua 10h VN rồi thì bỏ qua (schedule cho ngày mai sẽ gây nhầm)
   const nowUTC = new Date();
+
+  // Mục tiêu: hẹn giờ đăng lúc 10:00 VN hôm nay.
+  // Nếu cron chạy TRỄ (đã quá 10:00 VN) → KHÔNG bỏ qua nữa, mà hẹn đăng sau 3 phút
+  // để bài vẫn ra trong ngày. Chống lỗi "skip âm thầm" khi cron lệch giờ.
+  let scheduledAt = getTodayAt10hVN();
+  let scheduleNote = "10:00 VN";
   if (nowUTC >= scheduledAt) {
-    return json({
-      ok: true,
-      message: "Already past 10:00 VN today, skipping",
-      scheduled_for: scheduledAt.toISOString(),
-    });
+    scheduledAt = new Date(nowUTC.getTime() + 3 * 60 * 1000);
+    scheduleNote = "now+3min (cron chạy sau 10:00 VN)";
   }
+  console.log(`auto-generate-post start — todayVN=${todayVN}, scheduledAt=${scheduledAt.toISOString()} (${scheduleNote})`);
 
   const results: Array<{user_id: string; status: string; detail?: string}> = [];
 
@@ -208,10 +245,9 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // ===== 7. Chọn chủ đề theo ngày trong tuần (VN) =====
-        const vnNow = new Date(nowUTC.getTime() + 7 * 60 * 60 * 1000);
-        const dayOfWeek = vnNow.getUTCDay(); // 0=CN..6=T7
-        const topic = WEEKLY_TOPICS[dayOfWeek];
+        // ===== 7. Chọn chủ đề + kiểu mở bài NGẪU NHIÊN (đa dạng mỗi ngày) =====
+        const topic = TOPIC_POOL[Math.floor(Math.random() * TOPIC_POOL.length)];
+        const openingAngle = OPENING_ANGLES[Math.floor(Math.random() * OPENING_ANGLES.length)];
 
         const industryKey = profile.industry ?? "other";
         const industryLabel = INDUSTRY_LABEL[industryKey] ?? "kinh doanh";
@@ -226,7 +262,7 @@ Deno.serve(async (req) => {
           .limit(5);
 
         const recentContent = (history ?? [])
-          .map((h: {caption: string}, i: number) => `${i + 1}. ${h.caption.slice(0, 80)}`)
+          .map((h: {caption: string}, i: number) => `${i + 1}. ${safeTruncate(h.caption, 80)}`)
           .join("\n") || "(chưa có)";
 
         // ===== 9. Generate caption với Claude Haiku =====
@@ -241,6 +277,7 @@ VIẾT NHƯ NGƯỜI VIỆT THẬT:
 - CTA nhẹ tự nhiên: "ai cần nhắn mình", "nhắn shop nhé" (KHÔNG dùng "inbox ngay")
 - Emoji 0–2 cái
 - Hashtag 1–3 cái, cụ thể ngành/sản phẩm
+- CẤM mở đầu bằng các cụm nhàm: "Sự thật", "Chuyện nhỏ mà dễ bị bỏ qua", "Hôm nay mình muốn nghe từ bạn", "Bạn có biết". KHÔNG lặp kiểu mở bài của các bài gần đây bên dưới.
 
 ĐỘ DÀI: 40–90 chữ — ngắn nhưng đủ ý`;
 
@@ -248,16 +285,19 @@ VIẾT NHƯ NGƯỜI VIỆT THẬT:
 Chủ đề hôm nay: ${topic}
 ${profile.shop_desc ? `Mô tả shop: ${profile.shop_desc}` : ""}
 
-Bài đã đăng gần đây (tránh lặp ý):
+Bài đã đăng gần đây (tránh lặp ý VÀ tránh lặp kiểu mở bài):
 ${recentContent}
+
+Hôm nay mở bài theo kiểu: ${openingAngle}.
+(Hạt giống sáng tạo: ${Math.floor(Math.random() * 100000)} — viết khác các lần trước, đừng in số này ra.)
 
 Viết 1 caption Facebook tự nhiên, đúng chủ đề hôm nay.`;
 
         const msg = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 400,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
+          system: stripLoneSurrogates(systemPrompt),
+          messages: [{ role: "user", content: stripLoneSurrogates(userPrompt) }],
         });
 
         const caption = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "";
@@ -315,6 +355,7 @@ Viết 1 caption Facebook tự nhiên, đúng chủ đề hôm nay.`;
       skipped: results.filter(r => r.status === "skipped").length,
       errors: results.filter(r => r.status === "error").length,
       scheduled_for: scheduledAt.toISOString(),
+      schedule_note: scheduleNote,
       results,
     };
 

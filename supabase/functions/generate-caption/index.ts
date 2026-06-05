@@ -260,10 +260,19 @@ Viết 3 mẫu bài tuyển dụng Facebook, tách bằng "---".`;
 TỪ TUYỆT ĐỐI KHÔNG DÙNG (dù chỉ 1 từ là loại luôn):
 "đừng bỏ lỡ" / "chất lượng vượt trội" / "siêu hot" / "deal hấp dẫn" / "cơ hội vàng" / "đội ngũ chuyên nghiệp" / "sản phẩm uy tín" / "giá cực tốt" / "không thể bỏ lỡ" / "đừng bỏ qua" / "ưu đãi hấp dẫn" / "chất lượng cao" / "phục vụ tận tâm"
 
-3 CÁCH MỞ ĐẦU KHÁC NHAU — mỗi caption dùng 1 cách, theo thứ tự:
-1. Câu hỏi hoặc quan sát bất ngờ → rồi mới nói đến sản phẩm
-2. Chia sẻ thẳng 1 sự thật/chi tiết cụ thể về sản phẩm (con số, cảm nhận, so sánh)
-3. Kể ngắn 1 tình huống thật của khách hoặc 1 mẹo hay liên quan
+MỞ BÀI — 3 caption PHẢI mở theo 3 kiểu KHÁC HẲN nhau. Tự chọn ngẫu nhiên 3 kiểu khác nhau từ menu (mỗi lần viết chọn khác lần trước):
+- Câu hỏi bất ngờ khiến người đọc khựng lại
+- Quan sát đời thường rất relatable
+- Kể 1 khoảnh khắc/tình huống thật (mini-story)
+- 1 con số hoặc chi tiết cụ thể gây tò mò
+- 1 mẹo dùng được ngay
+- Đính chính 1 hiểu lầm phổ biến
+- So sánh A vs B / trước vs sau
+- Lời thú nhận thật lòng của chủ shop
+- Mở bằng cảm giác cụ thể (mát, êm, thơm, nhẹ tay...)
+- Câu nói vu vơ như đang nhắn cho bạn thân
+
+CẤM mở đầu bằng các cụm đã dùng nhàm: "Sự thật", "Sự thật là", "Sự thật mỉm cười", "Chuyện nhỏ mà dễ bị bỏ qua", "Hôm nay mình muốn nghe từ bạn", "Bạn có biết". TUYỆT ĐỐI không lặp kiểu mở bài đã có trong "Bài đã đăng gần đây" bên dưới.
 
 VIẾT NHƯ NGƯỜI VIỆT THẬT:
 - Câu ngắn 5–10 chữ xen câu dài hơn — không đều nhau
@@ -287,7 +296,8 @@ ${referenceBlock}
 Bài đã đăng gần đây (tránh lặp ý):
 ${recentContent}
 
-Viết 3 caption theo 3 cách mở đầu khác nhau, tách bằng "---". Không đánh số, không thêm nhãn [1] [2] [3].`;
+Viết 3 caption với 3 kiểu mở bài khác hẳn nhau (theo menu mở bài), giọng và nhịp câu cũng phải khác nhau. Tách bằng "---". Không đánh số, không thêm nhãn [1] [2] [3].
+(Hạt giống sáng tạo lần này: ${Math.floor(Math.random() * 100000)} — dùng để viết khác các lần trước, đừng in con số này ra.)`;
     }
 
     // ----- Ghép Style Preset + Humanize Layer vào systemPrompt -----
