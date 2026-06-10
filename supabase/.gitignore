@@ -6,3 +6,6 @@
 .env.keys
 .env.local
 .env.*.local
+
+# Chứa SCHEDULER_SECRET — chỉ dùng local, không commit
+fix_auto_generate_cron.sql
