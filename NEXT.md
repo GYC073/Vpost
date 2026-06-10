@@ -1,8 +1,32 @@
-# NEXT — Handoff note (session 27, 2026-06-04)
+# NEXT — Handoff note (session 28, 2026-06-10)
 
 ## Trạng thái
 
-✅ **ĐÃ FIX XONG + VERIFY END-TO-END.** Sáng 04/06 không có bài auto → tìm ra 2 lỗi, sửa hết, đã đăng 1 bài auto lên Facebook thật (post id `1031327383407406_122108100009293478`, status `posted`). App ổn định. Đang chờ Meta App Review.
+✅ **DRIFT ĐÃ ĐÓNG. App ổn định, đang chờ Meta App Review.** Hệ thống đăng bài mấy hôm chạy đều. Repo và production giờ KHỚP nhau (không còn drift edge function).
+
+---
+
+## Session 28 — Sync drift repo↔production (2026-06-10)
+
+**Bối cảnh:** từ session 27, production chạy bản edit-tại-chỗ (qua Dashboard editor) còn local `index.ts` là canonical superset (đầy đủ hardening + diversity). Cần deploy để sync hẳn.
+
+**Đã làm:**
+- ✅ Deploy `auto-generate-post --no-verify-jwt` + `generate-caption` từ máy Windows của Ben → production giờ chạy bản canonical (stripLoneSurrogates + safeTruncate + tolerant auth + TOPIC_POOL 12 mục; generate-caption có menu 10 góc mở bài + random seed).
+- ✅ Commit `.gitignore` (ignore `fix_auto_generate_cron.sql` — chứa secret) + push. *(Các file function đã được commit từ session 27 trong `1f7476d`; git repo vốn đã là canonical source.)*
+- ✅ Verify: trigger thủ công auto-generate-post (pg_net request id 5407) → 3 bài caption đầy đủ (len 280/333/440), không lỗi surrogate, 3 mở bài khác hẳn nhau.
+
+**→ KHÔNG còn "drift cần biết" như ghi chú cuối session 27. Repo = production.**
+
+**Môi trường Windows (ghi nhớ cho lần sau):**
+- PowerShell chặn `npx.ps1` (execution policy) → dùng `npx.cmd ...` hoặc chạy trong `cmd`.
+- `.git/index.lock` stale (do sandbox Linux tạo khi thử git, không tự xóa được) → từ Windows `Remove-Item D:\vpost\.git\index.lock` rồi git lại.
+- `WARNING: Docker is not running` khi `supabase functions deploy` là VÔ HẠI (Docker chỉ cần cho chạy local).
+
+---
+
+## (cũ) Session 27 — 2026-06-04
+
+✅ **ĐÃ FIX XONG + VERIFY END-TO-END.** Sáng 04/06 không có bài auto → tìm ra 2 lỗi, sửa hết, đã đăng 1 bài auto lên Facebook thật (post id `1031327383407406_122108100009293478`, status `posted`).
 
 ---
 

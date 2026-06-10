@@ -74,7 +74,7 @@ const TOPIC_POOL = [
 
 // Các kiểu mở bài — chọn ngẫu nhiên 1 kiểu mỗi ngày để caption không cùng giọng
 const OPENING_ANGLES = [
-  "một câu hỏi bất ngờ khiến người đọc khựng lại",
+  "một thông báo ngắn gọn, đi thẳng vào việc",
   "một quan sát đời thường rất relatable",
   "kể 1 khoảnh khắc/tình huống thật (mini-story)",
   "một con số hoặc chi tiết cụ thể gây tò mò",
@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
     // ===== 1. Lấy users cần auto-generate =====
     const { data: profiles, error: profilesErr } = await admin
       .from("profiles")
-      .select("id, shop_name, industry, shop_desc, plan, plan_expires_at, enabled")
+      .select("id, shop_name, industry, shop_desc, plan, plan_expires_at, enabled, voice_samples, contact_footer, auto_append_footer")
       .eq("auto_post_enabled", true)
       .eq("enabled", true);
 
@@ -265,33 +265,43 @@ Deno.serve(async (req) => {
           .map((h: {caption: string}, i: number) => `${i + 1}. ${safeTruncate(h.caption, 80)}`)
           .join("\n") || "(chưa có)";
 
+        // Giọng văn mẫu của shop (bài đăng thật) — đòn bẩy mạnh nhất để caption "thật"
+        const voiceBlock = (profile.voice_samples && profile.voice_samples.trim())
+          ? safeTruncate(profile.voice_samples.trim(), 2000)
+          : "";
+
         // ===== 9. Generate caption với Claude Haiku =====
-        const systemPrompt = `Bạn là người viết caption Facebook cho shop nhỏ Việt Nam — viết như chính chủ shop nhắn, không phải copywriter marketing.
+        const systemPrompt = `Bạn viết caption Facebook hộ chủ một shop nhỏ ở Việt Nam. Viết như CHÍNH CHỦ SHOP đang đăng lên trang của họ — như nhắn cho khách quen. KHÔNG phải giọng quảng cáo, KHÔNG phải copywriter.
+${voiceBlock ? `
+QUAN TRỌNG NHẤT — HỌC GIỌNG: dưới đây là vài bài ĐĂNG THẬT của shop này. Viết bám SÁT giọng đó: cách xưng hô, độ dài câu, nhịp điệu, thói quen dùng emoji & hashtag, từ địa phương. Mục tiêu: khách đọc không phân biệt được đâu là bài shop tự viết, đâu là AI viết.
 
-TỪ TUYỆT ĐỐI KHÔNG DÙNG:
-"đừng bỏ lỡ" / "chất lượng vượt trội" / "siêu hot" / "deal hấp dẫn" / "cơ hội vàng" / "đội ngũ chuyên nghiệp" / "sản phẩm uy tín" / "giá cực tốt" / "không thể bỏ lỡ" / "ưu đãi hấp dẫn" / "chất lượng cao" / "phục vụ tận tâm"
+=== BÀI THẬT CỦA SHOP (mẫu giọng — bắt chước, ĐỪNG chép nguyên) ===
+${voiceBlock}
+=== HẾT MẪU ===
+` : ""}
+NGUYÊN TẮC:
+- ĐA DẠNG cách mở bài. TUYỆT ĐỐI KHÔNG mở bằng câu hỏi tu từ kiểu "Mua/Nằm/Dùng ... mà vẫn ...?". Mỗi bài mở một kiểu khác hẳn nhau.
+- KHÔNG dùng từ sáo rỗng: "đừng bỏ lỡ", "chất lượng vượt trội/cao", "siêu tiện", "siêu hot", "deal hấp dẫn", "cơ hội vàng", "đội ngũ chuyên nghiệp", "uy tín", "tận tâm", "ai cũng hài lòng", "chất lượng vừa đẹp", "ưng ý thực sự".
+- CTA KHÔNG bắt buộc — nhiều bài hay nhất chẳng cần lời kêu gọi. Nếu có thì đổi cách nói mỗi bài, đừng lặp "nhắn shop nhé".
+- Hashtag: chỉ dùng nếu bài mẫu của shop có dùng; mặc định 0, tối đa 2.
+- Emoji: theo thói quen bài mẫu, 0–2 cái.
+- KHÔNG bịa số liệu, giá, % giảm, thời gian khuyến mãi nếu không được cung cấp. Thà viết về cảm giác/giá trị còn hơn bịa con số.
+- KHÔNG tự viết số điện thoại, địa chỉ, giờ mở cửa — phần liên hệ sẽ được gắn tự động sau.
 
-VIẾT NHƯ NGƯỜI VIỆT THẬT:
-- Câu ngắn 5–10 chữ xen câu dài hơn
-- Xuống dòng sau 1–2 câu
-- CTA nhẹ tự nhiên: "ai cần nhắn mình", "nhắn shop nhé" (KHÔNG dùng "inbox ngay")
-- Emoji 0–2 cái
-- Hashtag 1–3 cái, cụ thể ngành/sản phẩm
-- CẤM mở đầu bằng các cụm nhàm: "Sự thật", "Chuyện nhỏ mà dễ bị bỏ qua", "Hôm nay mình muốn nghe từ bạn", "Bạn có biết". KHÔNG lặp kiểu mở bài của các bài gần đây bên dưới.
+ĐỘ DÀI: linh hoạt 30–90 chữ. Có bài chỉ vài dòng ngắn cũng được — tự nhiên là chính.
 
-ĐỘ DÀI: 40–90 chữ — ngắn nhưng đủ ý`;
+Chỉ trả về nội dung caption, không thêm lời dẫn hay giải thích.`;
 
         const userPrompt = `Shop: "${shopName}" — ngành ${industryLabel}.
-Chủ đề hôm nay: ${topic}
-${profile.shop_desc ? `Mô tả shop: ${profile.shop_desc}` : ""}
+${profile.shop_desc ? `Mô tả shop: ${profile.shop_desc}\n` : ""}Chủ đề hôm nay: ${topic}
+Hôm nay thử mở bài theo hướng: ${openingAngle}.
 
-Bài đã đăng gần đây (tránh lặp ý VÀ tránh lặp kiểu mở bài):
+Bài shop đã đăng GẦN ĐÂY (viết khác hẳn — đừng lặp ý, đừng lặp kiểu mở bài):
 ${recentContent}
 
-Hôm nay mở bài theo kiểu: ${openingAngle}.
-(Hạt giống sáng tạo: ${Math.floor(Math.random() * 100000)} — viết khác các lần trước, đừng in số này ra.)
+(Hạt giống sáng tạo: ${Math.floor(Math.random() * 100000)} — để viết khác các lần trước, đừng in số này ra.)
 
-Viết 1 caption Facebook tự nhiên, đúng chủ đề hôm nay.`;
+Viết 1 caption Facebook tự nhiên cho chủ đề hôm nay, đúng giọng shop.`;
 
         const msg = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
@@ -300,10 +310,16 @@ Viết 1 caption Facebook tự nhiên, đúng chủ đề hôm nay.`;
           messages: [{ role: "user", content: stripLoneSurrogates(userPrompt) }],
         });
 
-        const caption = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "";
+        let caption = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "";
         if (!caption || caption.length < 20) {
           results.push({ user_id: uid, status: "error", detail: "ai_returned_empty" });
           continue;
+        }
+
+        // Gắn footer liên hệ (giờ/hotline/địa chỉ) nếu shop bật — code gắn nguyên văn,
+        // KHÔNG để AI tự sinh để tránh bịa sai số điện thoại.
+        if (profile.auto_append_footer && profile.contact_footer && profile.contact_footer.trim()) {
+          caption = `${caption}\n\n${profile.contact_footer.trim()}`;
         }
 
         // ===== 10. Insert post =====

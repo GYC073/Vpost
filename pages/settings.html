@@ -433,9 +433,37 @@
     <div class="settings-row" id="autoPostInfoRow" style="display:none; background: rgba(37,99,235,0.04); border-top: 1px solid var(--border);">
       <div style="font-size:13px; color: var(--text-secondary); line-height:1.6;">
         <i class="ti ti-info-circle" style="color:var(--primary)"></i>
-        AI tự chọn chủ đề xoay vòng mỗi ngày trong tuần (giới thiệu sản phẩm, mẹo hay, flash sale...).
+        AI tự chọn chủ đề xoay vòng mỗi ngày (giới thiệu sản phẩm, mẹo hay, cảm ơn khách, flash sale...).
         Bài sẽ xuất hiện trong <a href="calendar.html" style="color:var(--primary)">lịch đăng bài</a> — bạn vẫn có thể sửa hoặc huỷ trước 10h.
       </div>
+    </div>
+
+    <!-- Dạy AI giọng văn của shop + footer liên hệ -->
+    <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:14px;">
+      <div class="settings-row-left">
+        <div class="settings-row-label"><i class="ti ti-message-heart" style="color:var(--primary)"></i> Dạy AI giọng văn của shop</div>
+        <div class="settings-row-sub">Dán 3–5 bài đăng <b>thật</b> của shop, mỗi bài cách nhau bằng một dòng <code>---</code>. AI sẽ bắt chước đúng giọng này — càng giống bài thật, caption càng tự nhiên, bớt giọng quảng cáo.</div>
+        <textarea class="settings-input" id="settingVoiceSamples" rows="7" placeholder="Đi đơn cho khách iu 🥰
+Cảm ơn khách luôn tin tưởng và ủng hộ shop nha
+---
+Mẫu nệm mới về kho rồi cả nhà ơi, êm phải biết luôn
+Ai cần ghé shop xem trực tiếp nhé"></textarea>
+      </div>
+      <div class="settings-row-left">
+        <div class="settings-row-label"><i class="ti ti-map-pin" style="color:var(--primary)"></i> Thông tin liên hệ (gắn cuối bài)</div>
+        <div class="settings-row-sub">Giờ mở cửa, hotline/Zalo, địa chỉ… AI gắn <b>nguyên văn</b> khối này vào cuối bài auto — không tự bịa số điện thoại.</div>
+        <textarea class="settings-input" id="settingContactFooter" rows="4" placeholder="————————————
+🕗 Giờ mở cửa: 8h00 - 20h00
+☎️ Hotline/Zalo: 079 6771777
+🏠 Cơ sở: 170 Lê Duẩn - TP Đông Hà"></textarea>
+      </div>
+      <label style="display:flex; align-items:center; gap:8px; font-size:14px; color:var(--text); cursor:pointer;">
+        <input type="checkbox" id="settingAppendFooter" style="width:18px;height:18px; accent-color:var(--primary);">
+        Tự gắn thông tin liên hệ vào cuối mỗi bài auto
+      </label>
+      <button class="fb-connect-btn" style="background:var(--primary); align-self:flex-start;" onclick="saveAutoPostStyle()">
+        <i class="ti ti-device-floppy"></i> Lưu giọng văn &amp; liên hệ
+      </button>
     </div>
   </div>
 
@@ -657,14 +685,46 @@ async function loadAutoPostSetting() {
     if (!supa) return;
     const { data: { session } } = await supa.auth.getSession();
     if (!session?.user?.id) return;
-    const { data } = await supa.from('profiles').select('auto_post_enabled').eq('id', session.user.id).single();
+    const { data } = await supa.from('profiles')
+      .select('auto_post_enabled, voice_samples, contact_footer, auto_append_footer')
+      .eq('id', session.user.id).single();
     if (!data) return;
     const toggle = document.getElementById('autoPostToggle');
     if (toggle) {
       toggle.checked = !!data.auto_post_enabled;
       document.getElementById('autoPostInfoRow').style.display = data.auto_post_enabled ? 'block' : 'none';
     }
+    // Đổ dữ liệu giọng văn + footer vào ô
+    const vs = document.getElementById('settingVoiceSamples');
+    const cf = document.getElementById('settingContactFooter');
+    const af = document.getElementById('settingAppendFooter');
+    if (vs && data.voice_samples != null)  vs.value = data.voice_samples;
+    if (cf && data.contact_footer != null) cf.value = data.contact_footer;
+    if (af) af.checked = !!data.auto_append_footer;
   } catch(e) { console.warn('[Settings] loadAutoPostSetting error:', e); }
+}
+
+// Lưu giọng văn mẫu + footer liên hệ + cờ tự gắn footer
+async function saveAutoPostStyle() {
+  try {
+    const supa = window.vpostSupabase;
+    if (!supa) return;
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session?.user?.id) return;
+    const voiceSamples  = document.getElementById('settingVoiceSamples')?.value.trim() || null;
+    const contactFooter = document.getElementById('settingContactFooter')?.value.trim() || null;
+    const appendFooter  = !!document.getElementById('settingAppendFooter')?.checked;
+    const { error } = await supa.from('profiles').update({
+      voice_samples: voiceSamples,
+      contact_footer: contactFooter,
+      auto_append_footer: appendFooter,
+    }).eq('id', session.user.id);
+    if (error) throw error;
+    if (window.showToast) showToast('Đã lưu giọng văn & liên hệ ✅');
+  } catch(e) {
+    console.error('[Settings] saveAutoPostStyle error:', e);
+    if (window.showToast) showToast('Lưu thất bại, thử lại nhé');
+  }
 }
 
 // Facebook OAuth — render status + actions
