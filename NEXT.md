@@ -17,6 +17,21 @@
 
 **→ KHÔNG còn "drift cần biết" như ghi chú cuối session 27. Repo = production.**
 
+### Session 28 (tiếp) — Nâng cấp caption auto-post cho "thật" hơn
+
+**Vấn đề Ben phản hồi:** caption auto vẫn cứng, "mùi copywriter", lặp khuôn — đặc biệt khuôn mở bài câu hỏi tu từ "[Mua/Nằm] nệm mà...?", CTA lặp "nhắn shop nhé", từ sáo ("siêu tiện", "ai cũng hài lòng"). So với bài nhân viên thật (ngắn, ấm, "khách iu", có block giờ/hotline/địa chỉ) thì thua xa.
+
+**Giải pháp đã code (3 phần):**
+1. **Migration `008_auto_post_voice.sql`** — thêm 3 cột vào `profiles`: `voice_samples` (bài thật để học giọng), `contact_footer` (block liên hệ), `auto_append_footer` (bool).
+2. **`pages/settings.html`** — trong mục "Tự động đăng bài": thêm textarea "Dạy AI giọng văn" + textarea "Thông tin liên hệ" + checkbox tự gắn footer + nút lưu (`saveAutoPostStyle()`); `loadAutoPostSetting()` đọc thêm 3 cột.
+3. **`auto-generate-post/index.ts`** — select 3 cột mới; viết lại system/user prompt: học giọng từ `voice_samples` (ưu tiên cao nhất), cấm khuôn câu hỏi mở bài, bỏ CTA cứng, hashtag/emoji tùy chọn theo bài mẫu, cấm bịa số liệu, không tự sinh thông tin liên hệ; sau khi AI trả về thì code gắn `contact_footer` nguyên văn nếu bật (tránh AI bịa sai SĐT). Đã bỏ angle "câu hỏi bất ngờ" khỏi `OPENING_ANGLES`.
+
+**Ben ĐÃ làm (xác nhận):** chạy migration 008 + deploy `auto-generate-post --no-verify-jwt` + commit/push + vào Settings dán bài thật/footer + tích checkbox.
+
+**⏳ VERIFY CÒN TREO:** chưa kiểm chứng được caption mới vì (a) function chốt "1 bài auto/ngày" → trigger lại hôm nay bị skip; (b) lúc làm đã 17:00 VN, ép tạo sẽ đăng thẳng lên fanpage THẬT của Kho Nệm (không muốn spam). **→ Dùng bài auto 08:30 VN sáng mai (11/06) làm bài test:** xem trong calendar lúc 08:30–10:00, đọc caption có bám giọng shop + hết lặp khuôn không. Có cửa sổ sửa/huỷ trước 10:00.
+
+**Lưu ý:** Claude trong session Cowork KHÔNG chạy SQL thẳng lên Supabase được (không có service key / quyền SQL Editor) → mọi verify SQL phải Ben chạy ở SQL Editor, hoặc dựa vào bài auto thật.
+
 **Môi trường Windows (ghi nhớ cho lần sau):**
 - PowerShell chặn `npx.ps1` (execution policy) → dùng `npx.cmd ...` hoặc chạy trong `cmd`.
 - `.git/index.lock` stale (do sandbox Linux tạo khi thử git, không tự xóa được) → từ Windows `Remove-Item D:\vpost\.git\index.lock` rồi git lại.
