@@ -312,7 +312,12 @@ HUMANIZE — BẮT BUỘC:
 - Được viết tắt tự nhiên: "k" (không), "vs" (với), "đc" (được) nếu phù hợp tone
 - Không câu nào nghe như slogan hoặc quảng cáo trên TV
 - Nếu có giá: viết thẳng số (ví dụ "180k", "1.2tr") — không viết "giá hợp lý" hay "giá tốt"
-- Kết bài bằng hành động cụ thể nếu cần: nhắn shop / bình luận / ghé xem — KHÔNG "liên hệ ngay"`;
+- Kết bài bằng hành động cụ thể nếu cần: nhắn shop / bình luận / ghé xem — KHÔNG "liên hệ ngay"
+
+CHÍNH TẢ & TỪ NGỮ — BẮT BUỘC:
+- CHỈ dùng từ tiếng Việt thông dụng, có thật. KHÔNG tự ghép/bịa từ (vd lỗi đã gặp: "quần ga" → đúng là "chăn ga"/"ga giường"; "chập xuống" → đúng là "xẹp lún").
+- Mỗi câu phải hoàn chỉnh, đọc trôi chảy — không câu đứt gãy khó hiểu.
+- Trước khi trả về: đọc lại từng câu như người Việt bình thường, câu nào lủng củng hoặc có từ lạ thì viết lại. Thà đơn giản mà đúng còn hơn hoa mỹ mà sai.`;
 
     // ----- Gọi Claude Haiku -----
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");

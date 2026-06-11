@@ -288,6 +288,11 @@ NGUYÊN TẮC:
 - KHÔNG bịa số liệu, giá, % giảm, thời gian khuyến mãi nếu không được cung cấp. Thà viết về cảm giác/giá trị còn hơn bịa con số.
 - KHÔNG tự viết số điện thoại, địa chỉ, giờ mở cửa — phần liên hệ sẽ được gắn tự động sau.
 
+CHÍNH TẢ & TỪ NGỮ (bắt buộc):
+- CHỈ dùng từ tiếng Việt thông dụng, có thật. TUYỆT ĐỐI không tự ghép/bịa từ mới. Lỗi thực tế đã gặp phải tránh: "quần ga" (đúng: "chăn ga" / "ga giường"), "chập xuống" (đúng: "xẹp lún" / "lún xuống").
+- Mỗi câu phải hoàn chỉnh, đọc trôi chảy. Không viết câu đứt gãy, thiếu chủ ngữ đến mức khó hiểu.
+- Trước khi trả về: tự đọc lại từng câu như một người Việt bình thường. Câu nào lủng củng, khó hiểu, hoặc chứa từ lạ → viết lại cho tự nhiên. Thà đơn giản mà đúng còn hơn hoa mỹ mà sai.
+
 ĐỘ DÀI: linh hoạt 30–90 chữ. Có bài chỉ vài dòng ngắn cũng được — tự nhiên là chính.
 
 Chỉ trả về nội dung caption, không thêm lời dẫn hay giải thích.`;
