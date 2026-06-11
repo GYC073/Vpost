@@ -57,20 +57,41 @@ const INDUSTRY_LABEL: Record<string, string> = {
 };
 
 // Pool chủ đề — CHỌN NGẪU NHIÊN mỗi ngày (không gán cứng theo thứ để tránh lặp nhịp tuần)
-const TOPIC_POOL = [
-  "giới thiệu sản phẩm mới về hoặc bán chạy nhất",
-  "chia sẻ mẹo hay / kiến thức liên quan ngành hàng",
-  "câu chuyện khách hàng thật / feedback tích cực",
-  "flash sale hoặc ưu đãi sắp tới",
-  "behind the scenes / một ngày của shop",
-  "sản phẩm combo / gợi ý quà tặng",
-  "cảm ơn khách hàng + nhắc đến sản phẩm hot",
-  "đính chính 1 hiểu lầm phổ biến trong ngành",
-  "so sánh giúp khách chọn đúng (kiểu A vs kiểu B)",
-  "giải đáp 1 câu hỏi khách hay thắc mắc",
-  "mẹo bảo quản / dùng sản phẩm bền đẹp",
-  "khoảnh khắc đời thường ở shop (chân thật, không bán hàng lộ liễu)",
+// kind: "product" = nói về hàng/shop cụ thể (chỉ dùng ảnh THẬT, không có thì chữ thuần)
+//       "tip"     = mẹo/kiến thức chung (không có ảnh thật thì cho phép ảnh AI minh hoạ)
+const TOPIC_POOL: Array<{ text: string; kind: "product" | "tip" }> = [
+  { text: "giới thiệu sản phẩm mới về hoặc bán chạy nhất", kind: "product" },
+  { text: "chia sẻ mẹo hay / kiến thức liên quan ngành hàng", kind: "tip" },
+  { text: "câu chuyện khách hàng thật / feedback tích cực", kind: "product" },
+  { text: "flash sale hoặc ưu đãi sắp tới", kind: "product" },
+  { text: "behind the scenes / một ngày của shop", kind: "product" },
+  { text: "sản phẩm combo / gợi ý quà tặng", kind: "product" },
+  { text: "cảm ơn khách hàng + nhắc đến sản phẩm hot", kind: "product" },
+  { text: "đính chính 1 hiểu lầm phổ biến trong ngành", kind: "tip" },
+  { text: "so sánh giúp khách chọn đúng (kiểu A vs kiểu B)", kind: "tip" },
+  { text: "giải đáp 1 câu hỏi khách hay thắc mắc", kind: "tip" },
+  { text: "mẹo bảo quản / dùng sản phẩm bền đẹp", kind: "tip" },
+  { text: "khoảnh khắc đời thường ở shop (chân thật, không bán hàng lộ liễu)", kind: "product" },
 ];
+
+// Prompt ảnh AI minh hoạ theo ngành (tiếng Anh cho Pollinations) — chỉ dùng cho bài "tip"
+const INDUSTRY_IMG_PROMPT: Record<string, string> = {
+  coffee:     "cozy vietnamese coffee shop, latte art on wooden table",
+  fashion:    "neatly folded clothes on shelf, warm boutique lighting",
+  beauty:     "skincare products flatlay, pastel tones, soft shadows",
+  food:       "fresh homemade vietnamese food on rustic table",
+  tech:       "clean desk setup with modern gadgets, soft light",
+  home:       "cozy bedroom interior, comfortable mattress with soft bedding",
+  health:     "fresh fruits and wellness items, bright clean scene",
+  education:  "warm study desk with books and notebook",
+  furniture:  "cozy bedroom interior, comfortable mattress and pillows, morning light",
+  sport:      "gym equipment and water bottle, energetic clean scene",
+  realestate: "bright modern apartment interior, large window",
+  shoes:      "stylish sneakers on clean background, soft studio light",
+  authentic:  "luxury products neatly displayed, elegant minimal scene",
+  perfume:    "perfume bottle with soft flowers, elegant minimal scene",
+  other:      "small local shop interior, products neatly displayed, warm light",
+};
 
 // Các kiểu mở bài — chọn ngẫu nhiên 1 kiểu mỗi ngày để caption không cùng giọng
 const OPENING_ANGLES = [
@@ -298,7 +319,7 @@ CHÍNH TẢ & TỪ NGỮ (bắt buộc):
 Chỉ trả về nội dung caption, không thêm lời dẫn hay giải thích.`;
 
         const userPrompt = `Shop: "${shopName}" — ngành ${industryLabel}.
-${profile.shop_desc ? `Mô tả shop: ${profile.shop_desc}\n` : ""}Chủ đề hôm nay: ${topic}
+${profile.shop_desc ? `Mô tả shop: ${profile.shop_desc}\n` : ""}Chủ đề hôm nay: ${topic.text}
 Hôm nay thử mở bài theo hướng: ${openingAngle}.
 
 Bài shop đã đăng GẦN ĐÂY (viết khác hẳn — đừng lặp ý, đừng lặp kiểu mở bài):
@@ -327,10 +348,45 @@ Viết 1 caption Facebook tự nhiên cho chủ đề hôm nay, đúng giọng s
           caption = `${caption}\n\n${profile.contact_footer.trim()}`;
         }
 
+        // ===== 9.5 Chọn ảnh cho bài =====
+        // Ưu tiên 1: ảnh THẬT từ kho page_photos (xoay vòng — ít dùng nhất trước).
+        // Ưu tiên 2 (chỉ bài "tip"): ảnh AI minh hoạ Pollinations (pre-warm trước khi gắn).
+        // Không có gì → đăng chữ thuần (an toàn hơn ảnh giả).
+        let imageUrl: string | null = null;
+
+        const { data: photo } = await admin
+          .from("page_photos")
+          .select("id, photo_url, times_used")
+          .eq("user_id", uid)
+          .eq("is_active", true)
+          .order("last_used_at", { ascending: true, nullsFirst: true })
+          .order("times_used", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (photo) {
+          imageUrl = photo.photo_url;
+          await admin.from("page_photos").update({
+            times_used: (photo.times_used ?? 0) + 1,
+            last_used_at: new Date().toISOString(),
+          }).eq("id", photo.id);
+        } else if (topic.kind === "tip") {
+          const imgPrompt = `${INDUSTRY_IMG_PROMPT[industryKey] ?? INDUSTRY_IMG_PROMPT.other}, photo style, soft natural light, no people, no text, no watermark, no logo`;
+          const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1080&height=1080&nologo=true&seed=${Math.floor(Math.random() * 1e6)}`;
+          try {
+            // Pre-warm: bắt Pollinations sinh ảnh xong ngay bây giờ, để lúc FB fetch không bị timeout
+            const warm = await fetch(pollUrl, { signal: AbortSignal.timeout(30000) });
+            if (warm.ok && (warm.headers.get("content-type") ?? "").startsWith("image/")) {
+              imageUrl = pollUrl;
+            }
+          } catch (_) { /* sinh ảnh fail → đăng chữ thuần */ }
+        }
+
         // ===== 10. Insert post =====
         const { error: insertErr } = await admin.from("posts").insert({
           user_id: uid,
           caption,
+          image_url: imageUrl,
           status: "scheduled",
           scheduled_at: scheduledAt.toISOString(),
           source: "auto",
