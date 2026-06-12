@@ -728,7 +728,7 @@ body {
       <div style="height:14px"></div>
       <div class="preview-headline">
         <h2>Biến 1 ảnh sản phẩm<br>thành <span class="grad">bài đăng bán hàng</span><br>chuyên nghiệp</h2>
-        <p>Không cần biết viết lách — AI phân tích ảnh,<br>hiểu ngành hàng, tạo caption chuẩn tone shop bạn.</p>
+        <p>Không cần biết viết lách — chỉ cần mô tả ngắn,<br>AI hiểu ngành hàng, viết caption chuẩn tone shop bạn.</p>
         <div class="industry-strip">
           <span class="industry-badge">👗 Thời trang</span>
           <span class="industry-badge">🛏️ Nội thất</span>
@@ -808,11 +808,6 @@ body {
           <div class="testimonial-stars">★★★★★</div>
         </div>
         <div class="testimonial-text" id="tText">Mình dùng Vpost mỗi ngày để đăng bài lên Facebook. AI hiểu đúng tone shop, không cần chỉnh nhiều, tiết kiệm cả tiếng đồng hồ mỗi ngày.</div>
-      </div>
-      <div class="testimonial-dots">
-        <div class="t-dot active" id="dot-0" onclick="goTestimonial(0)"></div>
-        <div class="t-dot" id="dot-1" onclick="goTestimonial(1)"></div>
-        <div class="t-dot" id="dot-2" onclick="goTestimonial(2)"></div>
       </div>
     </div>
 
@@ -1080,16 +1075,6 @@ const TESTIMONIALS = [
     avatar: 'K', color: 'linear-gradient(135deg,#2563EB,#7C3AED)',
     name: 'Kho Nệm Giá Tốt', shop: 'Quảng Trị · Đồ nội thất',
     text: 'Mình dùng Vpost mỗi ngày để đăng bài lên Facebook. AI hiểu đúng tone shop, không cần chỉnh nhiều, tiết kiệm cả tiếng đồng hồ mỗi ngày.'
-  },
-  {
-    avatar: 'M', color: 'linear-gradient(135deg,#059669,#0891b2)',
-    name: 'Mỹ phẩm Hana', shop: 'Đà Nẵng · Làm đẹp',
-    text: 'Trước mình viết caption mất 30 phút, giờ 30 giây có bài chuẩn tone. Khách hàng inbox nhiều hơn hẳn sau khi dùng Vpost.'
-  },
-  {
-    avatar: 'T', color: 'linear-gradient(135deg,#dc2626,#ea580c)',
-    name: 'Tiệm Cafe Mộc', shop: 'Hội An · Ăn uống',
-    text: 'Vpost tạo caption đúng cái cảm giác mình muốn — ấm cúng, gần gũi. Không quá chuyên nghiệp, không quá cứng nhắc. Rất hợp shop cafe nhỏ.'
   }
 ];
 
@@ -1114,10 +1099,12 @@ function goTestimonial(idx) {
   }, 350);
 }
 
-// Start rotating after 5s
-setTimeout(() => {
-  tTimer = setTimeout(() => goTestimonial(1), 5000);
-}, 1000);
+// Start rotating after 5s (chỉ khi có >1 testimonial)
+if (TESTIMONIALS.length > 1) {
+  setTimeout(() => {
+    tTimer = setTimeout(() => goTestimonial(1), 5000);
+  }, 1000);
+}
 
 
 // ─── Tab switch: show/hide register benefits ─────────────────

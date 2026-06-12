@@ -52,7 +52,7 @@ Chỉ trả về đúng caption, không giải thích gì thêm.`;
 Viết 1 caption Facebook cho shop này.`;
 
     const message = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
+      model: "claude-sonnet-4-6", // Sonnet: demo là bộ mặt sản phẩm — không để khách tiềm năng gặp lỗi bịa từ. Giới hạn 3 lần/session nên chi phí thấp.
       max_tokens: 300,
       messages: [{ role: "user", content: userPrompt }],
       system: systemPrompt,
