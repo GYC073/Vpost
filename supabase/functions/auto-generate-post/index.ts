@@ -62,8 +62,8 @@ const INDUSTRY_LABEL: Record<string, string> = {
 const TOPIC_POOL: Array<{ text: string; kind: "product" | "tip" }> = [
   { text: "giới thiệu sản phẩm mới về hoặc bán chạy nhất", kind: "product" },
   { text: "chia sẻ mẹo hay / kiến thức liên quan ngành hàng", kind: "tip" },
-  { text: "câu chuyện khách hàng thật / feedback tích cực", kind: "product" },
-  { text: "flash sale hoặc ưu đãi sắp tới", kind: "product" },
+  // BỎ "flash sale / ưu đãi sắp tới" + "câu chuyện khách hàng thật": AI không biết
+  // shop có sale thật hay khách thật nào → sẽ BỊA lên fanpage thật (đã xảy ra 12/06).
   { text: "behind the scenes / một ngày của shop", kind: "product" },
   { text: "sản phẩm combo / gợi ý quà tặng", kind: "product" },
   { text: "cảm ơn khách hàng + nhắc đến sản phẩm hot", kind: "product" },
@@ -307,6 +307,8 @@ NGUYÊN TẮC:
 - Hashtag: chỉ dùng nếu bài mẫu của shop có dùng; mặc định 0, tối đa 2.
 - Emoji: theo thói quen bài mẫu, 0–2 cái.
 - KHÔNG bịa số liệu, giá, % giảm, thời gian khuyến mãi nếu không được cung cấp. Thà viết về cảm giác/giá trị còn hơn bịa con số.
+- KHÔNG bịa SỰ KIỆN: không tự nói shop "đang flash sale", "hôm nay giảm giá", "có ưu đãi" nếu đề bài không nói rõ. Không bịa câu chuyện khách hàng cụ thể ("nhiều khách hỏi mình...", "có chị khách hôm qua...") — đây là fanpage thật, khách đọc sẽ inbox hỏi và shop không trả lời được.
+- XƯNG HÔ NHẤT QUÁN: chọn 1 cách xưng hô theo bài mẫu của shop (mình / em / shop...) và giữ NGUYÊN từ đầu đến cuối bài. Không nhảy từ "mình" sang "em" giữa chừng.
 - KHÔNG tự viết số điện thoại, địa chỉ, giờ mở cửa — phần liên hệ sẽ được gắn tự động sau.
 
 CHÍNH TẢ & TỪ NGỮ (bắt buộc):
@@ -330,7 +332,7 @@ ${recentContent}
 Viết 1 caption Facebook tự nhiên cho chủ đề hôm nay, đúng giọng shop.`;
 
         const msg = await anthropic.messages.create({
-          model: "claude-haiku-4-5-20251001",
+          model: "claude-sonnet-4-6", // Sonnet: tiếng Việt tốt hơn Haiku hẳn — hết lỗi bịa từ ("quần ga", "chợp cơ hội"). 1 bài/ngày nên chi phí không đáng kể.
           max_tokens: 400,
           system: stripLoneSurrogates(systemPrompt),
           messages: [{ role: "user", content: stripLoneSurrogates(userPrompt) }],
