@@ -861,6 +861,46 @@ footer{ background:#060c18 !important; border-top:1px solid rgba(255,255,255,.07
   .forwho-card, .feature-card, .step-card, .pricing-card,
   .testimonial-card, .caption-card{ transition: none !important; }
 }
+/* ── FIX 1: "Các bước" trả về dạng sạch (bỏ kính), số bước gradient ── */
+.step-card{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+.step-card:hover{ transform: none !important; box-shadow: none !important; border: none !important; }
+.step-num{
+  background: linear-gradient(135deg,#5b8cff,#7C3AED) !important;
+  box-shadow: 0 8px 20px -8px rgba(124,58,237,.6);
+}
+.step-arrow{ color: rgba(255,255,255,.28) !important; }
+
+/* ── FIX 2: mọi ô nền sáng còn sót -> kính tối, chữ sáng ── */
+.demo-output-text, .demo-copy-btn, .ba-output-box, .m-btn-outline{
+  background: rgba(255,255,255,.05) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  color: var(--ink) !important;
+}
+.demo-output-text{ border: 1px solid rgba(255,255,255,.14) !important; }
+/* Caption AI trong hero: ép nền tối + chữ sáng để luôn đọc được */
+.ba-output-box{ background: linear-gradient(160deg, rgba(91,140,255,.10), rgba(124,58,237,.08)) !important; border: 1px solid rgba(91,140,255,.30) !important; }
+.ba-caption-txt, .ba-output-box, .demo-output-text{ color: var(--ink) !important; }
+.ba-btn-copy{ background: rgba(255,255,255,.06) !important; border: 1px solid rgba(255,255,255,.16) !important; color: var(--ink) !important; }
+.mockup-screen{ background: #0c1730 !important; }
+.m-btn-outline{ color: var(--ink-50) !important; }
+
+/* ── FIX 3: pill xanh lá -> trong suốt hợp nền tối ── */
+.hero-value-hint, .pricing-value-hint, .t-verified-badge{
+  background: rgba(16,185,129,.16) !important;
+  border-color: rgba(16,185,129,.35) !important;
+  color: #6ee7b7 !important;
+}
+/* badge "Sắp có" trên logo nền tối */
+.logo-item span{ background: rgba(255,255,255,.12) !important; color: var(--ink-70) !important; }
+
 /* ════════ HẾT VPOST DARK GLASS SKIN ════════ */
 
 </style>
